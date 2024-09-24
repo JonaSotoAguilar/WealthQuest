@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour
     public PlayerMovement playerMovement;
     public DiceController diceController;
 
+    public PlayerStats[] jugadores;  // Array de jugadores, cada uno con sus stats
+    private int jugadorActual = 0;   // Índice del jugador actual
+
     private void Awake()
     {
         if (instance == null)
@@ -26,7 +29,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && playerCamera.enabled && !playerMovement.IsMoving()) // Asegurarse de que el jugador no esté moviéndose
+        if (Input.GetKeyDown(KeyCode.Space) && playerCamera.enabled && !playerMovement.IsMoving())
         {
             LaunchDice();
         }
@@ -43,6 +46,23 @@ public class GameManager : MonoBehaviour
     {
         playerCamera.enabled = true;
         diceCamera.enabled = false;
+
+        // Mover al jugador actual
         playerMovement.MoverJugador(result);
+
+        // Actualizar las estadísticas del jugador actual
+        jugadores[jugadorActual].ActualizarTurno();
+
+        // Actualizar el HUD del jugador actual
+        HUDManager.instance.ActualizarHUD(jugadores[jugadorActual]);
+
+        // Pasar el turno al siguiente jugador
+        CambiarTurno();
+    }
+
+    private void CambiarTurno()
+    {
+        jugadorActual = (jugadorActual + 1) % jugadores.Length; // Cambia al siguiente jugador en la lista
+        //Debug.Log("Es el turno del jugador: " + jugadorActual);
     }
 }

@@ -1,0 +1,21 @@
+Escencial:
+- Tipos Casillas: Dinero, Pregunta, Desafio
+- Dificultad Casillas.
+- Tarjetas Casillas.
+- Preguntas Casillas.
+- Perfil del Jugador
+- Historial Partidas.
+- Opciones Configuracion.
+
+Avanzado:
+- bGames.
+- API datos financieros.
+
+
+Diseno:
+- Mapa.
+
+Extra:
+- Coperativo 4 jugadores
+- IA para 3 jugadores
+
