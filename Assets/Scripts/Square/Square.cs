@@ -2,5 +2,6 @@ using UnityEngine;
 
 public abstract class Square : MonoBehaviour
 {
-    public abstract void ActivarCasilla(PlayerStats jugador);
+    // Cambia el parámetro a tipo Player
+    public abstract void ActivarCasilla(Player player);
 }

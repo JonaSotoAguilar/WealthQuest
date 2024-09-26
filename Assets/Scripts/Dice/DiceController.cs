@@ -27,20 +27,24 @@ public class DiceController : MonoBehaviour
         myRigidbody = GetComponent<Rigidbody>();
     }
 
-    void Update()
+    public void LaunchDice()
     {
-        // Lanzar dado al presionar espacio
-        if (Input.GetKeyDown(KeyCode.Space) && !isDiceLaunched)
-        {
-            LaunchDice();
-            isDiceLaunched = true;
-            StartCoroutine(WaitAndCheckResult()); // Comienza la espera antes de comprobar el resultado
-        }
+        if (isDiceLaunched) return; // Asegurarse de que no se lance el dado dos veces
+        isDiceLaunched = true;
+
+        Vector3 fuerzaAleatoria = new Vector3(Random.Range(-5f, 5f), 10f, Random.Range(-5f, 5f));
+        Vector3 torqueAleatorio = new Vector3(Random.Range(-500f, 500f), Random.Range(-500f, 500f), Random.Range(-500f, 500f));
+        myRigidbody.AddForce(fuerzaAleatoria, ForceMode.Impulse);
+        myRigidbody.AddTorque(torqueAleatorio, ForceMode.Impulse);
+        diceSleeping = false;
+
+        // Comenzar a esperar hasta que el dado se detenga
+        StartCoroutine(WaitAndCheckResult());
     }
 
     IEnumerator WaitAndCheckResult()
     {
-        yield return new WaitForSeconds(1); // Espera 3 segundos antes de verificar el resultado
+        yield return new WaitForSeconds(1); // Espera un segundo antes de verificar si el dado está durmiendo
         while (!myRigidbody.IsSleeping())
         {
             yield return null; // Espera hasta que el dado se detenga completamente
@@ -75,16 +79,7 @@ public class DiceController : MonoBehaviour
         }
 
         diceSleeping = true;
-        isDiceLaunched = false; // Restablecer para permitir futuros lanzamientos
+        isDiceLaunched = false; // Permitir futuros lanzamientos de dados
         GameManager.instance.FinishDiceRoll(diceRoll); // Notificar al GameManager del resultado
-    }
-
-    public void LaunchDice()
-    {
-        Vector3 fuerzaAleatoria = new Vector3(Random.Range(-5f, 5f), 10f, Random.Range(-5f, 5f));
-        Vector3 torqueAleatorio = new Vector3(Random.Range(-500f, 500f), Random.Range(-500f, 500f), Random.Range(-500f, 500f));
-        myRigidbody.AddForce(fuerzaAleatoria, ForceMode.Impulse);
-        myRigidbody.AddTorque(torqueAleatorio, ForceMode.Impulse);
-        diceSleeping = false;
     }
 }

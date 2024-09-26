@@ -1,13 +1,15 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class QuestionPanel : MonoBehaviour
 {
     public TextMeshProUGUI questionText;
     public Button[] optionButtons;
     private int correctAnswerIndex;
-    private PlayerStats currentPlayerStats;
+    private Player currentPlayer;
+    public event Action OnQuestionAnswered; // Evento para notificar cuando se ha respondido la pregunta
 
     void Start()
     {
@@ -15,16 +17,16 @@ public class QuestionPanel : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void SetupQuestion(string question, string[] options, int correctIndex, PlayerStats playerStats)
+    public void SetupQuestion(string question, string[] options, int correctIndex, Player player)
     {
         questionText.text = question;
         correctAnswerIndex = correctIndex;
-        currentPlayerStats = playerStats;
+        currentPlayer = player;
 
         for (int i = 0; i < options.Length; i++)
         {
             optionButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = options[i];
-            int index = i;  // Copia local para evitar problemas con el closure en lambdas
+            int index = i;
             optionButtons[i].onClick.RemoveAllListeners();
             optionButtons[i].onClick.AddListener(() => Answer(index));
         }
@@ -37,10 +39,12 @@ public class QuestionPanel : MonoBehaviour
         ShowPanel(false);
         if (index == correctAnswerIndex)
         {
-            currentPlayerStats.ModificarPuntaje(10);  // Asume un puntaje fijo por correcta
-            HUDManager.instance.ActualizarHUD(currentPlayerStats);
+            currentPlayer.ModifyScore(10); // Asume un puntaje fijo por respuesta correcta
+            HUDManager.instance.ActualizarHUD(currentPlayer);
         }
-        // Aquí puedes manejar una respuesta incorrecta si es necesario
+
+        // Notificar que la pregunta ha sido respondida
+        OnQuestionAnswered?.Invoke();
     }
 
     public void ShowPanel(bool visible)

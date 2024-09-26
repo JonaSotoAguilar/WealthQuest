@@ -1,10 +1,9 @@
 using UnityEngine;
-using TMPro;  // Importa la librería TextMeshPro
+using TMPro;  // Importar la librería necesaria para TextMeshPro
 
 public class HUDManager : MonoBehaviour
 {
-    public static HUDManager instance;
-
+    public static HUDManager instance;  // Singleton
     public TextMeshProUGUI turnoText;
     public TextMeshProUGUI dineroText;
     public TextMeshProUGUI puntajeText;
@@ -14,18 +13,18 @@ public class HUDManager : MonoBehaviour
         if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject);  // Mantener el HUDManager al cambiar de escena
         }
         else
         {
-            Destroy(gameObject);
+            Destroy(gameObject);  // Si ya existe una instancia, destruir este objeto
         }
     }
 
-    public void ActualizarHUD(PlayerStats playerStats)
+    public void ActualizarHUD(Player player)
     {
-        turnoText.text = "Turno: " + playerStats.turno;
-        dineroText.text = "Dinero: $" + playerStats.dinero;
-        puntajeText.text = "Puntaje: " + playerStats.puntaje;
+        turnoText.text = "Turno: " + player.playerName;
+        dineroText.text = "Dinero: $" + player.money;
+        puntajeText.text = "Puntaje: " + player.score;
     }
 }
