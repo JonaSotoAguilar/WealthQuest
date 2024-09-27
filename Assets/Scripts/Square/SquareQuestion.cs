@@ -2,25 +2,35 @@ using UnityEngine;
 
 public class SquareQuestion : Square
 {
-    public string pregunta = "";
-    public string[] opciones = { "", "", "" };
-    public int indiceRespuestaCorrecta = 0; // El índice de la respuesta correcta
-    public int puntajePorRespuestaCorrecta = 10; // Puntaje que otorga si responde bien
+    public string question = "";
+    public string[] answers = { "", "", "" };
+    public int indexCorrectAnswer = 0;
+    public int ScoreForCorrectAnswer = 10;
+    private bool squareSleeping;
 
-    public override void ActivarCasilla(Player player)
+    public override void ActiveSquare(Player player)
     {
-        // Marca que una pregunta está activa, bloqueando el lanzamiento de los dados
-        GameManager.instance.isQuestionActive = true;
+        squareSleeping = false;
 
         // Mostrar la pregunta y configurar el panel de la pregunta
-        QuestionPanel panel = HUDManager.instance.GetComponentInChildren<QuestionPanel>(true);
-        panel.SetupQuestion(pregunta, opciones, indiceRespuestaCorrecta, player);
+        QuestionPanel panel = HUDController.instance.GetComponentInChildren<QuestionPanel>(true);
+        panel.SetupQuestion(question, answers, indexCorrectAnswer, player); // Pasamos el dispositivo aquí
 
-        // El panel de preguntas desactiva la bandera `isQuestionActive` cuando el jugador responde
-        panel.OnQuestionAnswered += () =>
-        {
-            // Cuando la pregunta haya sido respondida, se habilita nuevamente el turno
-            GameManager.instance.isQuestionActive = false;
-        };
+        // Suscribirse al evento de respuesta de la pregunta
+        panel.OnQuestionAnswered += HandleQuestionAnswered;
+    }
+
+    private void HandleQuestionAnswered()
+    {
+        // Desuscribirse para evitar que el manejador sea llamado múltiples veces
+        HUDController.instance.GetComponentInChildren<QuestionPanel>(true).OnQuestionAnswered -= HandleQuestionAnswered;
+
+        squareSleeping = true; // Ahora que la pregunta ha sido respondida, permitir que el juego continúe
+    }
+
+    public override bool IsSquareStopped()
+    {
+        return squareSleeping;
     }
 }
+

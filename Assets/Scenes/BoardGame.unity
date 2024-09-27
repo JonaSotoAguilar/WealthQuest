@@ -236,16 +236,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pregunta: "\xBFQue es interes simple?"
-  opciones:
-  - "M\xE9todo que aplica el inter\xE9s sobre el principal inicial y tambi\xE9n sobre
-    los intereses acumulados en per\xEDodos anteriores."
-  - "Calcula solo sobre el capital inicial sin considerar los intereses generados
-    en per\xEDodos anteriores."
-  - "Reduce el monto del principal inicial con cada pago que se realiza durante el
-    per\xEDodo del pr\xE9stamo."
-  indiceRespuestaCorrecta: 1
-  puntajePorRespuestaCorrecta: 10
+  question: Elije C
+  answers:
+  - A
+  - B
+  - C
+  indexCorrectAnswer: 2
+  ScoreForCorrectAnswer: 10
 --- !u!1 &21992879 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
@@ -289,16 +286,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pregunta: "\xBFQue es interes simple?"
-  opciones:
-  - "M\xE9todo que aplica el inter\xE9s sobre el principal inicial y tambi\xE9n sobre
-    los intereses acumulados en per\xEDodos anteriores."
-  - "Calcula solo sobre el capital inicial sin considerar los intereses generados
-    en per\xEDodos anteriores."
-  - "Reduce el monto del principal inicial con cada pago que se realiza durante el
-    per\xEDodo del pr\xE9stamo."
-  indiceRespuestaCorrecta: 1
-  puntajePorRespuestaCorrecta: 10
+  question: Elije B
+  answers:
+  - A
+  - B
+  - C
+  indexCorrectAnswer: 1
+  ScoreForCorrectAnswer: 10
 --- !u!1 &52786380
 GameObject:
   m_ObjectHideFlags: 0
@@ -606,7 +600,7 @@ GameObject:
   - component: {fileID: 229381578}
   - component: {fileID: 229381577}
   m_Layer: 5
-  m_Name: TextMoney
+  m_Name: MoneyText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -632,7 +626,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Money: $0'
+  m_text: 'Dinero: $0'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -641,8 +635,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1128,6 +1122,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 351105961}
   m_CullTransparentMesh: 1
+--- !u!4 &357240284 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+  m_PrefabInstance: {fileID: 5274190477724068321}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &365961542 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
@@ -1171,7 +1170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0704e0e31a4e6d419b52aa884cbea2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cantidadDinero: 50
+  amountMoney: 50
 --- !u!1001 &381295068
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1534,16 +1533,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pregunta: "\xBFQue es interes simple?"
-  opciones:
-  - "M\xE9todo que aplica el inter\xE9s sobre el principal inicial y tambi\xE9n sobre
-    los intereses acumulados en per\xEDodos anteriores."
-  - "Calcula solo sobre el capital inicial sin considerar los intereses generados
-    en per\xEDodos anteriores."
-  - "Reduce el monto del principal inicial con cada pago que se realiza durante el
-    per\xEDodo del pr\xE9stamo."
-  indiceRespuestaCorrecta: 1
-  puntajePorRespuestaCorrecta: 10
+  question: Elije la A
+  answers:
+  - A
+  - B
+  - C
+  indexCorrectAnswer: 0
+  ScoreForCorrectAnswer: 10
 --- !u!1001 &458474767
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1767,7 +1763,7 @@ GameObject:
   - component: {fileID: 464234133}
   - component: {fileID: 464234132}
   m_Layer: 5
-  m_Name: TextScore
+  m_Name: ScoreText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1802,8 +1798,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1996,7 +1992,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
-  - {fileID: 767550186}
+  - {fileID: 357240284}
+  - {fileID: 947602780}
   m_Father: {fileID: 1282802723}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &670279584 stripped
@@ -2042,16 +2039,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pregunta: "\xBFQue es interes simple?"
-  opciones:
-  - "M\xE9todo que aplica el inter\xE9s sobre el principal inicial y tambi\xE9n sobre
-    los intereses acumulados en per\xEDodos anteriores."
-  - "Calcula solo sobre el capital inicial sin considerar los intereses generados
-    en per\xEDodos anteriores."
-  - "Reduce el monto del principal inicial con cada pago que se realiza durante el
-    per\xEDodo del pr\xE9stamo."
-  indiceRespuestaCorrecta: 1
-  puntajePorRespuestaCorrecta: 10
+  question: Elije la A
+  answers:
+  - A
+  - B
+  - C
+  indexCorrectAnswer: 0
+  ScoreForCorrectAnswer: 10
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -2224,38 +2218,36 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2084331890}
   m_SourcePrefab: {fileID: 100100000, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
---- !u!1 &767550182 stripped
+--- !u!1 &947602779 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1381326087484064, guid: fe09d879335f3084b896225f435b183b, type: 3}
-  m_PrefabInstance: {fileID: 1990811475}
+  m_PrefabInstance: {fileID: 2085747314}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &767550186 stripped
+--- !u!4 &947602780 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4055302919426256, guid: fe09d879335f3084b896225f435b183b, type: 3}
-  m_PrefabInstance: {fileID: 1990811475}
+  m_PrefabInstance: {fileID: 2085747314}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &767550195
+--- !u!114 &947602783
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 767550182}
+  m_GameObject: {fileID: 947602779}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e95ee5ef20f0a6b49ae6799d28f2826b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameData: {fileID: 1832640041}
-  velocidadMovimiento: 2
-  jugadorIndex: 0
---- !u!114 &767550196
+  speedMovement: 2
+--- !u!114 &947602784
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 767550182}
+  m_GameObject: {fileID: 947602779}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4bfaed4e8a5dafc4994aefa77b5d3054, type: 3}
@@ -2264,7 +2256,41 @@ MonoBehaviour:
   playerName: Jona
   money: 0
   score: 0
+  playerIndex: 0
   playerState: 0
+  playerMovement: {fileID: 947602783}
+  playerInput: {fileID: 947602787}
+  isWaitingForDevice: 0
+--- !u!114 &947602787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 947602779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}
+  m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: Board
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -2370,10 +2396,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db7d7d1b167226d45b5f25639b784592, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jugador: {fileID: 767550186}
-  distancia: 4
-  altura: 3
-  angulo: 10
+  player: {fileID: 357240284}
+  distance: 4
+  height: 3
+  angle: 10
 --- !u!1 &982528339
 GameObject:
   m_ObjectHideFlags: 0
@@ -2745,7 +2771,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0704e0e31a4e6d419b52aa884cbea2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cantidadDinero: 50
+  amountMoney: 50
 --- !u!1001 &1180231750
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2951,7 +2977,7 @@ GameObject:
   - component: {fileID: 1213666863}
   - component: {fileID: 1213666862}
   m_Layer: 5
-  m_Name: TextTurn
+  m_Name: TurnText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2986,8 +3012,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3335,6 +3361,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1303122021}
+  - component: {fileID: 1303122022}
   m_Layer: 0
   m_Name: Squares
   m_TagString: Untagged
@@ -3369,6 +3396,18 @@ Transform:
   - {fileID: 1180231751}
   m_Father: {fileID: 1282802723}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1303122022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1303122020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88e796ec51a957741bf447529dea6353, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1344793328
 GameObject:
   m_ObjectHideFlags: 0
@@ -3441,9 +3480,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 219d06c1f7e316a459ab50941fc7b3a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turnoText: {fileID: 1213666862}
-  dineroText: {fileID: 229381577}
-  puntajeText: {fileID: 464234132}
+  turnText: {fileID: 1213666862}
+  moneyText: {fileID: 229381577}
+  scoreText: {fileID: 464234132}
 --- !u!223 &1344793332
 Canvas:
   m_ObjectHideFlags: 0
@@ -3531,7 +3570,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0704e0e31a4e6d419b52aa884cbea2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cantidadDinero: 50
+  amountMoney: 50
 --- !u!1 &1486293673 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
@@ -3575,7 +3614,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0704e0e31a4e6d419b52aa884cbea2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cantidadDinero: 50
+  amountMoney: 50
 --- !u!1001 &1560063011
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3664,7 +3703,7 @@ GameObject:
   - component: {fileID: 1616021089}
   - component: {fileID: 1616021088}
   m_Layer: 5
-  m_Name: Button_3
+  m_Name: Answer_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3842,7 +3881,7 @@ GameObject:
   - component: {fileID: 1683009799}
   - component: {fileID: 1683009798}
   m_Layer: 5
-  m_Name: Button_2
+  m_Name: Answer_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4221,7 +4260,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1832640040}
   - component: {fileID: 1832640042}
-  - component: {fileID: 1832640041}
+  - component: {fileID: 1832640043}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4244,21 +4283,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1832640041
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1832640036}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e11d9ba7b5ff7d0488f5335a48c9e6d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  players: []
-  currentPlayer: 0
-  gameState: 0
 --- !u!114 &1832640042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4268,15 +4292,59 @@ MonoBehaviour:
   m_GameObject: {fileID: 1832640036}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64e3f5d5aa3478e42b64ea331010af94, type: 3}
+  m_Script: {fileID: 11500000, guid: a9dce11c5c3635f40979100a5bb9b8fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  diceController: {fileID: 1689750435}
   playerCamera: {fileID: 963194227}
   diceCamera: {fileID: 52786382}
-  playerMovement: {fileID: 767550195}
-  diceController: {fileID: 1689750435}
-  isQuestionActive: 0
-  gameData: {fileID: 1832640041}
+  playerInputManager: {fileID: 1832640043}
+  numPlayers: 2
+  gameState: 0
+--- !u!114 &1832640043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832640036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 621567455fd1c4ceb811cc8a00b6a1a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_NotificationBehavior: 0
+  m_MaxPlayerCount: 4
+  m_AllowJoining: 1
+  m_JoinBehavior: 0
+  m_PlayerJoinedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_PlayerLeftEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_JoinAction:
+    m_UseReference: 0
+    m_Action:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 5df5e849-2b10-4769-a12e-af9d3affad92
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 0}
+  m_PlayerPrefab: {fileID: 5649626995650458262, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+  m_SplitScreen: 0
+  m_MaintainAspectRatioInSplitScreen: 0
+  m_FixedNumberOfSplitScreens: -1
+  m_SplitScreenRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1 &1833781022
 GameObject:
   m_ObjectHideFlags: 0
@@ -4398,7 +4466,7 @@ GameObject:
   - component: {fileID: 1875632994}
   - component: {fileID: 1875632993}
   m_Layer: 5
-  m_Name: Button_1
+  m_Name: Answer_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4540,7 +4608,107 @@ Transform:
   - {fileID: 1002236755}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1990811475
+--- !u!1 &2002416948 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
+  m_PrefabInstance: {fileID: 323280313}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2002416949 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4238037144770610, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
+  m_PrefabInstance: {fileID: 323280313}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &2002416950
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2002416948}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.2, z: 1}
+  m_Center: {x: 0, y: 0.1, z: 0}
+--- !u!114 &2002416956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2002416948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  question: Elije la A
+  answers:
+  - A
+  - B
+  - C
+  indexCorrectAnswer: 0
+  ScoreForCorrectAnswer: 10
+--- !u!1 &2084331882 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
+  m_PrefabInstance: {fileID: 748769223}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2084331883 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4238037144770610, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
+  m_PrefabInstance: {fileID: 748769223}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &2084331886
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084331882}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.2, z: 1}
+  m_Center: {x: 0, y: 0.1, z: 0}
+--- !u!114 &2084331890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084331882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  question: Elije la A
+  answers:
+  - A
+  - B
+  - C
+  indexCorrectAnswer: 0
+  ScoreForCorrectAnswer: 10
+--- !u!1001 &2085747314
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -4550,7 +4718,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1381326087484064, guid: fe09d879335f3084b896225f435b183b, type: 3}
       propertyPath: m_Name
-      value: Player_1
+      value: Player_2
       objectReference: {fileID: 0}
     - target: {fileID: 4055302919426256, guid: fe09d879335f3084b896225f435b183b, type: 3}
       propertyPath: m_LocalScale.x
@@ -4566,7 +4734,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4055302919426256, guid: fe09d879335f3084b896225f435b183b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.5
+      value: -0.59
       objectReference: {fileID: 0}
     - target: {fileID: 4055302919426256, guid: fe09d879335f3084b896225f435b183b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4614,117 +4782,71 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1381326087484064, guid: fe09d879335f3084b896225f435b183b, type: 3}
       insertIndex: 1
-      addedObject: {fileID: 767550196}
+      addedObject: {fileID: 947602784}
     - targetCorrespondingSourceObject: {fileID: 1381326087484064, guid: fe09d879335f3084b896225f435b183b, type: 3}
       insertIndex: 2
-      addedObject: {fileID: 767550195}
+      addedObject: {fileID: 947602783}
+    - targetCorrespondingSourceObject: {fileID: 1381326087484064, guid: fe09d879335f3084b896225f435b183b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 947602787}
   m_SourcePrefab: {fileID: 100100000, guid: fe09d879335f3084b896225f435b183b, type: 3}
---- !u!1 &2002416948 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
-  m_PrefabInstance: {fileID: 323280313}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &2002416949 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4238037144770610, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
-  m_PrefabInstance: {fileID: 323280313}
-  m_PrefabAsset: {fileID: 0}
---- !u!65 &2002416950
-BoxCollider:
+--- !u!1001 &5274190477724068321
+PrefabInstance:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2002416948}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 0.2, z: 1}
-  m_Center: {x: 0, y: 0.1, z: 0}
---- !u!114 &2002416956
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2002416948}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pregunta: "\xBFQue es interes simple?"
-  opciones:
-  - "M\xE9todo que aplica el inter\xE9s sobre el principal inicial y tambi\xE9n sobre
-    los intereses acumulados en per\xEDodos anteriores."
-  - "Calcula solo sobre el capital inicial sin considerar los intereses generados
-    en per\xEDodos anteriores."
-  - "Reduce el monto del principal inicial con cada pago que se realiza durante el
-    per\xEDodo del pr\xE9stamo."
-  indiceRespuestaCorrecta: 1
-  puntajePorRespuestaCorrecta: 10
---- !u!1 &2084331882 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
-  m_PrefabInstance: {fileID: 748769223}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &2084331883 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4238037144770610, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
-  m_PrefabInstance: {fileID: 748769223}
-  m_PrefabAsset: {fileID: 0}
---- !u!65 &2084331886
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2084331882}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 0.2, z: 1}
-  m_Center: {x: 0, y: 0.1, z: 0}
---- !u!114 &2084331890
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2084331882}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pregunta: "\xBFQue es interes simple?"
-  opciones:
-  - "M\xE9todo que aplica el inter\xE9s sobre el principal inicial y tambi\xE9n sobre
-    los intereses acumulados en per\xEDodos anteriores."
-  - "Calcula solo sobre el capital inicial sin considerar los intereses generados
-    en per\xEDodos anteriores."
-  - "Reduce el monto del principal inicial con cada pago que se realiza durante el
-    per\xEDodo del pr\xE9stamo."
-  indiceRespuestaCorrecta: 1
-  puntajePorRespuestaCorrecta: 10
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 644533616}
+    m_Modifications:
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.513
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.02
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 667852791409353467, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5649626995650458262, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
+      propertyPath: m_Name
+      value: Player_1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1365531a06f144e4db9b9115642c8698, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -2,13 +2,16 @@ using UnityEngine;
 
 public class SquareEnd : Square
 {
-    public override void ActivarCasilla(Player player)
-    {
-        // Cambiar el estado del jugador a FINALIZADO
-        player.playerState = GameState.Finalizado;
-        Debug.Log(player.playerName + " ha alcanzado la casilla final y está FINALIZADO.");
+    private bool squareSleeping;
 
-        // Actualizar el HUD para reflejar los cambios
-        HUDManager.instance.ActualizarHUD(player);
+    public override void ActiveSquare(Player player)
+    {
+        squareSleeping = false;
+        player.playerState = GameState.Finalizado; // Cambiar el estado del jugador a FINALIZADO
+        squareSleeping = true;
+    }
+
+    public override bool IsSquareStopped(){
+        return squareSleeping;
     }
 }

@@ -4,12 +4,13 @@ using UnityEngine;
 public class DiceController : MonoBehaviour
 {
     public bool mode2D;
-    public bool diceSleeping;
-    public bool isDiceLaunched = false; // Bandera para controlar si el dado ha sido lanzado
     public int diceRoll;
     public diceTypeList diceType;
     private float topSide;
     public Rigidbody myRigidbody;
+
+    // Flag
+    public bool diceSleeping;
 
     public enum diceTypeList
     {
@@ -27,41 +28,50 @@ public class DiceController : MonoBehaviour
         myRigidbody = GetComponent<Rigidbody>();
     }
 
+    // Lanzar el dado
     public void LaunchDice()
     {
-        if (isDiceLaunched) return; // Asegurarse de que no se lance el dado dos veces
-        isDiceLaunched = true;
-
+        // Aplicar fuerza y torque aleatorio al dado
+        diceSleeping = false;
         Vector3 fuerzaAleatoria = new Vector3(Random.Range(-5f, 5f), 10f, Random.Range(-5f, 5f));
         Vector3 torqueAleatorio = new Vector3(Random.Range(-500f, 500f), Random.Range(-500f, 500f), Random.Range(-500f, 500f));
         myRigidbody.AddForce(fuerzaAleatoria, ForceMode.Impulse);
         myRigidbody.AddTorque(torqueAleatorio, ForceMode.Impulse);
-        diceSleeping = false;
 
-        // Comenzar a esperar hasta que el dado se detenga
+        // Comenzar la rutina para verificar el resultado una vez se detenga el dado
         StartCoroutine(WaitAndCheckResult());
     }
 
+    // Corutina para esperar hasta que el dado se detenga
     IEnumerator WaitAndCheckResult()
     {
-        yield return new WaitForSeconds(1); // Espera un segundo antes de verificar si el dado está durmiendo
+        yield return new WaitForSeconds(1); // Espera un segundo antes de verificar si el dado está en reposo
+
+        // Espera hasta que el dado se detenga completamente
         while (!myRigidbody.IsSleeping())
         {
-            yield return null; // Espera hasta que el dado se detenga completamente
+            yield return null;
         }
+
+        
+
+        // Una vez que el dado se haya detenido, verificamos el resultado
         CheckResult();
     }
 
+    // Verificar el resultado del lanzamiento del dado
     void CheckResult()
     {
         topSide = mode2D ? 50000 : -50000;
 
+        // Recorremos los hijos del dado (las caras) para determinar cuál está arriba
         for (int index = 0; index < (int)diceType; index++)
         {
             var getChild = gameObject.transform.GetChild(index);
 
             if (!mode2D)
             {
+                // Modo 3D: Comparamos la posición Y para determinar la cara superior
                 if (getChild.position.y > topSide)
                 {
                     topSide = getChild.position.y;
@@ -70,6 +80,7 @@ public class DiceController : MonoBehaviour
             }
             else
             {
+                // Modo 2D: Comparamos la posición Z para determinar la cara frontal
                 if (getChild.position.z < topSide)
                 {
                     topSide = getChild.position.z;
@@ -77,9 +88,12 @@ public class DiceController : MonoBehaviour
                 }
             }
         }
-
         diceSleeping = true;
-        isDiceLaunched = false; // Permitir futuros lanzamientos de dados
-        GameManager.instance.FinishDiceRoll(diceRoll); // Notificar al GameManager del resultado
+    }
+
+    // Método para verificar si el dado ha dejado de moverse
+    public bool IsDiceStopped()
+    {
+        return diceSleeping;
     }
 }

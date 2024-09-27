@@ -9,12 +9,11 @@ public class QuestionPanel : MonoBehaviour
     public Button[] optionButtons;
     private int correctAnswerIndex;
     private Player currentPlayer;
-    public event Action OnQuestionAnswered; // Evento para notificar cuando se ha respondido la pregunta
+    public event Action OnQuestionAnswered;
 
     void Start()
     {
-        // Inicialmente ocultar el panel
-        gameObject.SetActive(false);
+        gameObject.SetActive(false); // Inicialmente ocultar el panel
     }
 
     public void SetupQuestion(string question, string[] options, int correctIndex, Player player)
@@ -36,12 +35,12 @@ public class QuestionPanel : MonoBehaviour
 
     void Answer(int index)
     {
-        ShowPanel(false);
         if (index == correctAnswerIndex)
         {
-            currentPlayer.ModifyScore(10); // Asume un puntaje fijo por respuesta correcta
-            HUDManager.instance.ActualizarHUD(currentPlayer);
+            currentPlayer.ModifyScore(10); // Puntaje por respuesta correcta
         }
+
+        ShowPanel(false);
 
         // Notificar que la pregunta ha sido respondida
         OnQuestionAnswered?.Invoke();

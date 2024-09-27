@@ -2,11 +2,19 @@ using UnityEngine;
 
 public class SquareMoney : Square
 {
-    public int cantidadDinero = 50; // Cantidad de dinero que otorga la casilla
+    public int amountMoney = 50; // Cantidad de dinero que otorga la casilla
+    private bool squareSleeping;
 
-    public override void ActivarCasilla(Player player)
+    public override void ActiveSquare(Player player)
     {
-        player.ModifyMoney(cantidadDinero);
-        HUDManager.instance.ActualizarHUD(player);
+        squareSleeping = false;
+        player.ModifyMoney(amountMoney);
+        squareSleeping = true;
+    }
+
+
+    public override bool IsSquareStopped()
+    {
+        return squareSleeping;
     }
 }
