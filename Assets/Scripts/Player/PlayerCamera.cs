@@ -2,10 +2,14 @@ using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
 {
-    public Transform player;
-    public float distance = 4.0f;  // Distancia desde el jugador
-    public float height = 3.0f;     // Altura respecto al jugador
-    public float angle = 10.0f;    // Ángulo de inclinación hacia abajo
+    [SerializeField]
+    private Transform player;
+    [SerializeField]
+    private float distance = 4.0f;  // Distancia desde el jugador
+    [SerializeField]
+    private float height = 3.0f;     // Altura respecto al jugador
+    [SerializeField]
+    private float angle = 10.0f;    // Ángulo de inclinación hacia abajo
 
     private Vector3 offset;
 

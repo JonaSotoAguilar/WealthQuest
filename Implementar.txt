@@ -8,26 +8,11 @@ Prototipos:
 - Prototipo 7: Historial de partidas.
 - Prototipo 8: Integración de bGames (Perfil, Mecanicas).
 
-Escencial:
-- Tipos Casillas: Dinero, Pregunta, Desafio
-- Dificultad Casillas.
-- Tarjetas Casillas.
-- Preguntas Casillas.
-- Perfil del Jugador
-- Historial Partidas.
-- Opciones Configuracion.
+Fixed
+- Asignar esquina según index.
+- Inicializar Nombre del jugador.
+- Seguimiento de cámara a la pieza en turno.
 
-Avanzado:
-- bGames.
-- API datos financieros.
+- Establecer cantidad de jugadores (Maximo 4).
 
-
-Diseno:
-- Mapa.
-
-Extra:
-- Coperativo 4 jugadores
-- IA para 3 jugadores
-
-
-
+- Solo puede responder el que esta en turno (Bloquear cursor o los demás mandos).

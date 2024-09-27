@@ -3,33 +3,22 @@ using TMPro;  // Importar la librería necesaria para TextMeshPro
 
 public class HUDController : MonoBehaviour
 {
-    public static HUDController instance;  // Singleton
-    public TextMeshProUGUI turnText;
-    public TextMeshProUGUI moneyText;
-    public TextMeshProUGUI scoreText;
+    [SerializeField]
+    private TextMeshProUGUI turnText;
+    [SerializeField]
+    private TextMeshProUGUI moneyText;
+    [SerializeField]
+    private TextMeshProUGUI scoreText;
 
-    private void Awake()
+    public void UpdateHUD(PlayerController player)
     {
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject);  // Mantener el HUDManager al cambiar de escena
-        }
-        else
-        {
-            Destroy(gameObject);  // Si ya existe una instancia, destruir este objeto
-        }
+        turnText.text = "Turno: " + player.GetPlayerName();
+        moneyText.text = "Dinero: $" + player.GetMoney();
+        scoreText.text = "Puntaje: " + player.GetScore();
     }
 
-    void Start()
+    public void ShowPanel(bool visible)
     {
-        gameObject.SetActive(false); // Inicialmente oculta el HUD
-    }
-
-    public void UpdateHUD(Player player)
-    {
-        turnText.text = "Turno: " + player.playerName;
-        moneyText.text = "Dinero: $" + player.money;
-        scoreText.text = "Puntaje: " + player.score;
+        gameObject.SetActive(visible);
     }
 }

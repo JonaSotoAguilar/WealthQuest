@@ -3,13 +3,14 @@ using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
-    // Position
-    private Vector3 cornerOffset;
-    private int currentPosition = 0;
-    // Movement
-    public float speedMovement = 2f;
+    // Atributos
+    [SerializeField]
+    private int currentPosition = 0; // Posición actual
+    [SerializeField]
+    private float speedMovement = 2f; // Velocidad de movimiento
+    private Vector3 cornerOffset; // Offset de la esquina
     // Flag
-    private bool playerSleeping;
+    private bool playerSleeping; // Controla si el jugador está en movimiento
 
     public void MovePlayer(int steps)
     {
