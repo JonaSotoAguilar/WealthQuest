@@ -2414,7 +2414,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.2, z: 1}
   m_Center: {x: 0, y: 0.1, z: 0}
---- !u!114 &1106963309
+--- !u!114 &1106963306
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2423,16 +2423,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1106963301}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
+  m_Script: {fileID: 11500000, guid: c0704e0e31a4e6d419b52aa884cbea2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  question: Elije B
-  answers:
-  - A
-  - B
-  - C
-  indexCorrectAnswer: 1
-  ScoreForCorrectAnswer: 10
+  amountMoney: 50
 --- !u!1001 &1180231750
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2624,7 +2618,7 @@ PrefabInstance:
       addedObject: {fileID: 1106963303}
     - targetCorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1106963309}
+      addedObject: {fileID: 1106963306}
   m_SourcePrefab: {fileID: 100100000, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
 --- !u!1 &1213666861
 GameObject:
@@ -3245,7 +3239,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.2, z: 1}
   m_Center: {x: 0, y: 0.1, z: 0}
---- !u!114 &1459871473
+--- !u!114 &1459871470
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3254,16 +3248,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1459871465}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2b3341c8a1a15940b2f6f45132aab58, type: 3}
+  m_Script: {fileID: 11500000, guid: c0704e0e31a4e6d419b52aa884cbea2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  question: Elije B
-  answers:
-  - A
-  - B
-  - C
-  indexCorrectAnswer: 1
-  ScoreForCorrectAnswer: 10
+  amountMoney: 50
 --- !u!1 &1486293673 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
@@ -3387,7 +3375,7 @@ PrefabInstance:
       addedObject: {fileID: 1459871467}
     - targetCorrespondingSourceObject: {fileID: 1498889023777250, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1459871473}
+      addedObject: {fileID: 1459871470}
   m_SourcePrefab: {fileID: 100100000, guid: aee5333d95634824abd2f63207ce2f9e, type: 3}
 --- !u!1001 &1679482077
 PrefabInstance:
