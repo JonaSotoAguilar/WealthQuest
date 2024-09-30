@@ -3,15 +3,21 @@ using UnityEngine;
 
 public class DiceController : MonoBehaviour
 {
-    public bool mode2D;
-    public int diceRoll;
-    public diceTypeList diceType;
+    // Atributos
+    private bool mode2D;
+
+    private int diceRoll;
+    public int DiceRoll { get => diceRoll; } 
+
     private float topSide;
-    public Rigidbody myRigidbody;
 
-    // Flag
-    public bool diceSleeping;
+    private Rigidbody myRigidbody;
 
+    private bool diceSleeping;
+    public bool DiceSleeping { get => diceSleeping; }
+    [SerializeField]
+
+    private diceTypeList diceType;
     public enum diceTypeList
     {
         D4 = 4,
@@ -37,24 +43,15 @@ public class DiceController : MonoBehaviour
         Vector3 torqueAleatorio = new Vector3(Random.Range(-500f, 500f), Random.Range(-500f, 500f), Random.Range(-500f, 500f));
         myRigidbody.AddForce(fuerzaAleatoria, ForceMode.Impulse);
         myRigidbody.AddTorque(torqueAleatorio, ForceMode.Impulse);
-
-        // Comenzar la rutina para verificar el resultado una vez se detenga el dado
-        StartCoroutine(WaitAndCheckResult());
+        StartCoroutine(WaitAndCheckResult()); // Comenzar la rutina para verificar el resultado una vez se detenga el dado
     }
 
     // Corutina para esperar hasta que el dado se detenga
     IEnumerator WaitAndCheckResult()
     {
         yield return new WaitForSeconds(1); // Espera un segundo antes de verificar si el dado está en reposo
-
         // Espera hasta que el dado se detenga completamente
-        while (!myRigidbody.IsSleeping())
-        {
-            yield return null;
-        }
-
-        
-
+        while (!myRigidbody.IsSleeping()) yield return null;
         // Una vez que el dado se haya detenido, verificamos el resultado
         CheckResult();
     }
@@ -89,11 +86,5 @@ public class DiceController : MonoBehaviour
             }
         }
         diceSleeping = true;
-    }
-
-    // Método para verificar si el dado ha dejado de moverse
-    public bool IsDiceStopped()
-    {
-        return diceSleeping;
     }
 }

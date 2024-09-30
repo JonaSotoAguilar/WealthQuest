@@ -2,7 +2,9 @@ using UnityEngine;
 
 public abstract class Square : MonoBehaviour
 {
-    public abstract void ActiveSquare(PlayerController player);
+    public abstract void ActiveSquare(PlayerData player);
 
-    public abstract bool IsSquareStopped();
+    public abstract void ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer);
+
+    public abstract bool SquareSleeping();
 }

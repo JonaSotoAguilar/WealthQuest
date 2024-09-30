@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 public class SquareQuestion : Square
 {
@@ -11,13 +12,21 @@ public class SquareQuestion : Square
     [SerializeField]
     private int ScoreForCorrectAnswer = 10;
     private bool squareSleeping;
+    public override bool SquareSleeping() => squareSleeping;
 
-    public override void ActiveSquare(PlayerController player)
+    private CanvasPlayer canvasPlayer;
+
+    public override void ActiveSquare(PlayerData player) => throw new System.NotImplementedException();
+
+
+    public override void ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer)
     {
         squareSleeping = false;
+        this.canvasPlayer = canvasPlayer;
 
         // Mostrar la pregunta y configurar el panel de la pregunta
-        QuestionPanelController panel = CanvasManager.instance.GetComponentInChildren<QuestionPanelController>(true);
+        QuestionController panel = canvasPlayer.QuestionPanel;
+
         panel.SetupQuestion(question, answers, indexCorrectAnswer, ScoreForCorrectAnswer, player); // Pasamos el dispositivo aquí
 
         // Suscribirse al evento de respuesta de la pregunta
@@ -27,14 +36,9 @@ public class SquareQuestion : Square
     private void HandleQuestionAnswered()
     {
         // Desuscribirse para evitar que el manejador sea llamado múltiples veces
-        CanvasManager.instance.GetComponentInChildren<QuestionPanelController>(true).OnQuestionAnswered -= HandleQuestionAnswered;
+        canvasPlayer.QuestionPanel.OnQuestionAnswered -= HandleQuestionAnswered;
 
         squareSleeping = true; // Ahora que la pregunta ha sido respondida, permitir que el juego continúe
-    }
-
-    public override bool IsSquareStopped()
-    {
-        return squareSleeping;
     }
 }
 

@@ -8,11 +8,5 @@ Prototipos:
 - Prototipo 7: Historial de partidas.
 - Prototipo 8: Integración de bGames (Perfil, Mecanicas).
 
-Fixed
-- Asignar esquina según index.
-- Inicializar Nombre del jugador.
-- Seguimiento de cámara a la pieza en turno.
-
-- Establecer cantidad de jugadores (Maximo 4).
-
-- Solo puede responder el que esta en turno (Bloquear cursor o los demás mandos).
+Fixed:
+- Actualizar

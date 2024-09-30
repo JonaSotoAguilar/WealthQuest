@@ -1,111 +1,85 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
+using UnityEngine.EventSystems;
+using System.Collections;
+using System.Linq;
 
+[System.Serializable]
 public class PlayerController : MonoBehaviour
 {
-    // Atributos
-    [SerializeField]
-    private string playerName;
-    [SerializeField]
-    private int playerIndex = 0;
-    [SerializeField]
-    private int money = 0;
-    [SerializeField]
-    private int score = 0;
-    private GameState playerState = GameState.EnCurso;
-    private Vector3[] corners = new Vector3[]
-    {
-        new Vector3(-0.5f, 0f, 0.5f),
-        new Vector3(0.5f, 0f, 0.5f),
-        new Vector3(-0.5f, 0f, -0.5f),
-        new Vector3(0.5f, 0f, -0.5f)
-    };
-    private PlayerMovement playerMovement; // Componente de movimiento del jugador
+    private PlayerData player; // Datos del jugador
+    public PlayerData Player { get => player; }
 
-    private void Awake()
+    private PlayerInput playerInput; // Entrada del jugador
+    public PlayerInput PlayerInput { get => playerInput; }
+
+    private CanvasPlayer canvasPlayer; // Canvas del jugador
+
+    // Inicialización los Input del jugador
+    public void Initialize(PlayerData assignedPlayer, PlayerInput input, CanvasPlayer canvas)
     {
-        playerMovement = GetComponent<PlayerMovement>();
+        player = assignedPlayer;
+        playerInput = input;
+        canvasPlayer = canvas;
     }
 
-    // Inicializar datos del jugador
-    public void InitializePlayer(string name, int initialMoney, int initialScore, int index)
+    // Jugar turno
+    public void PlayTurn(CallbackContext context)
     {
-        playerName = name;
-        money = initialMoney;
-        score = initialScore;
-        playerIndex = index;
-        playerMovement.SetCorner(corners[index]);
+        // Comprobar si es posible jugar el turno
+        if (GameManager.Instance.CanPlayTurn(player.PlayerIndex))
+        {
+            GameManager.Instance.InitTurn = false; // Ya inició el turno
+            StartCoroutine(ThrowDice(player)); // Lanzar el dado
+        }
     }
 
-    // Mover al jugador
-    public void MovePlayer(int steps)
+    // Lanzar el dado
+    public IEnumerator ThrowDice(PlayerData player)
     {
-        playerMovement.MovePlayer(steps);
+        // Esperar hasta que el dado se detenga y obtener el resultados
+        GameManager.Instance.ChangeDiceView(); // Cambiar a la vista del jugador
+        GameManager.Instance.Dice.LaunchDice();
+        while (!GameManager.Instance.Dice.DiceSleeping)
+        {
+            yield return null;
+        }
+
+        StartCoroutine(MovePlayer(player)); // Mover al jugador actual
     }
 
-    // TODO:
-
-    // Comprobar si el jugador está en movimiento
-    public bool IsPlayerStopped()
+    // Mover al jugador actual
+    private IEnumerator MovePlayer(PlayerData player)
     {
-        return playerMovement.IsPlayerStopped();
+        // Mover al jugador actual
+        GameManager.Instance.ChangePlayerView();
+        player.PlayerMovement.MovePlayer(GameManager.Instance.Dice.DiceRoll);
+        while (!player.PlayerMovement.PlayerSleeping) // Esperar hasta que el jugador se detenga
+        {
+            yield return null;
+        }
+
+        StartCoroutine(PlaySquare(player));
     }
 
-    // Obtener la posición actual del jugador
-    public int CurrentPlayerPosition()
+    // Jugar casilla
+    private IEnumerator PlaySquare(PlayerData player)
     {
-        return playerMovement.GetCurrentPosition();
-    }
+        // Pasamos el jugador y su canvas
+        Square square = GameManager.Instance.Squares.SquaresBoard[player.PlayerMovement.CurrentPosition].GetComponent<Square>();
+        playerInput.SwitchCurrentActionMap("UI"); // Cambiar al mapa de acción UI
+        GameManager.Instance.HUD.ShowPanel(false); // Mostrar el panel
+        square.ActiveSquare(player, canvasPlayer); // Pasamos el dispositivo del jugador actual
 
-    // TODO: Getters
+        while (!square.SquareSleeping()) // Esperar hasta que la casilla se termine de ejecutar
+        {
+            yield return null;
+        }
 
-    // Obtener el índice del jugador
-    public string GetPlayerName()
-    {
-        return playerName;
-    }
-
-    // Obtener el dinero del jugador
-    public int GetMoney()
-    {
-        return money;
-    }
-
-    // Obtener la puntuación del jugador
-    public int GetScore()
-    {
-        return score;
-    }
-
-    // Obtener el índice del jugador
-    public int GetPlayerIndex()
-    {
-        return playerIndex;
-    }
-
-    // Obtener el estado del jugador
-    public GameState GetPlayerState()
-    {
-        return playerState;
-    }
-
-    // TODO: Setters
-
-    // Modificar puntuación
-    public void ModifyScore(int points)
-    {
-        score += points;
-        CanvasManager.instance.UpdateHUD(this);
-    }
-
-    // Modificar dinero
-    public void ModifyMoney(int amount)
-    {
-        money += amount;
-    }
-
-    // Modificar estado del jugador
-    public void SetPlayerState(GameState state)
-    {
-        playerState = state;
+        playerInput.SwitchCurrentActionMap("Player");
+        GameManager.Instance.HUD.ShowPanel(true); // Mostrar el panel
+        GameManager.Instance.HUD.UpdateHUD(player); // Actualizar el HUD
+        GameManager.Instance.UpdateTurn(); // Actualizar el turno
     }
 }

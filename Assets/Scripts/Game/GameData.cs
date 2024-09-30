@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class GameData : MonoBehaviour
 {
@@ -7,13 +8,25 @@ public class GameData : MonoBehaviour
     [SerializeField]
     private int gameID; // ID del juego. Considera usar solo la propiedad si no necesitas serializarlo.
 
-    private GameState gameState;
-    private int turnPlayer;
-
     [SerializeField]
-    private int numPlayers = 2; // Número de jugadores. Serializado para ajustar desde el Inspector.
+    private int numPlayers = 1; // Número de jugadores. Serializado para ajustar desde el Inspector.
+    public int NumPlayers { get => numPlayers; } // Propiedad solo de lectura.
 
-    private List<PlayerController> players;
+    private GameState gameState;
+    public GameState GameState { get => gameState; set => gameState = value; }
+
+    private int turnPlayer;
+    public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
+
+    private PlayerData[] players;
+    public PlayerData[] Players { get => players; set => players = value; }
+
+    // Inicialización de los datos del juego
+    void Awake()
+    {
+        turnPlayer = 0;
+        gameState = GameState.EnCurso;
+    }
 
     // Guardar el juego
     private void SaveGame()
