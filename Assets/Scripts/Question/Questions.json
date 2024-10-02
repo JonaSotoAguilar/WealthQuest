@@ -1,0 +1,104 @@
+{
+    "questions": [
+        {
+            "question": "¿Qué es un presupuesto personal?",
+            "answers": [
+                "Un documento legal",
+                "Una planificación de ingresos y gastos",
+                "Un impuesto"
+            ],
+            "indexCorrectAnswer": 1,
+            "scoreForCorrectAnswer": 10
+        },
+        {
+            "question": "¿Cuál es la regla del 50/30/20?",
+            "answers": [
+                "Una estrategia para distribuir el tiempo",
+                "Una fórmula para calcular los impuestos",
+                "Una estrategia de asignación de ingresos: 50% necesidades, 30% deseos, 20% ahorro"
+            ],
+            "indexCorrectAnswer": 2,
+            "scoreForCorrectAnswer": 10
+        },
+        {
+            "question": "¿Qué es el fondo de emergencia?",
+            "answers": [
+                "Dinero destinado a inversiones de riesgo",
+                "Dinero reservado para gastos inesperados",
+                "Dinero destinado a pagar impuestos"
+            ],
+            "indexCorrectAnswer": 1,
+            "scoreForCorrectAnswer": 15
+        },
+        {
+            "question": "¿Qué es el interés compuesto?",
+            "answers": [
+                "Intereses generados sobre el capital inicial",
+                "Intereses generados sobre el capital inicial y sobre los intereses acumulados",
+                "Un tipo de impuesto"
+            ],
+            "indexCorrectAnswer": 1,
+            "scoreForCorrectAnswer": 20
+        },
+        {
+            "question": "¿Qué significa diversificar una cartera de inversión?",
+            "answers": [
+                "Invertir en un solo tipo de activo",
+                "Invertir en diferentes tipos de activos para reducir el riesgo",
+                "No invertir en nada"
+            ],
+            "indexCorrectAnswer": 1,
+            "scoreForCorrectAnswer": 20
+        },
+        {
+            "question": "¿Qué es el crédito?",
+            "answers": [
+                "Dinero que ahorras",
+                "Dinero que te presta una entidad o persona",
+                "Un tipo de inversión en bonos"
+            ],
+            "indexCorrectAnswer": 1,
+            "scoreForCorrectAnswer": 10
+        },
+        {
+            "question": "¿Qué es el historial crediticio?",
+            "answers": [
+                "Una lista de tus cuentas bancarias",
+                "Un registro de tus actividades y comportamientos financieros con el crédito",
+                "Una cuenta de ahorros"
+            ],
+            "indexCorrectAnswer": 1,
+            "scoreForCorrectAnswer": 15
+        },
+        {
+            "question": "¿Cuál es el beneficio de tener una cuenta de ahorros?",
+            "answers": [
+                "Generar intereses sobre el dinero depositado",
+                "Pagar menos impuestos",
+                "No genera ningún beneficio"
+            ],
+            "indexCorrectAnswer": 0,
+            "scoreForCorrectAnswer": 10
+        },
+        {
+            "question": "¿Qué es la tasa de interés?",
+            "answers": [
+                "El porcentaje que pagas o ganas sobre una cantidad de dinero",
+                "El precio de las acciones en la bolsa",
+                "El valor de una moneda en otro país"
+            ],
+            "indexCorrectAnswer": 0,
+            "scoreForCorrectAnswer": 15
+        },
+        {
+            "question": "¿Qué es la inflación?",
+            "answers": [
+                "Un aumento en los precios de bienes y servicios",
+                "Una reducción de impuestos",
+                "Un tipo de inversión"
+            ],
+            "indexCorrectAnswer": 0,
+            "scoreForCorrectAnswer": 20
+        }
+    ]
+}

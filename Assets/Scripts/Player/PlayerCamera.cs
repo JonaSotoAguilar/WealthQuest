@@ -4,19 +4,14 @@ using System.Collections.Generic;
 
 public class PlayerCamera : MonoBehaviour
 {
-    [SerializeField]
-    private Transform player;
-    public Transform Player { get => player; set { player = value; StartCoroutine(UpdateCamera()); } }
-    [SerializeField]
-    private float distance = 4.0f;  // Distancia desde el jugador
-    [SerializeField]
-    private float height = 3.0f;     // Altura respecto al jugador
-    [SerializeField]
-    private float angle = 10.0f;    // Ángulo de inclinación hacia abajo
-    [SerializeField]
-    private float smoothSpeed = 0.125f;  // Velocidad de la interpolación
-
     private Vector3 offset;
+    [SerializeField] private Transform player;
+    [SerializeField] private float distance = 4.0f; 
+    [SerializeField] private float height = 3.0f; 
+    [SerializeField] private float angle = 10.0f;  
+    [SerializeField] private float smoothSpeed = 0.125f; 
+
+    public Transform Player { get => player; set { player = value; StartCoroutine(UpdateCamera()); } }
 
     void Start()
     {
@@ -26,7 +21,6 @@ public class PlayerCamera : MonoBehaviour
     // Calcula el offset de la cámara
     private void CalculateOffset()
     {
-        // Establece el offset para que la cámara esté a la derecha del jugador
         offset = Quaternion.Euler(angle, -90, 0) * new Vector3(0, 0, -distance);
         offset += Vector3.up * height;
     }
@@ -36,7 +30,6 @@ public class PlayerCamera : MonoBehaviour
     {
         if (player != null)
         {
-            // Actualiza la posición de la cámara para que siga al jugador con el offset
             transform.position = player.position + offset;
             transform.LookAt(player.position);
         }
@@ -54,13 +47,12 @@ public class PlayerCamera : MonoBehaviour
 
         while (t < 1f)
         {
-            t += Time.deltaTime * smoothSpeed;  // Controla la velocidad de la transición
+            t += Time.deltaTime * smoothSpeed; 
             transform.position = Vector3.Lerp(transform.position, targetPosition, t);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, t);
-            yield return null;  // Esperar al siguiente frame
+            yield return null;  
         }
 
-        // Asegurarse de que la cámara está exactamente en la posición y rotación correctas al final
         transform.position = targetPosition;
         transform.LookAt(player.position);
     }

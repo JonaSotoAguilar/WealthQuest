@@ -9,53 +9,62 @@ using System.Linq;
 public class PlayerController : MonoBehaviour
 {
     private PlayerData player; // Datos del jugador
-    public PlayerData Player { get => player; }
-
     private PlayerInput playerInput; // Entrada del jugador
-    public PlayerInput PlayerInput { get => playerInput; }
-
+    private PlayerMovement playerMovement; // Movimiento del jugador
     private CanvasPlayer canvasPlayer; // Canvas del jugador
 
+    [Header("Player Components")]
+    private DiceController dice;
+    private HUDController hud;
+    private SquareLoader squares;
+
     // Inicialización los Input del jugador
-    public void Initialize(PlayerData assignedPlayer, PlayerInput input, CanvasPlayer canvas)
+    public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input, PlayerMovement movement, CanvasPlayer canvas)
     {
         player = assignedPlayer;
         playerInput = input;
+        playerMovement = movement;
         canvasPlayer = canvas;
+
+        playerMovement.CornerOffset = PlayerCorner.GetCorner(player.Index);
+    }
+
+    public void InitializeComponents(DiceController diceController, HUDController hudController, SquareLoader squareLoader)
+    {
+        dice = diceController;
+        hud = hudController;
+        squares = squareLoader;
     }
 
     // Jugar turno
     public void PlayTurn(CallbackContext context)
     {
-        // Comprobar si es posible jugar el turno
-        if (GameManager.Instance.CanPlayTurn(player.PlayerIndex))
+        if (GameManager.Instance.CanPlayTurn(player.Index))
         {
-            GameManager.Instance.InitTurn = false; // Ya inició el turno
-            StartCoroutine(ThrowDice(player)); // Lanzar el dado
+            GameManager.Instance.InitTurn = false;
+            StartCoroutine(ThrowDice(player));
         }
     }
 
     // Lanzar el dado
     public IEnumerator ThrowDice(PlayerData player)
     {
-        // Esperar hasta que el dado se detenga y obtener el resultados
-        GameManager.Instance.ChangeDiceView(); // Cambiar a la vista del jugador
-        GameManager.Instance.Dice.LaunchDice();
-        while (!GameManager.Instance.Dice.DiceSleeping)
+        GameManager.Instance.ChangeDiceView();
+        dice.LaunchDice();
+        while (!dice.DiceSleeping)
         {
             yield return null;
         }
 
-        StartCoroutine(MovePlayer(player)); // Mover al jugador actual
+        StartCoroutine(MovePlayer(player));
     }
 
     // Mover al jugador actual
     private IEnumerator MovePlayer(PlayerData player)
     {
-        // Mover al jugador actual
         GameManager.Instance.ChangePlayerView();
-        player.PlayerMovement.MovePlayer(GameManager.Instance.Dice.DiceRoll);
-        while (!player.PlayerMovement.PlayerSleeping) // Esperar hasta que el jugador se detenga
+        playerMovement.MovePlayer(dice.DiceRoll);
+        while (!playerMovement.PlayerSleeping)
         {
             yield return null;
         }
@@ -66,20 +75,18 @@ public class PlayerController : MonoBehaviour
     // Jugar casilla
     private IEnumerator PlaySquare(PlayerData player)
     {
-        // Pasamos el jugador y su canvas
-        Square square = GameManager.Instance.Squares.SquaresBoard[player.PlayerMovement.CurrentPosition].GetComponent<Square>();
-        playerInput.SwitchCurrentActionMap("UI"); // Cambiar al mapa de acción UI
-        GameManager.Instance.HUD.ShowPanel(false); // Mostrar el panel
-        square.ActiveSquare(player, canvasPlayer); // Pasamos el dispositivo del jugador actual
+        Square square = squares.Squares[player.CurrentPosition].GetComponent<Square>();
+        playerInput.SwitchCurrentActionMap("UI");
+        hud.ShowPanel(false);
+        square.ActiveSquare(player, canvasPlayer);
 
-        while (!square.SquareSleeping()) // Esperar hasta que la casilla se termine de ejecutar
+        while (!square.SquareSleeping())
         {
             yield return null;
         }
-
         playerInput.SwitchCurrentActionMap("Player");
-        GameManager.Instance.HUD.ShowPanel(true); // Mostrar el panel
-        GameManager.Instance.HUD.UpdateHUD(player); // Actualizar el HUD
-        GameManager.Instance.UpdateTurn(); // Actualizar el turno
+        hud.UpdatePlayer(player);
+        hud.ShowPanel(true);
+        GameManager.Instance.UpdateTurn();
     }
 }

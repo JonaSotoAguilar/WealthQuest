@@ -5,58 +5,60 @@ using System.Linq;
 public class MultiplayerLocal : MonoBehaviour
 {
 
-    [SerializeField]
-    private PlayerInputManager playerInputManager;
+    [SerializeField] private PlayerInputManager playerInputManager;
+    [SerializeField] private GameData gameData;
+    [SerializeField] private GameObject[] playerPieces;
+
+    // Referencias a los componentes que ya están en la escena
+    [SerializeField] private DiceController diceController;
+    [SerializeField] private HUDController hudController;
+    [SerializeField] private SquareLoader squareLoader;
 
     // Detectar cuando un jugador se une
     private void OnPlayerJoined(PlayerInput playerInput)
     {
-        // Verificar si ya se alcanzó el límite de jugadores
-        if (playerInputManager.playerCount > GameManager.Instance.GameData.NumPlayers)
+        if (playerInputManager.playerCount > gameData.NumPlayers)
         {
-            Destroy(playerInput.gameObject); // Destruir el PlayerInput adicional
+            Destroy(playerInput.gameObject);
         }
         else
         {
-            InitializePlayer(playerInput); // Asignar los PlayerControllers a los PlayerInputs de manera adecuada
+            InitializePlayer(playerInput);
         }
     }
 
-
-    // Inicializar el jugador
+    // Inicializar el jugador y asignar su pieza correspondiente
     private void InitializePlayer(PlayerInput playerInput)
     {
-        var players = FindObjectsByType<PlayerData>(FindObjectsSortMode.None); // Encontrar todos los PlayerControllers
         var index = playerInput.playerIndex; // Obtener el índice del PlayerInput
-        var player = players.FirstOrDefault(p => p.PlayerIndex == index); // Obtener el PlayerController con el índice correcto
-        // Imprimir el index del jugador
-        Debug.Log($"Player {index} joined the game.");
+        var playerPiece = playerPieces[index]; // Obtener la pieza correspondiente de la lista
 
-        // Buscar un PlayerInput por su índice
 
-        if (player == null)
+        // Obtener los componentes de PlayerData y PlayerMovement de la pieza
+        var playerData = playerPiece.GetComponent<PlayerData>();
+        var playerMovement = playerPiece.GetComponent<PlayerMovement>();
+
+        // Inicializar el PlayerInputHandler
+        var playerController = playerInput.GetComponent<PlayerController>(); // Obtener el PlayerController
+        var canvasPlayer = playerInput.GetComponentInChildren<CanvasPlayer>(); // Obtener el CanvasPlayer
+
+        if (playerController != null)
         {
-            Debug.LogWarning($"No se encontró un PlayerController para el índice {index}.");
-        }
-        else
-        {
-            // Inicializar el PlayerInputHandler
-            var playerInputHandler = playerInput.GetComponent<PlayerController>(); // Obtener el PlayerInputHandler
-            var canvasPlayer = playerInput.GetComponentInChildren<CanvasPlayer>(); // Obtener el CanvasPlayer
-
-            if (playerInputHandler != null) // Inicializar el PlayerInputHandler
-                playerInputHandler.Initialize(player, playerInput, canvasPlayer);
+            // Asignar el PlayerData y PlayerMovement al PlayerController
+            playerController.InitializePlayer(playerData, playerInput, playerMovement, canvasPlayer); // Inicializar el PlayerController
+            playerController.InitializeComponents(diceController, hudController, squareLoader); // Inicializar los componentes del PlayerController
         }
     }
+
     // Suscribirse al evento correcto
     private void OnEnable()
     {
-        playerInputManager.onPlayerJoined += OnPlayerJoined; // Subscribirse al evento correcto: onPlayerJoined
+        playerInputManager.onPlayerJoined += OnPlayerJoined;
     }
 
     // Desuscribirse del evento correcto
     private void OnDisable()
     {
-        playerInputManager.onPlayerJoined -= OnPlayerJoined; // Desubscribirse del evento correcto
+        playerInputManager.onPlayerJoined -= OnPlayerJoined;
     }
 }

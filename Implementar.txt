@@ -10,3 +10,12 @@ Prototipos:
 
 Fixed:
 - Actualizar
+
+Referencias Juegos:
+- Monopoly Speed
+
+Sistema de preguntas
+- Obtener JSON desde GitHub.
+
+Sensor:
+- API app finanzas

@@ -1,44 +1,54 @@
 using UnityEngine;
-using System.Linq;
+using System.Collections.Generic;
 
 public class SquareQuestion : Square
 {
-    [SerializeField]
-    private string question = "";
-    [SerializeField]
-    private string[] answers = { "", "", "" };
-    [SerializeField]
-    private int indexCorrectAnswer = 0;
-    [SerializeField]
-    private int ScoreForCorrectAnswer = 10;
     private bool squareSleeping;
-    public override bool SquareSleeping() => squareSleeping;
-
     private CanvasPlayer canvasPlayer;
+
+    [Header("Square Components")]
+    [SerializeField] private GameData gameData;
+
+    public override bool SquareSleeping() => squareSleeping;
 
     public override void ActiveSquare(PlayerData player) => throw new System.NotImplementedException();
 
-
-    public override void ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer)
+    public override void ActiveSquare(PlayerData player, CanvasPlayer canvas)
     {
         squareSleeping = false;
-        this.canvasPlayer = canvasPlayer;
-
-        // Mostrar la pregunta y configurar el panel de la pregunta
-        QuestionController panel = canvasPlayer.QuestionPanel;
-
-        panel.SetupQuestion(question, answers, indexCorrectAnswer, ScoreForCorrectAnswer, player); // Pasamos el dispositivo aquí
-
-        // Suscribirse al evento de respuesta de la pregunta
-        panel.OnQuestionAnswered += HandleQuestionAnswered;
+        canvasPlayer = canvas;
+        QuestionData selectedQuestion = GetRandomQuestion();
+        if (selectedQuestion != null)
+        {
+            QuestionController panel = canvasPlayer.QuestionPanel;
+            panel.SetupQuestion(selectedQuestion, player);
+            panel.OnQuestionAnswered += HandleQuestionAnswered;
+        }
+        else
+        {
+            Debug.LogError("No quedan preguntas disponibles.");
+        }
     }
 
     private void HandleQuestionAnswered()
     {
-        // Desuscribirse para evitar que el manejador sea llamado múltiples veces
         canvasPlayer.QuestionPanel.OnQuestionAnswered -= HandleQuestionAnswered;
+        squareSleeping = true;
+    }
 
-        squareSleeping = true; // Ahora que la pregunta ha sido respondida, permitir que el juego continúe
+    private QuestionData GetRandomQuestion()
+    {
+        if (gameData.QuestionList != null && gameData.QuestionList.Count > 0)
+        {
+            int randomIndex = Random.Range(0, gameData.QuestionList.Count);
+            QuestionData selectedQuestion = gameData.QuestionList[randomIndex];
+            gameData.QuestionList.RemoveAt(randomIndex);
+
+            return selectedQuestion;
+        }
+        else
+        {
+            return null;
+        }
     }
 }
-

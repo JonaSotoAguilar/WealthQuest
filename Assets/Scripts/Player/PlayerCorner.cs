@@ -21,7 +21,7 @@ public class PlayerCorner
         else
         {
             Debug.LogError("Índice fuera de rango.");
-            return Vector3.zero; // Devuelve un valor por defecto si el índice no es válido
+            return Vector3.zero; 
         }
     }
 }

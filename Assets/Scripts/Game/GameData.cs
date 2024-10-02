@@ -4,29 +4,21 @@ using System.Linq;
 
 public class GameData : MonoBehaviour
 {
-    // Si no necesitas ajustar estos valores desde el Inspector, puedes eliminar el campo y usar solo la propiedad.
-    [SerializeField]
+    public static GameData Instance { get; private set; } // Instancia única de GameData
     private int gameID; // ID del juego. Considera usar solo la propiedad si no necesitas serializarlo.
 
-    [SerializeField]
-    private int numPlayers = 1; // Número de jugadores. Serializado para ajustar desde el Inspector.
-    public int NumPlayers { get => numPlayers; } // Propiedad solo de lectura.
-
-    private GameState gameState;
-    public GameState GameState { get => gameState; set => gameState = value; }
-
-    private int turnPlayer;
-    public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
-
+    [SerializeField] private int numPlayers = 1; // Número de jugadores. Serializado para ajustar desde el Inspector.
+    private GameState gameState = GameState.EnCurso;
+    private int turnPlayer = 0;
     private PlayerData[] players;
-    public PlayerData[] Players { get => players; set => players = value; }
+    private List<QuestionData> questionList;
 
-    // Inicialización de los datos del juego
-    void Awake()
-    {
-        turnPlayer = 0;
-        gameState = GameState.EnCurso;
-    }
+    public int NumPlayers { get => numPlayers; } // Propiedad solo de lectura.
+    public GameState GameState { get => gameState; set => gameState = value; }
+    public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
+    public PlayerData[] Players { get => players; set => players = value; }
+    public List<QuestionData> QuestionList { get => questionList; set => questionList = value; }
+
 
     // Guardar el juego
     private void SaveGame()

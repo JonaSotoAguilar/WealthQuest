@@ -1,11 +1,11 @@
 using UnityEngine;
 
-public class SquareController : MonoBehaviour
+public class SquareLoader: MonoBehaviour
 {
-    private Transform[] squaresBoard;
-    public Transform[] SquaresBoard { get => squaresBoard; }
-
+    private Transform[] squares;
     private int squareCount;
+
+    public Transform[] Squares { get => squares; }
     public int SquareCount { get => squareCount; }
 
     private void Awake()
@@ -17,11 +17,11 @@ public class SquareController : MonoBehaviour
     {
         // Asumimos que el script está en el objeto "Squares", por lo que no necesitamos buscarlo.
         Transform containerSquares = transform; // Nos referimos a sí mismo
-        squaresBoard = new Transform[containerSquares.childCount];
-        for (int i = 0; i < squaresBoard.Length; i++)
+        squares = new Transform[containerSquares.childCount];
+        for (int i = 0; i < squares.Length; i++)
         {
-            squaresBoard[i] = containerSquares.GetChild(i);
+            squares[i] = containerSquares.GetChild(i);
         }
-        squareCount = squaresBoard.Length;
+        squareCount = squares.Length;
     }
 }

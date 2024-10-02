@@ -6,30 +6,14 @@ using System.Linq;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; } // Singleton instance
-
-    [SerializeField]
-    private GameData gameData; // Datos del juego
-    public GameData GameData { get => gameData; }
-
-    [SerializeField]
-    private DiceController diceController; // Controlador del dado (asegúrate de asignarlo en el Inspector o por código)
-    public DiceController Dice { get => diceController; }
-
-    [SerializeField]
-    private SquareController squareController; // Controlador de las casillas (asegúrate de asignarlo en el Inspector o por código)
-    public SquareController Squares { get => squareController; }
-
-    [SerializeField]
-    private HUDController hudController; // Controlador del HUD (asegúrate de asignarlo en el Inspector o por código)
-    public HUDController HUD { get => hudController; }
-
-    [SerializeField]
-    private PlayerCamera playerCamera; // Cámara para el jugador
-
-    [SerializeField]
-    private Camera diceCamera; // Cámara para el dado
-
     private bool initTurn = true;  // Controla si es posible iniciar el turno
+
+    [Header("Game Components")]
+    [SerializeField] private GameData gameData; // Datos del juego (asegúrate de asignarlo en el Inspector o por código)
+    [SerializeField] private HUDController hud; // Controlador del HUD (asegúrate de asignarlo en el Inspector o por código)
+    [SerializeField] private PlayerCamera playerCamera; // Cámara para el jugador
+    [SerializeField] private Camera diceCamera; // Cámara para el dado
+
     public bool InitTurn { get => initTurn; set => initTurn = value; }
 
     // Singleton
@@ -58,22 +42,22 @@ public class GameManager : MonoBehaviour
         var players = FindObjectsByType<PlayerData>(FindObjectsSortMode.None); // Buscar jugadores
         // Si el índice de jugador es mayor o igual al número de jugadores, eliminarlo
         foreach (var player in players)
-            if (player.PlayerIndex >= gameData.NumPlayers)
+            if (player.Index >= gameData.NumPlayers)
                 Destroy(player.gameObject);
         yield return null;// Esperar un frame para que Unity destruya los objetos
-        GameData.Players = FindObjectsByType<PlayerData>(FindObjectsSortMode.None); // Buscar nuevamente los jugadores de la partida y guardarlos
+        gameData.Players = FindObjectsByType<PlayerData>(FindObjectsSortMode.None); // Buscar nuevamente los jugadores de la partida y guardarlos
 
         // Inicializar el primer turno
-        var currentPlayer = GameData.Players.FirstOrDefault(p => p.PlayerIndex == gameData.TurnPlayer);
+        var currentPlayer = gameData.Players.FirstOrDefault(p => p.Index == gameData.TurnPlayer);
         playerCamera.Player = currentPlayer.transform;
-        hudController.UpdateHUD(currentPlayer);
+        hud.UpdatePlayer(currentPlayer);
         ChangePlayerView();
     }
 
     // Actualizar el turno
     public void UpdateTurn()
     {
-        var players = GameData.Players;
+        var players = gameData.Players;
 
         if (players.All(p => p.PlayerState != GameState.EnCurso))
             gameData.GameState = GameState.Finalizado; // Cambiar el estado del juego a Finalizado
@@ -81,18 +65,18 @@ public class GameManager : MonoBehaviour
         {
             // Buscar el siguiente jugador en curso
             int turnPlayer = gameData.TurnPlayer;
-            PlayerData currentPlayer = players.FirstOrDefault(p => p.PlayerIndex == turnPlayer);
+            PlayerData currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer);
             // Buscar el siguiente jugador en curso
             do
             {
                 turnPlayer = (turnPlayer + 1) % players.Length; // Cambiar al siguiente jugador en el array
-                currentPlayer = players.FirstOrDefault(p => p.PlayerIndex == turnPlayer); // Obtener jugador con indice igual al turno actual
+                currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer); // Obtener jugador con indice igual al turno actual
             } while (currentPlayer.PlayerState != GameState.EnCurso); // Solo pasar si está en curso
 
             // Cambiar al siguiente jugador
             gameData.TurnPlayer = turnPlayer; // Actualizar el turno
             playerCamera.Player = currentPlayer.transform; // Cambiar la cámara al jugador actual
-            hudController.UpdateHUD(currentPlayer); // Actualizar el HUD 
+            hud.UpdatePlayer(currentPlayer); // Actualizar el HUD 
             initTurn = true; // Permite iniciar el siguiente turno
         }
     }

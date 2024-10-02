@@ -2,37 +2,25 @@ using UnityEngine;
 
 public class PlayerData : MonoBehaviour
 {
-    // Atributos
-    [SerializeField]
-    private string playerName;
-    public string PlayerName { get => playerName; set => playerName = value; }
-
-    [SerializeField]
-    private int playerIndex = 0;
-    public int PlayerIndex { get => playerIndex; set => playerIndex = value; }
-
-    [SerializeField]
+    [SerializeField] private string playerName;
+    [SerializeField] private int index;
     private int score = 0;
-    public int Score { get => score; set => score = value; }
-
+    private int currentPosition = 0;
     private GameState playerState = GameState.EnCurso;
+
+    public string PlayerName { get => playerName; set => playerName = value; }
+    public int Index { get => index; set => index = value; }
+    public int Score { get => score; set => score = value; }
+    public int CurrentPosition { get => currentPosition; set => currentPosition = value; }
     public GameState PlayerState { get => playerState; set => playerState = value; }
 
-    // Movimiento del jugador
-    private PlayerMovement playerMovement;
-    public PlayerMovement PlayerMovement { get => playerMovement; }
-
-    private void Awake()
-    {
-        playerMovement = GetComponent<PlayerMovement>();
-        playerMovement.CornerOffset = PlayerCorner.GetCorner(playerIndex);
-    }
-
     // Inicializar datos del jugador
-    public void InitializePlayer(string name, int initialScore, int index)
+    public void InitializePlayer(string name, int playerScore, int playerIndex, int position)
     {
-        PlayerName = name;
-        Score = initialScore;
-        PlayerIndex = index;
+        playerName = name;
+        score = playerScore;
+        index = playerIndex;
+        currentPosition = position;
     }
 }
+

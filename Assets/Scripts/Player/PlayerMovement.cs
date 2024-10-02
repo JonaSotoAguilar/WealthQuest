@@ -3,26 +3,21 @@ using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
-    // Atributos
-    private int currentPosition = 0; // Posición actual
-    public int CurrentPosition { get => currentPosition; }
+    [SerializeField] private float speedMovement = 2f;
+    [SerializeField] private PlayerData player;
+    [SerializeField] private SquareLoader squares;
+    private Vector3 cornerOffset;
+    private bool playerSleeping;
 
-    [SerializeField]
-    private float speedMovement = 2f; // Velocidad de movimiento
-
-    private bool playerSleeping; // Controla si el jugador está en movimiento
-    public bool PlayerSleeping { get => playerSleeping; }
-
-    private Vector3 cornerOffset; // Offset de la esquina
     public Vector3 CornerOffset { get => cornerOffset; set => cornerOffset = value; }
-
+    public bool PlayerSleeping { get => playerSleeping; }
+    public PlayerData Player { get => player; set => player = value; }
     // Mueve al jugador en la cantidad de pasos especificada
     public void MovePlayer(int steps)
     {
-        // Asegúrate de que SquareManager está inicializado y tiene casillas disponibles
-        if (GameManager.Instance.Squares.SquareCount > 0)
+        if (squares.SquareCount > 0)
         {
-            int remainingSquares = GameManager.Instance.Squares.SquareCount - currentPosition - 1;
+            int remainingSquares = squares.SquareCount - player.CurrentPosition - 1;
             steps = Mathf.Min(steps, remainingSquares);
 
             // Comenzar movimiento
@@ -31,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            Debug.LogError("SquareManager no está disponible o no tiene casillas inicializadas.");
+            Debug.LogError("No se encontraron casillas para mover al jugador.");
         }
     }
 
@@ -40,9 +35,9 @@ public class PlayerMovement : MonoBehaviour
     {
         for (int i = 0; i < steps; i++)
         {
-            currentPosition++;
+            player.CurrentPosition++;
             Vector3 initialPosition = transform.position;
-            Transform squareTransform = GameManager.Instance.Squares.SquaresBoard[currentPosition];
+            Transform squareTransform = squares.Squares[player.CurrentPosition];
             Vector3 positionCenterBox = squareTransform.position;
             RaycastHit hit;
             Vector3 rayStart = positionCenterBox + Vector3.up * 10;
