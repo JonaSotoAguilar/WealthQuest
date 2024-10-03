@@ -1,16 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.InputSystem;
 
 public class GameData : MonoBehaviour
 {
-    public static GameData Instance { get; private set; } // Instancia única de GameData
+    // public static GameData Instance { get; private set; } // Instancia única de GameData
     private int gameID; // ID del juego. Considera usar solo la propiedad si no necesitas serializarlo.
 
     [SerializeField] private int numPlayers = 1; // Número de jugadores. Serializado para ajustar desde el Inspector.
+    [SerializeField] private PlayerData[] players;
     private GameState gameState = GameState.EnCurso;
     private int turnPlayer = 0;
-    private PlayerData[] players;
     private List<QuestionData> questionList;
 
     public int NumPlayers { get => numPlayers; } // Propiedad solo de lectura.
@@ -19,6 +20,28 @@ public class GameData : MonoBehaviour
     public PlayerData[] Players { get => players; set => players = value; }
     public List<QuestionData> QuestionList { get => questionList; set => questionList = value; }
 
+    // private void Awake()
+    // {
+    //     if (Instance == null)
+    //     {
+    //         Instance = this;
+    //         DontDestroyOnLoad(gameObject);
+    //     }
+    //     else
+    //     {
+    //         Destroy(gameObject);
+    //     }
+    // }
+
+    private void NewGame()
+    {
+        // 
+        // TODO: Actualizar datos de los jugadores
+
+
+        // TODO: Actualizar inputs de los jugadores
+
+    }
 
     // Guardar el juego
     private void SaveGame()
@@ -29,6 +52,13 @@ public class GameData : MonoBehaviour
     // Cargar el juego
     private void LoadGame()
     {
-        // Implementación de carga
+        // Buscar todos los PlayerData en la escena
+        var players = FindObjectsByType<PlayerData>(FindObjectsSortMode.None); // Buscar jugadores
+        // Recorre los jugadores y desactiva aquellos cuyo índice sea mayor o igual al número de jugadores
+        foreach (var player in players)
+        {
+            int index = player.Index;
+            players[index] = player;
+        }
     }
 }

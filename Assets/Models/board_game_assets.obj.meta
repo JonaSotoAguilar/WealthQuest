@@ -757,5 +757,5 @@ AssetOrigin:
   productId: 85330
   packageName: 'FlatPoly: Board Game Assets'
   packageVersion: 1.0
-  assetPath: Assets/Zololgo/FlatPoly Board Game Assets/Models/board_game_assets.obj
+  assetPath: Assets/Models/board_game_assets.obj
   uploadId: 226932

@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
         // Si el índice de jugador es mayor o igual al número de jugadores, eliminarlo
         foreach (var player in players)
             if (player.Index >= gameData.NumPlayers)
-                Destroy(player.gameObject);
+                player.gameObject.SetActive(false);
         yield return null;// Esperar un frame para que Unity destruya los objetos
         gameData.Players = FindObjectsByType<PlayerData>(FindObjectsSortMode.None); // Buscar nuevamente los jugadores de la partida y guardarlos
 
@@ -59,7 +59,7 @@ public class GameManager : MonoBehaviour
     {
         var players = gameData.Players;
 
-        if (players.All(p => p.PlayerState != GameState.EnCurso))
+        if (players.All(p => p.State != GameState.EnCurso))
             gameData.GameState = GameState.Finalizado; // Cambiar el estado del juego a Finalizado
         else
         {
@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
             {
                 turnPlayer = (turnPlayer + 1) % players.Length; // Cambiar al siguiente jugador en el array
                 currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer); // Obtener jugador con indice igual al turno actual
-            } while (currentPlayer.PlayerState != GameState.EnCurso); // Solo pasar si está en curso
+            } while (currentPlayer.State != GameState.EnCurso); // Solo pasar si está en curso
 
             // Cambiar al siguiente jugador
             gameData.TurnPlayer = turnPlayer; // Actualizar el turno

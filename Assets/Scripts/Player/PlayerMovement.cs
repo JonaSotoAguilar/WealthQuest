@@ -62,4 +62,11 @@ public class PlayerMovement : MonoBehaviour
         }
         playerSleeping = true;
     }
+
+    // TODO: Implementar método para posicionar en casilla inicial
+    public void InitPosition()
+    {
+        player.CurrentPosition = 0;
+        transform.position = squares.Squares[player.CurrentPosition].position + cornerOffset;
+    }
 }

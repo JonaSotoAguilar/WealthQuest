@@ -11,7 +11,7 @@ public class SquareEnd : Square
     public override void ActiveSquare(PlayerData player)
     {
         squareSleeping = false;
-        player.PlayerState = GameState.Finalizado; // Cambiar el estado del jugador a FINALIZADO
+        player.State = GameState.Finalizado; // Cambiar el estado del jugador a FINALIZADO
         squareSleeping = true;
     }
 }

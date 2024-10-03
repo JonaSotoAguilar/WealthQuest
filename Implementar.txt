@@ -1,16 +1,3 @@
-Prototipos:
-- Prototipo 1: Movimiento del jugador (Jugador, Cámara, Dado).
-- Prototipo 2: Casillas de juego (Inicio, Dinero, Pregunta, Final).
-- Prototipo 3: Datos de la partida (Jugadores, Puntaje, Dinero).
-- Prototipo 4: Perfil del Usuario (Nombre, bGames).
-- Prototipo 5: Pantalla de Inicio (Jugar, Historial, Perfil, Opciones, Salir).
-- Prototipo 6: Multijugador (Local).
-- Prototipo 7: Historial de partidas.
-- Prototipo 8: Integración de bGames (Perfil, Mecanicas).
-
-Fixed:
-- Actualizar
-
 Referencias Juegos:
 - Monopoly Speed
 
