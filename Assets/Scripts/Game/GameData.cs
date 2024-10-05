@@ -5,14 +5,14 @@ using UnityEngine.InputSystem;
 
 public class GameData : MonoBehaviour
 {
-    // public static GameData Instance { get; private set; } // Instancia única de GameData
+    public static GameData Instance { get; private set; } // Instancia única de GameData
     private int gameID; // ID del juego. Considera usar solo la propiedad si no necesitas serializarlo.
 
-    [SerializeField] private int numPlayers = 1; // Número de jugadores. Serializado para ajustar desde el Inspector.
+    [SerializeField] private int numPlayers; // Número de jugadores. Serializado para ajustar desde el Inspector.
     [SerializeField] private PlayerData[] players;
-    private GameState gameState = GameState.EnCurso;
-    private int turnPlayer = 0;
-    private List<QuestionData> questionList;
+    [SerializeField] private GameState gameState;
+    [SerializeField] private int turnPlayer;
+    [SerializeField] private List<QuestionData> questionList;
 
     public int NumPlayers { get => numPlayers; } // Propiedad solo de lectura.
     public GameState GameState { get => gameState; set => gameState = value; }
@@ -20,27 +20,23 @@ public class GameData : MonoBehaviour
     public PlayerData[] Players { get => players; set => players = value; }
     public List<QuestionData> QuestionList { get => questionList; set => questionList = value; }
 
-    // private void Awake()
-    // {
-    //     if (Instance == null)
-    //     {
-    //         Instance = this;
-    //         DontDestroyOnLoad(gameObject);
-    //     }
-    //     else
-    //     {
-    //         Destroy(gameObject);
-    //     }
-    // }
-
-    private void NewGame()
+    private void Awake()
     {
-        // 
-        // TODO: Actualizar datos de los jugadores
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
-
-        // TODO: Actualizar inputs de los jugadores
-
+    public void NewGame()
+    {
+        // Reduce el tamanho del array de jugadores quitando los nulos
+        players = players.Where(p => p != null).ToArray();
     }
 
     // Guardar el juego

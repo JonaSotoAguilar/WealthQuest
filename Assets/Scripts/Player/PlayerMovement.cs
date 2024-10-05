@@ -4,25 +4,22 @@ using System.Collections;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float speedMovement = 2f;
-    [SerializeField] private PlayerData player;
-    [SerializeField] private SquareLoader squares;
     private Vector3 cornerOffset;
     private bool playerSleeping;
 
     public Vector3 CornerOffset { get => cornerOffset; set => cornerOffset = value; }
     public bool PlayerSleeping { get => playerSleeping; }
-    public PlayerData Player { get => player; set => player = value; }
     // Mueve al jugador en la cantidad de pasos especificada
-    public void MovePlayer(int steps)
+    public void MovePlayer(int steps, PlayerData player)
     {
-        if (squares.SquareCount > 0)
+        if (GameManager.Instance.Squares.SquareCount > 0)
         {
-            int remainingSquares = squares.SquareCount - player.CurrentPosition - 1;
+            int remainingSquares = GameManager.Instance.Squares.SquareCount - player.CurrentPosition - 1;
             steps = Mathf.Min(steps, remainingSquares);
 
             // Comenzar movimiento
             playerSleeping = false;
-            StartCoroutine(Move(steps));
+            StartCoroutine(Move(steps, player));
         }
         else
         {
@@ -31,13 +28,13 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // Ejecutar movimiento
-    private IEnumerator Move(int steps)
+    private IEnumerator Move(int steps, PlayerData player)
     {
         for (int i = 0; i < steps; i++)
         {
             player.CurrentPosition++;
             Vector3 initialPosition = transform.position;
-            Transform squareTransform = squares.Squares[player.CurrentPosition];
+            Transform squareTransform = GameManager.Instance.Squares.Squares[player.CurrentPosition];
             Vector3 positionCenterBox = squareTransform.position;
             RaycastHit hit;
             Vector3 rayStart = positionCenterBox + Vector3.up * 10;
@@ -64,9 +61,9 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // TODO: Implementar método para posicionar en casilla inicial
-    public void InitPosition()
+    public void InitPosition(PlayerData player)
     {
         player.CurrentPosition = 0;
-        transform.position = squares.Squares[player.CurrentPosition].position + cornerOffset;
+        transform.position = GameManager.Instance.Squares.Squares[player.CurrentPosition].position + cornerOffset;
     }
 }

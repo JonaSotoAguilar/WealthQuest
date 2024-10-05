@@ -5,7 +5,6 @@ using System.Linq;
 public class MultiplayerLocal : MonoBehaviour
 {
     [SerializeField] private PlayerInputManager playerInputManager;
-    [SerializeField] private GameData gameData;
     [SerializeField] private GameObject[] playerPieces;
 
     // Referencias a los componentes que ya están en la escena
@@ -16,7 +15,7 @@ public class MultiplayerLocal : MonoBehaviour
     // Detectar cuando un jugador se une
     private void OnPlayerJoined(PlayerInput playerInput)
     {
-        if (playerInputManager.playerCount > gameData.NumPlayers)
+        if (playerInputManager.playerCount > GameData.Instance.NumPlayers)
         {
             Destroy(playerInput.gameObject);
         }
@@ -29,9 +28,9 @@ public class MultiplayerLocal : MonoBehaviour
     // Inicializar el jugador y asignar su pieza correspondiente
     private void InitializePlayer(PlayerInput playerInput)
     {
-        playerInput.actions.FindActionMap("Player").Disable();
-        playerInput.SwitchCurrentActionMap("UI");
-        Debug.Log("Current Action Map: " + playerInput.currentActionMap.name);
+        //playerInput.actions.FindActionMap("Player").Disable();
+        //playerInput.SwitchCurrentActionMap("UI");
+        //Debug.Log("Current Action Map: " + playerInput.currentActionMap.name);
 
         var index = playerInput.playerIndex; // Obtener el índice del PlayerInput
         var playerPiece = playerPieces[index]; // Obtener la pieza correspondiente de la lista
@@ -44,12 +43,7 @@ public class MultiplayerLocal : MonoBehaviour
         var playerController = playerInput.GetComponent<PlayerInputHandler>(); // Obtener el PlayerController
         var canvasPlayer = playerInput.GetComponentInChildren<CanvasPlayer>(); // Obtener el CanvasPlayer
 
-        if (playerController != null)
-        {
-            // Asignar el PlayerData y PlayerMovement al PlayerController
-            playerController.InitializePlayer(playerData, playerInput, playerMovement, canvasPlayer); // Inicializar el PlayerController
-            playerController.InitializeComponents(diceController, hudController, squareLoader); // Inicializar los componentes del PlayerController
-        }
+        playerController.InitializePlayer(playerData, playerInput, playerMovement, canvasPlayer); // Inicializar el PlayerController
     }
 
     // Suscribirse al evento correcto

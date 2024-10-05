@@ -6,9 +6,6 @@ public class SquareQuestion : Square
     private bool squareSleeping;
     private CanvasPlayer canvasPlayer;
 
-    [Header("Square Components")]
-    [SerializeField] private GameData gameData;
-
     public override bool SquareSleeping() => squareSleeping;
 
     public override void ActiveSquare(PlayerData player) => throw new System.NotImplementedException();
@@ -38,11 +35,11 @@ public class SquareQuestion : Square
 
     private QuestionData GetRandomQuestion()
     {
-        if (gameData.QuestionList != null && gameData.QuestionList.Count > 0)
+        if (GameData.Instance.QuestionList != null && GameData.Instance.QuestionList.Count > 0)
         {
-            int randomIndex = Random.Range(0, gameData.QuestionList.Count);
-            QuestionData selectedQuestion = gameData.QuestionList[randomIndex];
-            gameData.QuestionList.RemoveAt(randomIndex);
+            int randomIndex = Random.Range(0, GameData.Instance.QuestionList.Count);
+            QuestionData selectedQuestion = GameData.Instance.QuestionList[randomIndex];
+            GameData.Instance.QuestionList.RemoveAt(randomIndex);
 
             return selectedQuestion;
         }
