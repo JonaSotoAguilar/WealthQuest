@@ -36,7 +36,11 @@ public class GameData : MonoBehaviour
     public void NewGame()
     {
         // Reduce el tamanho del array de jugadores quitando los nulos
-        players = players.Where(p => p != null).ToArray();
+        //players = players.Where(p => p != null).ToArray();
+
+
+        // Modifica la lista al tamano NumPlayers, eliminando los jugadores restantes
+        players = players.Take(numPlayers).ToArray();
     }
 
     // Guardar el juego

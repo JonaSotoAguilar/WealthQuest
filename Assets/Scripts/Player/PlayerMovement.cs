@@ -4,8 +4,8 @@ using System.Collections;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float speedMovement = 2f;
-    private Vector3 cornerOffset;
-    private bool playerSleeping;
+    [SerializeField] private Vector3 cornerOffset;
+    [SerializeField] private bool playerSleeping;
 
     public Vector3 CornerOffset { get => cornerOffset; set => cornerOffset = value; }
     public bool PlayerSleeping { get => playerSleeping; }
@@ -60,10 +60,29 @@ public class PlayerMovement : MonoBehaviour
         playerSleeping = true;
     }
 
-    // TODO: Implementar método para posicionar en casilla inicial
-    public void InitPosition(PlayerData player)
+    public void InitPosition()
     {
-        player.CurrentPosition = 0;
-        transform.position = GameManager.Instance.Squares.Squares[player.CurrentPosition].position + cornerOffset;
+        // Get the square transform from the game manager, corresponding to the initial position.
+        Transform squareTransform = GameManager.Instance.Squares.Squares[0];
+
+        // Calculate the position based on the center of the square and the corner offset.
+        Vector3 squareCenterPosition = squareTransform.position;
+        RaycastHit hit;
+        Vector3 rayStart = squareCenterPosition + Vector3.up * 10;
+
+        // Cast a ray downwards to detect the surface below the square.
+        if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity))
+        {
+            // Set the player's position to the calculated destination with the corner offset.
+            transform.position = hit.point + cornerOffset;
+
+            // Align the player's rotation to the surface normal.
+            transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+        }
+        else
+        {
+            Debug.LogError("No surface found beneath the square.");
+        }
     }
+
 }

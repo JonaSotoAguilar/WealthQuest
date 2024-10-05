@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     // Inicialización
     private void Start()
     {
-        StartCoroutine(InitializeGame());
+        //StartCoroutine(InitializeGame());
     }
 
     // Inicializa los datos del juego
@@ -50,8 +50,16 @@ public class GameManager : MonoBehaviour
             if (player.Index >= GameData.Instance.NumPlayers)
                 Destroy(player.gameObject);
         yield return null;// Esperar un frame para que Unity destruya los objetos
-        GameData.Instance.NewGame();
+        GameData.Instance.NewGame(); // Inicializar el juego
 
+        // Inicializar el primer turno
+        var currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
+        playerCamera.Player = currentPlayer.transform;
+        hud.UpdatePlayer(currentPlayer);
+        ChangePlayerView();
+    }
+
+    public void InitFirstTurn(){
         // Inicializar el primer turno
         var currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
         playerCamera.Player = currentPlayer.transform;
