@@ -10,12 +10,6 @@ public class MultiplayerRoom : MonoBehaviour
     [SerializeField] private TMPro.TextMeshProUGUI[] playerNames;
     private PlayerInput[] playerInputs;
 
-    [Header("Componentes escena tablero")]
-    [SerializeField] private GameObject[] playerPieces;
-    [SerializeField] private DiceController diceController;
-    [SerializeField] private HUDController hudController;
-    [SerializeField] private SquareLoader squareLoader;
-
     private void Start()
     {
         playerInputs = new PlayerInput[playerInputManager.maxPlayerCount];
@@ -50,16 +44,26 @@ public class MultiplayerRoom : MonoBehaviour
     // Inicializar el jugador y asignar su pieza correspondiente
     private void InitializePlayer(PlayerInput playerInput)
     {
-        var playerData = playerInput.GetComponent<PlayerData>(); // Obtener el PlayerData
-        var playerMovement = playerInput.GetComponent<PlayerMovement>(); // Obtener el PlayerMovement
-        var canvasPlayer = playerInput.GetComponentInChildren<CanvasPlayer>(); // Obtener el CanvasPlayer
-        var playerController = playerInput.GetComponent<PlayerInputHandler>(); // Obtener el PlayerController
+        playerInput.actions.FindActionMap("Player").Disable();
+        playerInput.SwitchCurrentActionMap("UI");
 
-        if (playerController != null)
-        {
-            playerController.InitializePlayer(playerData, playerInput, playerMovement, canvasPlayer); // Inicializar el PlayerController
-            //playerController.InitializeComponents(diceController, hudController, squareLoader); // Inicializar los componentes del PlayerController
-        }
+        var index = playerInput.playerIndex; // Obtener el índice del PlayerInput
+
+        // Obtener los componentes de PlayerData 
+        var playerData = playerInput.GetComponent<PlayerData>();
+        var playerMovement = playerInput.GetComponent<PlayerMovement>();
+
+        // Inicializar el PlayerInputHandler
+        var playerInputHandler = playerInput.GetComponent<PlayerInputHandler>(); // Obtener el PlayerController
+        var canvasPlayer = playerInput.GetComponentInChildren<CanvasPlayer>(); // Obtener el CanvasPlayer
+
+        playerData.InitializePlayer(index, "Jugador " + (index + 1), 0, 0, GameState.EnCurso);
+        playerInputHandler.InitializePlayer(playerData, playerInput, playerMovement, canvasPlayer); // Inicializar el PlayerController
+
+        // Asignar el jugador a la lista de jugadores
+        //playerMovement.InitPosition();
+        playerInputs[index] = playerInput;
+        GameData.Instance.Players[index] = playerData;
     }
 
     public void UpdatePlayerNames()
@@ -74,8 +78,21 @@ public class MultiplayerRoom : MonoBehaviour
         }
     }
 
-    private void CreateGame()
+    public void UpdateActionMap()
     {
-        UpdatePlayerNames();
+        for (int i = 0; i < playerInputs.Length; i++)
+        {
+            if (playerInputs[i] != null)
+            {
+                playerInputs[i].SwitchCurrentActionMap("Player");
+            }
+        }
+    }
+
+    public void StartGame()
+    {
+        UpdateActionMap();
+        GameData.Instance.NewGame();
+        SceneManager.LoadScene("MultiplayerLocalTest");
     }
 }

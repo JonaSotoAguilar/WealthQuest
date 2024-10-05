@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            InitComponents();
         }
         else
         {
@@ -35,31 +36,36 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void InitComponents()
+    {
+        // Inicializar componentes
+        hud = FindFirstObjectByType<HUDController>();
+        playerCamera = FindFirstObjectByType<PlayerCamera>();
+        dice = FindFirstObjectByType<DiceController>();
+        squares = FindFirstObjectByType<SquareLoader>();
+        diceCamera = GameObject.Find("DiceCamera").GetComponent<Camera>();
+    }
+
     // Inicialización
     private void Start()
     {
-        //StartCoroutine(InitializeGame());
+        InitPositions();
+        InitFirstTurn();
     }
 
-    // Inicializa los datos del juego
-    private IEnumerator InitializeGame()
+    public void InitPositions()
     {
-        var players = FindObjectsByType<PlayerData>(FindObjectsSortMode.None); // Buscar jugadores
-        // Si el índice de jugador es mayor o igual al número de jugadores, eliminarlo
+        // Busca todos los playersMovement en la escena
+        var players = FindObjectsByType<PlayerMovement>(FindObjectsSortMode.None);
+        // Recorre los jugadores y desactiva aquellos cuyo índice sea mayor o igual al número de jugadores
         foreach (var player in players)
-            if (player.Index >= GameData.Instance.NumPlayers)
-                Destroy(player.gameObject);
-        yield return null;// Esperar un frame para que Unity destruya los objetos
-        GameData.Instance.NewGame(); // Inicializar el juego
-
-        // Inicializar el primer turno
-        var currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
-        playerCamera.Player = currentPlayer.transform;
-        hud.UpdatePlayer(currentPlayer);
-        ChangePlayerView();
+        {
+            player.InitPosition();
+        }
     }
 
-    public void InitFirstTurn(){
+    public void InitFirstTurn()
+    {
         // Inicializar el primer turno
         var currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
         playerCamera.Player = currentPlayer.transform;
