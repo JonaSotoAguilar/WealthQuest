@@ -10,16 +10,17 @@ public class GameManager : MonoBehaviour
 
     [Header("Game Components")]
     [SerializeField] private HUDController hud; // Controlador del HUD (asegúrate de asignarlo en el Inspector o por código)
+    [SerializeField] private DiceController dice; // Controlador del dado
+    [SerializeField] private SquareLoader squares; // Cargador de casillas
+
+    [Header("Game Cameras")]
     [SerializeField] private PlayerCamera playerCamera; // Cámara para el jugador
     [SerializeField] private Camera diceCamera; // Cámara para el dado
-    [SerializeField] private DiceController dice;
-    [SerializeField] private SquareLoader squares;
 
     public bool InitTurn { get => initTurn; set => initTurn = value; }
     public HUDController HUD { get => hud; }
     public DiceController Dice { get => dice; }
     public SquareLoader Squares { get => squares; }
-
 
     // Singleton
     private void Awake()

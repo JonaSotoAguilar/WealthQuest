@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 
-public class QuestionController : MonoBehaviour
+public class QuestionPanel : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private Button[] optionButtons;
@@ -23,7 +23,10 @@ public class QuestionController : MonoBehaviour
             optionButtons[i].onClick.AddListener(() => Answer(index, questionData, player));
         }
         optionButtons[0].Select();
-        lastSelectedButton = optionButtons[0].gameObject; 
+        lastSelectedButton = optionButtons[0].gameObject;
+
+        // Seleccionar el primer botón
+        EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
 
         ShowPanel(true);
     }
@@ -32,7 +35,7 @@ public class QuestionController : MonoBehaviour
     {
         if (index == questionData.indexCorrectAnswer)
         {
-            player.Score = questionData.scoreForCorrectAnswer; 
+            player.ScoreKFP = questionData.scoreForCorrectAnswer;
         }
 
         ShowPanel(false);

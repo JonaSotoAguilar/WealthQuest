@@ -8,7 +8,7 @@ public class SquareEnd : Square
 
     public override void ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer) => ActiveSquare(player);
 
-    public override void ActiveSquare(PlayerData player)
+    public void ActiveSquare(PlayerData player)
     {
         squareSleeping = false;
         player.State = GameState.Finalizado; // Cambiar el estado del jugador a FINALIZADO

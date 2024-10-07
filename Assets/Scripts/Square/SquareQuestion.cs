@@ -8,16 +8,14 @@ public class SquareQuestion : Square
 
     public override bool SquareSleeping() => squareSleeping;
 
-    public override void ActiveSquare(PlayerData player) => throw new System.NotImplementedException();
-
     public override void ActiveSquare(PlayerData player, CanvasPlayer canvas)
     {
         squareSleeping = false;
         canvasPlayer = canvas;
-        QuestionData selectedQuestion = GetRandomQuestion();
+        QuestionData selectedQuestion = GameData.Instance.GetRandomQuestion();
         if (selectedQuestion != null)
         {
-            QuestionController panel = canvasPlayer.QuestionPanel;
+            QuestionPanel panel = canvasPlayer.QuestionPanel;
             panel.SetupQuestion(selectedQuestion, player);
             panel.OnQuestionAnswered += HandleQuestionAnswered;
         }
@@ -31,21 +29,5 @@ public class SquareQuestion : Square
     {
         canvasPlayer.QuestionPanel.OnQuestionAnswered -= HandleQuestionAnswered;
         squareSleeping = true;
-    }
-
-    private QuestionData GetRandomQuestion()
-    {
-        if (GameData.Instance.QuestionList != null && GameData.Instance.QuestionList.Count > 0)
-        {
-            int randomIndex = Random.Range(0, GameData.Instance.QuestionList.Count);
-            QuestionData selectedQuestion = GameData.Instance.QuestionList[randomIndex];
-            GameData.Instance.QuestionList.RemoveAt(randomIndex);
-
-            return selectedQuestion;
-        }
-        else
-        {
-            return null;
-        }
     }
 }

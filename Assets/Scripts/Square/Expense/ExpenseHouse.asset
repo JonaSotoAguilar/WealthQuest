@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e30a4035defec84cae5bee5e058ecbf, type: 3}
+  m_Name: ExpenseHouse
+  m_EditorClassIdentifier: 
+  description: Compraste una casa
+  image: {fileID: 21300000, guid: 423f230b102fc4e4e9be9a75d471a3e2, type: 3}
+  immediateCost: 0
+  recurrentCost: 300
+  duration: 10

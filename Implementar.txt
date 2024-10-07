@@ -1,8 +1,50 @@
-Referencias Juegos:
-- Monopoly Speed
+Jugador:
+- index
+- nombre
+- posicion
+- estado
 
-Sistema de preguntas
-- Obtener JSON desde GitHub.
+[Finanzas]
+- dinero
+- puntaje
+- sueldo
+- gastos
+- List<Inversion>
 
-Sensor:
-- API app finanzas
+Puntos:
+1.  puntos desbloquean mas opciones/alternativas para los desafios.
+2. Mejoran el entendimiento en inversions (Aparecen mejores inveriones).
+
+Casillas:
+- Pregunta (Adquiere FKP [financial knowledge points]):
+1. Los puntos desbloquean mas opciones/alternativas para los desafios.
+2. Mejoran el entendimiento en inversions (Aparecen mejores inveriones).
+3. 
+
+- Desafio (Enfrenta un desafio o situacion):
+1. Pagar de inmeadiato o a lo largo de los turnos con interes.
+2. 
+
+
+- Inversion:
+1. Pierde cantidad fija, pero recive $ por turno.
+2. 
+
+
+- Ingreso:
+1. Recive cantidad fija de dinero.
+2. Cambia su salario.
+3. 
+
+
+- Gasto:
+1. Pierde cantidad fija de dinero.
+2. Adquiere un gasto recurrente.
+3. Si no tiene para pagar, adquiere deuda (Paga mas por turno, intereses).
+
+
+Final del juego:
+1. Recupera todo lo invertido como dinero (+ su interes)
+
+
+
