@@ -6,10 +6,10 @@ using System;
 
 public class QuestionPanel : MonoBehaviour
 {
+    [SerializeField] private EventSystem playerEventSystem;
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private Button[] optionButtons;
     public event Action OnQuestionAnswered;
-    private GameObject lastSelectedButton;
 
     public void SetupQuestion(QuestionData questionData, PlayerData player)
     {
@@ -22,11 +22,9 @@ public class QuestionPanel : MonoBehaviour
             optionButtons[i].onClick.RemoveAllListeners();
             optionButtons[i].onClick.AddListener(() => Answer(index, questionData, player));
         }
-        optionButtons[0].Select();
-        lastSelectedButton = optionButtons[0].gameObject;
 
-        // Seleccionar el primer botón
-        EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
+        // Seleccionar el primer botón multiplayer event system
+        playerEventSystem.SetSelectedGameObject(optionButtons[0].gameObject);
 
         ShowPanel(true);
     }
@@ -40,10 +38,6 @@ public class QuestionPanel : MonoBehaviour
 
         ShowPanel(false);
         OnQuestionAnswered?.Invoke();
-        if (lastSelectedButton != null)
-        {
-            EventSystem.current.SetSelectedGameObject(lastSelectedButton);
-        }
     }
 
     public void ShowPanel(bool visible)

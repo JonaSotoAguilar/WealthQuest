@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 public class CardsPanel : MonoBehaviour
 {
-
+    [SerializeField] private EventSystem playerEventSystem;
     [SerializeField] private GameObject cardPrefab;
     private GameObject cardInstance1;
     private GameObject cardInstance2;
@@ -29,9 +29,9 @@ public class CardsPanel : MonoBehaviour
 
             // Crear y mostrar la segunda tarjeta como hija del panel (CardsPanel usa transform directamente)
             cardInstance2 = SetupCard(selectedCards[1], player);
-            
+
             // Seleccionar la primera tarjeta
-            EventSystem.current.SetSelectedGameObject(cardInstance1);
+            playerEventSystem.SetSelectedGameObject(cardInstance1);
 
             ShowPanel(true);
         }

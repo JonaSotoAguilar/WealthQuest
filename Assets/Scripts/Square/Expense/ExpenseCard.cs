@@ -12,34 +12,25 @@ public class ExpenseCard : ScriptableObject
     // Crear un PlayerExpense basado en los valores de la tarjeta y el score del jugador
     public PlayerExpense CreateExpense(int playerKFP)
     {
-        // Crear una nueva instancia de PlayerExpense
-        PlayerExpense expense = new GameObject().AddComponent<PlayerExpense>();
-
-        // Si el jugador tiene 5 o más puntos de KFP, aplicar un descuento del 10%
         bool hasDiscount = playerKFP >= 5;
 
-        if (immediateCost > 0) // Si es un gasto inmediato
-        {
-            // Si tiene descuento, aplicar el 10%
-            expense.Capital = hasDiscount ? Mathf.CeilToInt(immediateCost * 0.9f) : immediateCost;
-            expense.Turns = 0; // No es recurrente
-        }
-        else if (recurrentCost > 0 && duration > 0) // Si es un gasto recurrente
-        {
-            // Si tiene descuento, aplicar el 10%
-            expense.Capital = hasDiscount ? Mathf.CeilToInt(recurrentCost * 0.9f) : recurrentCost;
-            expense.Turns = duration; // Establecer la duración
-        }
+        int finalCapital = immediateCost > 0
+            ? (hasDiscount ? Mathf.CeilToInt(immediateCost * 0.9f) : immediateCost)
+            : (hasDiscount ? Mathf.CeilToInt(recurrentCost * 0.9f) : recurrentCost);
 
-        return expense;
+        int finalTurns = immediateCost > 0 ? 0 : duration;
+
+        // Crear y retornar el gasto
+        return new PlayerExpense(finalTurns, finalCapital);
     }
+
 
     // Método que construye automáticamente el texto basado en los costos y el score del jugador
     public string GetFormattedText(int playerKFP)
     {
         if (playerKFP >= 5)
         {
-            
+
             // Aplicar un descuento del 10% si el jugador tiene 5 o más puntos de score
             int discountedImmediateCost = Mathf.CeilToInt(immediateCost * 0.9f);
             int discountedRecurrentCost = Mathf.CeilToInt(recurrentCost * 0.9f);

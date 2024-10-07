@@ -1,13 +1,18 @@
 using UnityEngine;
 
-public class PlayerExpense : MonoBehaviour 
+[System.Serializable]
+public class PlayerExpense
 {
     [SerializeField] private int turns;
     [SerializeField] private int capital;
-    [SerializeField] private int interest;
 
     public int Turns { get => turns; set => turns = value; }
     public int Capital { get => capital; set => capital = value; }
-    public int Interest { get => interest; set => interest = value; }
+
+    public PlayerExpense(int turns, int capital)
+    {
+        Turns = turns;
+        Capital = capital;
+    }
 
 }

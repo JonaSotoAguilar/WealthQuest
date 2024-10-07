@@ -89,6 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11546ddaba3b6e940abebf4ed0e19189, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerEventSystem: {fileID: 6526864442558841044}
   cardPrefab: {fileID: 7861086620489467455, guid: a25307080ade85e41af15243f298ea87, type: 3}
 --- !u!114 &3475302164263480087
 MonoBehaviour:
@@ -660,6 +661,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71302f39722bf4b4eaf5255ae88a936f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerEventSystem: {fileID: 6526864442558841044}
   questionText: {fileID: 7373037207451462224}
   optionButtons:
   - {fileID: 4265784299552623155}
