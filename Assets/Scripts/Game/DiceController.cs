@@ -8,7 +8,6 @@ public class DiceController : MonoBehaviour
     private bool mode2D;
     private int diceRoll;
     private float topSide;
-    private bool diceSleeping;
 
     public enum diceTypeList
     {
@@ -22,7 +21,6 @@ public class DiceController : MonoBehaviour
     }
 
     public int DiceRoll { get => diceRoll; }
-    public bool DiceSleeping { get => diceSleeping; }
 
     void Start()
     {
@@ -30,22 +28,18 @@ public class DiceController : MonoBehaviour
     }
 
     // Lanzar el dado
-    public void LaunchDice()
+    public IEnumerator LaunchDice()
     {
         // Aplicar fuerza y torque aleatorio al dado
-        diceSleeping = false;
         Vector3 fuerzaAleatoria = new Vector3(Random.Range(-5f, 5f), 10f, Random.Range(-5f, 5f));
         Vector3 torqueAleatorio = new Vector3(Random.Range(-500f, 500f), Random.Range(-500f, 500f), Random.Range(-500f, 500f));
         myRigidbody.AddForce(fuerzaAleatoria, ForceMode.Impulse);
         myRigidbody.AddTorque(torqueAleatorio, ForceMode.Impulse);
-        StartCoroutine(WaitAndCheckResult()); 
-    }
 
-    // Corutina para esperar hasta que el dado se detenga
-    IEnumerator WaitAndCheckResult()
-    {
-        yield return new WaitForSeconds(1); 
-        while (!myRigidbody.IsSleeping()) yield return null;
+        // Esperar hasta que el dado se detenga
+        yield return new WaitForSeconds(1); // Pausa inicial
+        yield return new WaitUntil(() => myRigidbody.IsSleeping());
+
         CheckResult();
     }
 
@@ -73,6 +67,5 @@ public class DiceController : MonoBehaviour
                 }
             }
         }
-        diceSleeping = true;
     }
 }

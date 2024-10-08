@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine.InputSystem;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.SceneManagement;
 
 public class GameData : MonoBehaviour
 {
@@ -44,6 +45,7 @@ public class GameData : MonoBehaviour
         players = players.Where(p => p != null).ToArray();
         LoadQuestionList();
         Addressables.LoadAssetsAsync<ExpenseCard>("ExpenseCards", null).Completed += OnExpenseCardsLoaded;
+        SceneManager.LoadScene("MultiplayerLocal");
     }
 
     // Guardar el juego
@@ -113,7 +115,7 @@ public class GameData : MonoBehaviour
         if (handle.Status == AsyncOperationStatus.Succeeded)
         {
             expenseCards = handle.Result.ToList();
-            Debug.Log($"Cargadas {expenseCards.Count} ExpenseCards.");
+            //Debug.Log($"Cargadas {expenseCards.Count} ExpenseCards.");
         }
         else
         {

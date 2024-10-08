@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     private bool initTurn = true;  // Controla si es posible iniciar el turno
 
     [Header("Game Components")]
-    [SerializeField] private HUDController hud; // Controlador del HUD (asegúrate de asignarlo en el Inspector o por código)
+    [SerializeField] private HUDManager hud; // Controlador del HUD (asegúrate de asignarlo en el Inspector o por código)
     [SerializeField] private DiceController dice; // Controlador del dado
     [SerializeField] private SquareLoader squares; // Cargador de casillas
 
@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Camera diceCamera; // Cámara para el dado
 
     public bool InitTurn { get => initTurn; set => initTurn = value; }
-    public HUDController HUD { get => hud; }
+    public HUDManager HUD { get => hud; }
     public DiceController Dice { get => dice; }
     public SquareLoader Squares { get => squares; }
 
@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
     private void InitComponents()
     {
         // Inicializar componentes
-        hud = FindFirstObjectByType<HUDController>();
+        hud = FindFirstObjectByType<HUDManager>();
         playerCamera = FindFirstObjectByType<PlayerCamera>();
         dice = FindFirstObjectByType<DiceController>();
         squares = FindFirstObjectByType<SquareLoader>();
@@ -71,33 +71,35 @@ public class GameManager : MonoBehaviour
         var currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
         playerCamera.Player = currentPlayer.transform;
         hud.UpdatePlayer(currentPlayer);
+        // Actualizar el mapa de acciones
+        PlayerInput playerInput = currentPlayer.GetComponent<PlayerInput>();
+        playerInput.SwitchCurrentActionMap("Player");
         ChangePlayerView();
     }
 
     // Actualizar el turno
     public void UpdateTurn()
     {
+        HUD.ShowPanel(true);
         var players = GameData.Instance.Players;
 
-        if (players.All(p => p.State != GameState.EnCurso))
+        if (players.All(p => p.State != GameState.EnCurso))     // Si todos los jugadores han terminado
             GameData.Instance.GameState = GameState.Finalizado; // Cambiar el estado del juego a Finalizado
         else
         {
-            // Buscar el siguiente jugador en curso
             int turnPlayer = GameData.Instance.TurnPlayer;
             PlayerData currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer);
-            // Buscar el siguiente jugador en curso
             do
             {
-                turnPlayer = (turnPlayer + 1) % players.Length; // Cambiar al siguiente jugador en el array
+                turnPlayer = (turnPlayer + 1) % players.Length;                     // Cambiar al siguiente jugador en el array
                 currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer); // Obtener jugador con indice igual al turno actual
-            } while (currentPlayer.State != GameState.EnCurso); // Solo pasar si está en curso
-
-            // Cambiar al siguiente jugador
-            GameData.Instance.TurnPlayer = turnPlayer; // Actualizar el turno
-            playerCamera.Player = currentPlayer.transform; // Cambiar la cámara al jugador actual
-            hud.UpdatePlayer(currentPlayer); // Actualizar el HUD 
-            initTurn = true; // Permite iniciar el siguiente turno
+            } while (currentPlayer.State != GameState.EnCurso);                     // Solo pasar si está en curso
+            GameData.Instance.TurnPlayer = turnPlayer;                              // Actualizar el turno
+            playerCamera.Player = currentPlayer.transform;                           // Cambiar la cámara al jugador actual
+            PlayerInput playerInput = currentPlayer.GetComponent<PlayerInput>();
+            playerInput.SwitchCurrentActionMap("Player");
+            hud.UpdatePlayer(currentPlayer);
+            //initTurn = true;
         }
     }
 

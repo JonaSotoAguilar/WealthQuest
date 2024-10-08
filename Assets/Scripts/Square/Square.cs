@@ -1,8 +1,8 @@
 using UnityEngine;
+using System.Collections;
 
 public abstract class Square : MonoBehaviour
 {
-    public abstract void ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer);
-
-    public abstract bool SquareSleeping();
+    // Método abstracto para activar la casilla y devolver una corrutina
+    public abstract IEnumerator ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer);
 }

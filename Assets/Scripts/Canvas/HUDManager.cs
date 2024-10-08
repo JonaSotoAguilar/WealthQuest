@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;  // Importar la librería necesaria para TextMeshPro
 
-public class HUDController : MonoBehaviour
+public class HUDManager : MonoBehaviour
 {
 
 

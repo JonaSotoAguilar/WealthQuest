@@ -9,30 +9,26 @@ public class CardsPanel : MonoBehaviour
 {
     [SerializeField] private EventSystem playerEventSystem;
     [SerializeField] private GameObject cardPrefab;
-    private GameObject cardInstance1;
-    private GameObject cardInstance2;
     public event Action OnCardSelected;
 
-    // Mostrar dos tarjetas aleatorias y permitir la selección
-    public void SetupExpense(PlayerData player)
+    // Mostrar tarjetas y permitir la selección
+    public void SetupCards(PlayerData player, List<CardBase> selectedCards)
     {
         // Limpiar las tarjetas anteriores si existen
         ClearCards();
 
-        // Obtener dos tarjetas aleatorias de la lista de GameData
-        List<ExpenseCard> selectedCards = GameData.Instance.GetRandomExpenseCards(2);
-
-        if (selectedCards.Count == 2)
+        if (selectedCards.Count > 0)
         {
-            // Crear y mostrar la primera tarjeta como hija del panel (CardsPanel usa transform directamente)
-            cardInstance1 = SetupCard(selectedCards[0], player);
-
-            // Crear y mostrar la segunda tarjeta como hija del panel (CardsPanel usa transform directamente)
-            cardInstance2 = SetupCard(selectedCards[1], player);
+            foreach (var card in selectedCards)
+            {
+                // Crear y mostrar la tarjeta como hija del panel
+                SetupCard(card, player);
+            }
 
             // Seleccionar la primera tarjeta
-            playerEventSystem.SetSelectedGameObject(cardInstance1);
+            playerEventSystem.SetSelectedGameObject(transform.GetChild(0).gameObject);
 
+            // Mostrar el panel
             ShowPanel(true);
         }
         else
@@ -42,49 +38,45 @@ public class CardsPanel : MonoBehaviour
     }
 
     // Método para configurar cada tarjeta individualmente
-    private GameObject SetupCard(ExpenseCard expenseCard, PlayerData player)
+    private void SetupCard(CardBase card, PlayerData player)
     {
         // Instanciar el prefab de la tarjeta como hijo del panel
         GameObject cardInstance = Instantiate(cardPrefab, transform);
 
         // Asignar la imagen de la tarjeta
         RawImage cardImage = cardInstance.transform.Find("CardImage").GetComponent<RawImage>();
-        cardImage.texture = expenseCard.image.texture;
+        cardImage.texture = card.image.texture;
 
         // Asignar la descripción de la tarjeta
         TextMeshProUGUI descriptionText = cardInstance.transform.Find("DescriptionText").GetComponent<TextMeshProUGUI>();
-        descriptionText.text = expenseCard.description;
+        descriptionText.text = card.description;
 
         // Asignar el costo de la tarjeta
         TextMeshProUGUI costText = cardInstance.transform.Find("CostText").GetComponent<TextMeshProUGUI>();
-        costText.text = expenseCard.GetFormattedText(player.ScoreKFP);
+        costText.text = card.GetFormattedText(player.ScoreKFP);
 
         // Asignar el comportamiento de selección
         Button cardButton = cardInstance.GetComponent<Button>();
-        cardButton.onClick.AddListener(() => HandleOptionSelected(expenseCard, player));
-
-        return cardInstance;  // Devolver la instancia creada para su gestión posterior
+        cardButton.onClick.AddListener(() => HandleOptionSelected(card, player));
     }
 
     // Método que maneja la selección de la tarjeta
-    private void HandleOptionSelected(ExpenseCard selectedCard, PlayerData player)
+    private void HandleOptionSelected(CardBase selectedCard, PlayerData player)
     {
-        // Crear un gasto a partir de la tarjeta seleccionada y el puntaje del jugador
-        PlayerExpense expense = selectedCard.CreateExpense(player.ScoreKFP);
+        // Aplicar el efecto de la tarjeta seleccionada
+        selectedCard.ApplyEffect(player);
 
-        // Aplicar el gasto al jugador (fijo o recurrente)
-        player.ApplyExpense(expense, expense.Turns > 0);
+        // Eliminar la tarjeta de su respectiva lista
+        selectedCard.RemoveFromGameData();
 
-        // Eliminar la tarjeta seleccionada de la lista
-        GameData.Instance.ExpenseCards.Remove(selectedCard);
-
-        // Destruir ambas tarjetas del panel
+        // Limpiar el panel de cartas
         ClearCards();
         ShowPanel(false);
 
         // Invocar el evento para notificar que se ha seleccionado una opción
         OnCardSelected?.Invoke();
     }
+
 
     // Limpiar las tarjetas previas
     private void ClearCards()

@@ -1,18 +1,13 @@
 using UnityEngine;
+using System.Collections;
 
 public class SquareEnd : Square
 {
-    private bool squareSleeping;
-    
-    public override bool SquareSleeping() => squareSleeping;
-
-    public override void ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer) => ActiveSquare(player);
-
-    public void ActiveSquare(PlayerData player)
+    // Implementación de ActiveSquare como una corrutina
+    public override IEnumerator ActiveSquare(PlayerData player, CanvasPlayer canvasPlayer)
     {
-        squareSleeping = false;
-        player.State = GameState.Finalizado; // Cambiar el estado del jugador a FINALIZADO
-        squareSleeping = true;
+        // Cambiar el estado del jugador a FINALIZADO
+        player.State = GameState.Finalizado;
+        yield return null; // Esperar un frame
     }
 }
-

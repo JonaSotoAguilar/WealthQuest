@@ -1,16 +1,15 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class SquareExpense : Square
 {
-    private bool squareSleeping;
     private CanvasPlayer canvasPlayer;
 
-    public override bool SquareSleeping() => squareSleeping;
-
-    public override void ActiveSquare(PlayerData player, CanvasPlayer canvas)
+    // Implementación de ActiveSquare como una corrutina
+    public override IEnumerator ActiveSquare(PlayerData player, CanvasPlayer canvas)
     {
-        squareSleeping = false;
         canvasPlayer = canvas;
 
         // Obtener una referencia al CardsPanel desde el Canvas
@@ -18,24 +17,28 @@ public class SquareExpense : Square
 
         if (panel != null)
         {
-            // Configurar el panel con las tarjetas de gasto para el jugador
-            panel.SetupExpense(player);
+            // Obtener las ExpenseCards desde GameData y convertirlas a CardBase
+            List<CardBase> selectedCards = GameData.Instance.GetRandomExpenseCards(2).Cast<CardBase>().ToList();
 
-            // Subscribirse al evento cuando el jugador selecciona una opción
-            panel.OnCardSelected += HandleExpenseSelected;
+            // Configurar el panel con las tarjetas para el jugador
+            panel.SetupCards(player, selectedCards);
+
+            // Variable para indicar si la tarjeta fue seleccionada
+            bool cardSelected = false;
+
+            // Subscribirse al evento cuando se selecciona una opción
+            System.Action onCardSelected = () => cardSelected = true;
+            panel.OnCardSelected += onCardSelected;
+
+            // Esperar hasta que una tarjeta sea seleccionada
+            yield return new WaitUntil(() => cardSelected);
+
+            // Desuscribirse del evento para evitar fugas de memoria
+            panel.OnCardSelected -= onCardSelected;
         }
         else
         {
             Debug.LogError("No se encontró el CardsPanel en el canvas.");
         }
-    }
-
-    private void HandleExpenseSelected()
-    {
-        // Una vez que se ha seleccionado la opción, desconectar el evento
-        canvasPlayer.CardsPanel.OnCardSelected -= HandleExpenseSelected;
-
-        // Marcar la casilla como dormida
-        squareSleeping = true;
     }
 }

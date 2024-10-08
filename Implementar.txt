@@ -5,46 +5,62 @@ Jugador:
 - estado
 
 [Finanzas]
+- kfp
 - dinero
-- puntaje
-- sueldo
-- gastos
+- ingreso
 - List<Inversion>
+- List<Gastos>
 
-Puntos:
-1.  puntos desbloquean mas opciones/alternativas para los desafios.
-2. Mejoran el entendimiento en inversions (Aparecen mejores inveriones).
+Inversión
+
+- Turnos 
+- Capital ($)
+- Interes (%)
+- Dividendo (%)
+
+Gasto/Deudas
+- Turnos
+- Capital ($)
+- Interes (%)
+
+Jugadas>
+1. El jugador puede aportar capital a sus deudas.
+
+Puntos (kfp: financial knowledge points = puntos de conocimiento financiero):
+1. Puntos desbloquean mas opciones/alternativas para los desafios.
+2. Mejoran el entendimiento en inversiones (Aparecen mejores inveriones).
+3. Segun su kfp es el interes de las deudas.
 
 Casillas:
-- Pregunta (Adquiere FKP [financial knowledge points]):
-1. Los puntos desbloquean mas opciones/alternativas para los desafios.
-2. Mejoran el entendimiento en inversions (Aparecen mejores inveriones).
-3. 
+- Preguntas:
+1. Adquiere kfp sin contesta bien.
+2. Racha otorgna bonificacion.
 
 - Desafio (Enfrenta un desafio o situacion):
-1. Pagar de inmeadiato o a lo largo de los turnos con interes.
-2. 
+1. Pierde dinero de inmediato o a lo largo de los turnos con interés.
+2. Pierde empleo por ciertos turnos (no recibe salario).
+3. Pierdes dinero pero adquieres puntos luego de x turnos.
 
 
 - Inversion:
-1. Pierde cantidad fija, pero recive $ por turno.
-2. 
+1. Invierte capital (se descuenta del dinero), pero $ por turno (dividendos) o al finalizar plazo.
 
 
 - Ingreso:
 1. Recive cantidad fija de dinero.
-2. Cambia su salario.
-3. 
+2. Mejora su salario (Aumento o cambio de trabajo).
 
 
 - Gasto:
-1. Pierde cantidad fija de dinero.
-2. Adquiere un gasto recurrente.
-3. Si no tiene para pagar, adquiere deuda (Paga mas por turno, intereses).
+1. Pierde cantidad fija de dinero (Si no tiene para pagar, adquiere deuda (pago con interes por x turnos)
+2. Adquiere un gasto (recurrente).
+3. Fijos o variables.
 
 
 Final del juego:
-1. Recupera todo lo invertido como dinero (+ su interes)
+1. Recupera todo lo el capital invertido como dinero (+ su interes)
+2. Obtiene una bonificacion por sus kfp finales.
+3. Si tiene deudas, se paga lo restante con su dinero.
 
 
 

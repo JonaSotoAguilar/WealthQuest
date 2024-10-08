@@ -1,34 +1,16 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "ExpenseCard", menuName = "Cards/ExpenseCard")]
-public class ExpenseCard : ScriptableObject
+public class ExpenseCard : CardBase
 {
-    public string description;  // Descripción del gasto
-    public Sprite image;        // Imagen de la tarjeta
     public int immediateCost;   // Costo inmediato, si existe
     public int recurrentCost;   // Costo recurrente, si existe
     public int duration;        // Duración en turnos del costo recurrente
 
-    // Crear un PlayerExpense basado en los valores de la tarjeta y el score del jugador
-    public PlayerExpense CreateExpense(int playerKFP)
-    {
-        bool hasDiscount = playerKFP >= 5;
-
-        int finalCapital = immediateCost > 0
-            ? (hasDiscount ? Mathf.CeilToInt(immediateCost * 0.9f) : immediateCost)
-            : (hasDiscount ? Mathf.CeilToInt(recurrentCost * 0.9f) : recurrentCost);
-
-        int finalTurns = immediateCost > 0 ? 0 : duration;
-
-        // Crear y retornar el gasto
-        return new PlayerExpense(finalTurns, finalCapital);
-    }
-
-
     // Método que construye automáticamente el texto basado en los costos y el score del jugador
-    public string GetFormattedText(int playerKFP)
+    public override string GetFormattedText(int scoreKFP)
     {
-        if (playerKFP >= 5)
+        if (scoreKFP >= 5)
         {
 
             // Aplicar un descuento del 10% si el jugador tiene 5 o más puntos de score
@@ -61,5 +43,27 @@ public class ExpenseCard : ScriptableObject
         }
 
         return "Sin costo."; // En caso de que no haya ni costo inmediato ni recurrente
+    }
+
+
+    // Crear un PlayerExpense basado en los valores de la tarjeta y el score del jugador
+    public override void ApplyEffect(PlayerData player)
+    {
+        bool hasDiscount = player.ScoreKFP >= 5;
+
+        int finalCapital = immediateCost > 0
+            ? (hasDiscount ? Mathf.CeilToInt(immediateCost * 0.9f) : immediateCost)
+            : (hasDiscount ? Mathf.CeilToInt(recurrentCost * 0.9f) : recurrentCost);
+
+        int finalTurns = immediateCost > 0 ? 0 : duration;
+
+        PlayerExpense expense = new PlayerExpense(finalTurns, finalCapital);
+
+        player.ApplyExpense(expense, expense.Turns > 0);
+    }
+
+    public override void RemoveFromGameData()
+    {
+        GameData.Instance.ExpenseCards.Remove(this);
     }
 }

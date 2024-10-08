@@ -5,21 +5,19 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float speedMovement = 2f;
     [SerializeField] private Vector3 cornerOffset;
-    [SerializeField] private bool playerSleeping;
 
     public Vector3 CornerOffset { get => cornerOffset; set => cornerOffset = value; }
-    public bool PlayerSleeping { get => playerSleeping; }
+
     // Mueve al jugador en la cantidad de pasos especificada
-    public void MovePlayer(int steps, PlayerData player)
+    public IEnumerator MovePlayer(int steps, PlayerData player)
     {
         if (GameManager.Instance.Squares.SquareCount > 0)
         {
             int remainingSquares = GameManager.Instance.Squares.SquareCount - player.CurrentPosition - 1;
             steps = Mathf.Min(steps, remainingSquares);
 
-            // Comenzar movimiento
-            playerSleeping = false;
-            StartCoroutine(Move(steps, player));
+            // Comenzar el movimiento del jugador y esperar a que termine
+            yield return StartCoroutine(Move(steps, player));
         }
         else
         {
@@ -36,8 +34,11 @@ public class PlayerMovement : MonoBehaviour
             Vector3 initialPosition = transform.position;
             Transform squareTransform = GameManager.Instance.Squares.Squares[player.CurrentPosition];
             Vector3 positionCenterBox = squareTransform.position;
+
+            // Realizamos un raycast hacia abajo desde la casilla para encontrar la superficie
             RaycastHit hit;
             Vector3 rayStart = positionCenterBox + Vector3.up * 10;
+
             if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity))
             {
                 Vector3 destinyPosition = hit.point + cornerOffset;
@@ -57,7 +58,6 @@ public class PlayerMovement : MonoBehaviour
                 Debug.LogError("No se encontró la superficie bajo la casilla.");
             }
         }
-        playerSleeping = true;
     }
 
     public void InitPosition()
