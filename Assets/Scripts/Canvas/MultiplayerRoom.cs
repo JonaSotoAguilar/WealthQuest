@@ -1,15 +1,58 @@
 using UnityEngine;
+using TMPro;
+using System.IO;
+using System.Collections;
+using System.Collections.Generic;
 
 public class MultiplayerRoom : MonoBehaviour
 {
-    [SerializeField] private MultiplayerLocal multiplayerLocal;     // Referencia al script de MultiplayerLocal
-    [SerializeField] private TMPro.TextMeshProUGUI[] playerNames;   // Lista de nombres de los jugadores
+    [SerializeField] private MultiplayerLocal multiplayerLocal;      // Referencia al script de MultiplayerLocal
+    [SerializeField] private TopicsLoader topicsLoader;             // Referencia al script de TopicsLoader
+    [SerializeField] private TextMeshProUGUI[] playerNames;         // Lista de nombres de los jugadores
     [SerializeField] private GameObject[] playerPanels;             // Lista de paneles para los jugadores
     [SerializeField] private GameObject connectedPanelPrefab;       // Prefab del panel "conectado"
+    [SerializeField] private TMP_Dropdown bundleDropdown;           // TMP_Dropdown para seleccionar el tema
+    private string assetBundleDirectory;                            // Carpeta de los Asset Bundles
+    private string selectedBundle;                                  // Nombre del bundle seleccionado
 
     private void Start()
     {
+        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
         multiplayerLocal.OnPlayerJoinedEvent += ReplacePanelWithConnected;
+        StartCoroutine(InitializeAndPopulateBundleDropdown());
+    }
+
+    // Inicia la carga de los temas y llena el ScrollView
+    private IEnumerator InitializeAndPopulateBundleDropdown()
+    {
+        yield return StartCoroutine(topicsLoader.InicializateTopics());
+        PopulateBundleDropdown();
+    }
+
+    // Llenar el TMP_Dropdown con los Asset Bundles disponibles
+    private void PopulateBundleDropdown()
+    {
+        // Limpiar las opciones actuales del Dropdown
+        bundleDropdown.ClearOptions();
+
+        // Crear una lista para las opciones del Dropdown
+        List<string> options = new List<string> { "Default" }; // Agregar "Default" como la primera opción
+
+        // Agregar los bundles locales a las opciones del Dropdown
+        options.AddRange(topicsLoader.LocalTopicList);
+
+        // Actualizar el Dropdown con las nuevas opciones
+        bundleDropdown.AddOptions(options);
+
+        // Seleccionar "Default" por defecto
+        selectedBundle = "Default";
+        bundleDropdown.value = 0;
+    }
+    // Método que se ejecuta cuando se selecciona un nuevo bundle en el TMP_Dropdown
+    public void OnBundleSelected(int index)
+    {
+        selectedBundle = bundleDropdown.options[index].text;
+        Debug.Log($"Bundle seleccionado: {selectedBundle}");
     }
 
     // Reemplazar el panel con el prefab de "conectado"
@@ -35,6 +78,7 @@ public class MultiplayerRoom : MonoBehaviour
         }
     }
 
+    // FIXME: Este método no se está utilizando actualmente
     public void UpdatePlayerNames()
     {
         for (int i = 0; i < playerNames.Length; i++)
@@ -45,9 +89,14 @@ public class MultiplayerRoom : MonoBehaviour
 
     public void StartGame()
     {
+        Debug.Log("Iniciando el juego...");
+        if (string.IsNullOrEmpty(selectedBundle))
+        {
+            Debug.LogWarning("Debe seleccionarse un tema (Asset Bundle) para iniciar el juego.");
+            return;
+        }
+
         multiplayerLocal.OnPlayerJoinedEvent -= ReplacePanelWithConnected;
-        //UpdatePlayerNames();
-        multiplayerLocal.UpdateActionMap();
-        GameData.Instance.NewGame();
+        StartCoroutine(GameData.Instance.NewGame(selectedBundle));
     }
 }

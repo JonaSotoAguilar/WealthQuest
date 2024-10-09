@@ -24,21 +24,6 @@ public class PlayerManager : MonoBehaviour
         playerMovement.CornerOffset = PlayerCorner.GetCorner(playerData.Index);
     }
 
-    // // Jugar turno
-    // public void Throw(CallbackContext context)
-    // {
-    //     Debug.Log("Throw");
-    //     playerInput.actions.FindAction("Throw").Disable();
-    //     playerInput.SwitchCurrentActionMap("UI");
-    //     StartCoroutine(ThrowDice());
-    //     if (GameManager.Instance.CanPlayTurn(playerData.Index))
-    //     {
-    //         GameManager.Instance.InitTurn = false;
-    //         playerInput.SwitchCurrentActionMap("UI");
-    //         StartCoroutine(ThrowDice());
-    //     }
-    // }
-
     // Jugar turno
     public void Throw(CallbackContext context)
     {

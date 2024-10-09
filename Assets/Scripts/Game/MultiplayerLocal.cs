@@ -36,7 +36,7 @@ public class MultiplayerLocal : MonoBehaviour
         DontDestroyOnLoad(playerInput.gameObject); // No destruir el objeto al cargar una nueva escena
         playerInputs[index] = playerInput; // Asignar el PlayerInput al arreglo de PlayerInput
         InitializePlayer(playerInput); // Inicializar el jugador
-        
+
         OnPlayerJoinedEvent?.Invoke(index);
     }
 
@@ -67,22 +67,5 @@ public class MultiplayerLocal : MonoBehaviour
             PlayerData player = playerInputs[index].GetComponent<PlayerData>();
             player.PlayerName = name;
         }
-    }
-
-    public void UpdateActionMap()
-    {
-        for (int i = 0; i < playerInputs.Length; i++)
-        {
-            if (playerInputs[i] != null)
-            {
-                playerInputs[i].SwitchCurrentActionMap("Player");
-            }
-        }
-    }
-
-    public void StartGame()
-    {
-        UpdateActionMap();
-        GameData.Instance.NewGame();
     }
 }

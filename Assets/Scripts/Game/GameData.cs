@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using UnityEngine.InputSystem;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using System.IO;
 
 public class GameData : MonoBehaviour
 {
@@ -19,7 +18,12 @@ public class GameData : MonoBehaviour
     [Header("Cards & Questions")]
     [SerializeField] private List<QuestionData> questionList;
     [SerializeField] private List<ExpenseCard> expenseCards;
-    [SerializeField] private TextAsset jsonFile;
+    [SerializeField] private TextAsset jsonFile; // Esto ya se cargará desde el AssetBundle
+
+    [Header("Asset Bundle Settings")]
+    private string assetBundleDirectory;                                                // Ruta a la carpeta de Asset Bundles
+    private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";    // Ruta del DefaultBundle
+    private string currentBundlePath;                                                   // La ruta del Asset Bundle seleccionado
 
     public GameState GameState { get => gameState; set => gameState = value; }
     public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
@@ -38,13 +42,20 @@ public class GameData : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
     }
 
-    public void NewGame()
+    public IEnumerator NewGame(string bundleName)
     {
         players = players.Where(p => p != null).ToArray();
-        LoadQuestionList();
-        Addressables.LoadAssetsAsync<ExpenseCard>("ExpenseCards", null).Completed += OnExpenseCardsLoaded;
+
+        // Verificar si se ha seleccionado el bundle "Default"
+        if (bundleName == "Default")
+            currentBundlePath = defaultBundlePath;
+        else
+            currentBundlePath = Path.Combine(assetBundleDirectory, bundleName);
+
+        yield return StartCoroutine(LoadDataFromBundle(currentBundlePath));
         SceneManager.LoadScene("MultiplayerLocal");
     }
 
@@ -60,17 +71,47 @@ public class GameData : MonoBehaviour
 
     }
 
-
-    private void LoadQuestionList()
+    // Método para cargar los datos desde el Asset Bundle
+    private IEnumerator LoadDataFromBundle(string bundlePath)
     {
-        // Ruta completa al archivo JSON en tu proyecto
-        QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(jsonFile.text);
+        AssetBundleCreateRequest bundleRequest = AssetBundle.LoadFromFileAsync(bundlePath);
+        yield return bundleRequest;
 
-        // Convertir el array de preguntas a una lista
-        List<QuestionData> questions = new List<QuestionData>(questionJSON.questions);
+        AssetBundle bundle = bundleRequest.assetBundle;
+        if (bundle == null)
+        {
+            Debug.LogError("Error al cargar el Asset Bundle: " + bundlePath);
+            yield break;
+        }
 
-        // Asignar la lista de preguntas a GameData
-        questionList = questions;
+        // Cargar todas las ExpenseCards
+        AssetBundleRequest loadCardsRequest = bundle.LoadAllAssetsAsync<ExpenseCard>();
+        yield return loadCardsRequest;
+        expenseCards = loadCardsRequest.allAssets.OfType<ExpenseCard>().ToList();
+
+        // Cargar el archivo JSON de las preguntas
+        AssetBundleRequest loadJsonRequest = bundle.LoadAssetAsync<TextAsset>("Questions");
+        yield return loadJsonRequest;
+
+        jsonFile = loadJsonRequest.asset as TextAsset;
+        if (jsonFile != null)
+        {
+            LoadQuestionListFromJson(jsonFile);
+            Debug.Log("Preguntas cargadas correctamente.");
+        }
+        else
+        {
+            Debug.LogError("No se encontró el archivo JSON en el Asset Bundle.");
+        }
+
+        bundle.Unload(false); // Descargar el Asset Bundle de la memoria
+    }
+
+    // Método para cargar las preguntas desde el archivo JSON
+    private void LoadQuestionListFromJson(TextAsset json)
+    {
+        QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(json.text);
+        questionList = new List<QuestionData>(questionJSON.questions);
     }
 
     // Selecciona una pregunta aleatoria de la lista de preguntas
@@ -108,18 +149,5 @@ public class GameData : MonoBehaviour
         }
 
         return selectedCards;
-    }
-
-    private void OnExpenseCardsLoaded(AsyncOperationHandle<IList<ExpenseCard>> handle)
-    {
-        if (handle.Status == AsyncOperationStatus.Succeeded)
-        {
-            expenseCards = handle.Result.ToList();
-            //Debug.Log($"Cargadas {expenseCards.Count} ExpenseCards.");
-        }
-        else
-        {
-            Debug.LogError("Error cargando las ExpenseCards.");
-        }
     }
 }
