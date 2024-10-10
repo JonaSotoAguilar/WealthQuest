@@ -1,9 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
-using UnityEngine.EventSystems;
 using System.Collections;
-using System.Linq;
+
 
 [System.Serializable]
 public class PlayerManager : MonoBehaviour
@@ -12,14 +11,19 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private PlayerInput playerInput;       // Entrada del jugador
     [SerializeField] private PlayerMovement playerMovement; // Movimiento del jugador
     [SerializeField] private PlayerCanvas playerCanvas;     // Canvas del jugador
+    [SerializeField] private PlayerDice playerDice;         // Dado del jugador
+
+    public PlayerDice PlayerDice { get => playerDice; }
 
     // Inicialización los Input del jugador
-    public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input, PlayerMovement movement, PlayerCanvas canvas)
+    public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input, PlayerMovement movement, PlayerCanvas canvas, PlayerDice dice)
     {
         playerData = assignedPlayer;
         playerInput = input;
         playerMovement = movement;
         playerCanvas = canvas;
+        playerDice = dice;
+        playerDice.ShowDice(false);
 
         playerMovement.CornerOffset = PlayerCorner.GetCorner(playerData.Index);
     }
@@ -37,10 +41,10 @@ public class PlayerManager : MonoBehaviour
     // Lanzar el dado y esperar a que termine
     public IEnumerator ThrowDice()
     {
-        GameManager.Instance.Cameras.ChangeDiceView();
+        //GameManager.Instance.Cameras.ChangeDiceView();
 
         // Llamar a la corrutina del dado y esperar a que termine
-        yield return GameManager.Instance.Dice.LaunchDice();
+        yield return playerDice.StopDice();
 
         // El dado ya terminó, ahora mover al jugador
         yield return MovePlayer();
@@ -49,10 +53,10 @@ public class PlayerManager : MonoBehaviour
     // Mover al jugador actual
     private IEnumerator MovePlayer()
     {
-        GameManager.Instance.Cameras.ChangePlayerView();
+        //GameManager.Instance.Cameras.ChangePlayerView();
 
         // Llamar a la corrutina de movimiento y esperar a que termine
-        yield return playerMovement.MovePlayer(GameManager.Instance.Dice.DiceRoll, playerData);
+        yield return playerMovement.MovePlayer(playerDice.DiceRoll, playerData);
 
         // Una vez que termine el movimiento, jugar la casilla
         yield return PlaySquare();

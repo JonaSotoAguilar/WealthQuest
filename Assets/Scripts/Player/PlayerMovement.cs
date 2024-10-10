@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float speedMovement = 2f;
+    [SerializeField] private float speedMovement;
     [SerializeField] private Vector3 cornerOffset;
 
     public Vector3 CornerOffset { get => cornerOffset; set => cornerOffset = value; }

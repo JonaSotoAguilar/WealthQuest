@@ -67,7 +67,7 @@ public class CardsPanel : MonoBehaviour
         selectedCard.ApplyEffect(player);
 
         // Eliminar la tarjeta de su respectiva lista
-        selectedCard.RemoveFromGameData();
+        // FIXME: selectedCard.RemoveFromGameData();
 
         // Limpiar el panel de cartas
         ClearCards();

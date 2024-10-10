@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
 
     [Header("Game Components")]
     [SerializeField] private HUDManager hud;        // Controlador del HUD 
-    [SerializeField] private DiceController dice;   // Controlador del dado
     [SerializeField] private SquareLoader squares;  // Cargador de casillas
     [SerializeField] private CameraManager cameras; // Controlador de cámaras
 
@@ -19,7 +18,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerData currentPlayer;
 
     public HUDManager HUD { get => hud; }
-    public DiceController Dice { get => dice; }
+    //public DiceController Dice { get => dice; }
     public SquareLoader Squares { get => squares; }
     public CameraManager Cameras { get => cameras; }
 
@@ -42,7 +41,6 @@ public class GameManager : MonoBehaviour
     {
         // Inicializar componentes
         hud = FindFirstObjectByType<HUDManager>();
-        dice = FindFirstObjectByType<DiceController>();
         squares = FindFirstObjectByType<SquareLoader>();
         cameras = FindFirstObjectByType<CameraManager>();
     }
@@ -70,8 +68,8 @@ public class GameManager : MonoBehaviour
         currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
         cameras.CurrentCamera(currentPlayer.transform);
         hud.UpdatePlayer(currentPlayer);
-        cameras.ChangePlayerView();
-        UpdateActionMap(currentPlayer, "Player");
+        ActiveDice();
+        UpdateActionMap("Player");
     }
 
     // Actualizar el turno
@@ -89,7 +87,8 @@ public class GameManager : MonoBehaviour
                 yield return FinishRound();
             hud.UpdatePlayer(currentPlayer);
             yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
-            UpdateActionMap(currentPlayer, "Player");
+            ActiveDice();
+            UpdateActionMap("Player");
         }
     }
 
@@ -120,10 +119,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void UpdateActionMap(PlayerData player, string actionMap)
+    public void UpdateActionMap(string actionMap)
     {
         PlayerInput playerInput = currentPlayer.GetComponent<PlayerInput>();
         playerInput.SwitchCurrentActionMap(actionMap);
+    }
+
+    public void ActiveDice()
+    {
+        PlayerDice playerDice = currentPlayer.GetComponent<PlayerManager>().PlayerDice;
+        playerDice.ShowDice(true);
     }
 }
 
