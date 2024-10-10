@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System;
 
-public class MultiplayerLocal : MonoBehaviour 
+public class MultiplayerLocal : MonoBehaviour
 {
     [SerializeField] private PlayerInputManager playerInputManager;
     [SerializeField] private PlayerInput[] playerInputs;
@@ -51,10 +51,10 @@ public class MultiplayerLocal : MonoBehaviour
         var playerData = playerInput.GetComponent<PlayerData>();
         var playerMovement = playerInput.GetComponent<PlayerMovement>();
         var playerInputHandler = playerInput.GetComponent<PlayerManager>();
-        var canvasPlayer = playerInput.GetComponentInChildren<CanvasPlayer>();
+        var playerCanvas = playerInput.GetComponentInChildren<PlayerCanvas>();
 
         playerData.InitializePlayer(index, "Jugador " + (index + 1), 0, GameState.EnCurso, 0, 10000, 0, 0, new List<PlayerInvestment>(), new List<PlayerExpense>());
-        playerInputHandler.InitializePlayer(playerData, playerInput, playerMovement, canvasPlayer);
+        playerInputHandler.InitializePlayer(playerData, playerInput, playerMovement, playerCanvas);
 
         playerInputs[index] = playerInput;
         GameData.Instance.Players[index] = playerData;

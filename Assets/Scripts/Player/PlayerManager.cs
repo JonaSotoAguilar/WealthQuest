@@ -11,15 +11,15 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private PlayerData playerData; // Datos del jugador
     [SerializeField] private PlayerInput playerInput; // Entrada del jugador
     [SerializeField] private PlayerMovement playerMovement; // Movimiento del jugador
-    [SerializeField] private CanvasPlayer canvasPlayer; // Canvas del jugador
+    [SerializeField] private PlayerCanvas playerCanvas; // Canvas del jugador
 
     // Inicialización los Input del jugador
-    public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input, PlayerMovement movement, CanvasPlayer canvas)
+    public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input, PlayerMovement movement, PlayerCanvas canvas)
     {
         playerData = assignedPlayer;
         playerInput = input;
         playerMovement = movement;
-        canvasPlayer = canvas;
+        playerCanvas = canvas;
 
         playerMovement.CornerOffset = PlayerCorner.GetCorner(playerData.Index);
     }
@@ -38,7 +38,7 @@ public class PlayerManager : MonoBehaviour
     // Lanzar el dado y esperar a que termine
     public IEnumerator ThrowDice()
     {
-        GameManager.Instance.ChangeDiceView();
+        GameManager.Instance.Cameras.ChangeDiceView();
 
         // Llamar a la corrutina del dado y esperar a que termine
         yield return GameManager.Instance.Dice.LaunchDice();
@@ -50,7 +50,7 @@ public class PlayerManager : MonoBehaviour
     // Mover al jugador actual
     private IEnumerator MovePlayer()
     {
-        GameManager.Instance.ChangePlayerView();
+        GameManager.Instance.Cameras.ChangePlayerView();
 
         // Llamar a la corrutina de movimiento y esperar a que termine
         yield return playerMovement.MovePlayer(GameManager.Instance.Dice.DiceRoll, playerData);
@@ -66,10 +66,10 @@ public class PlayerManager : MonoBehaviour
         GameManager.Instance.HUD.ShowPanel(false);
 
         // Llamar a la corrutina de la casilla
-        yield return square.ActiveSquare(playerData, canvasPlayer);
+        yield return square.ActiveSquare(playerData, playerCanvas);
 
         // Volver al mapa de acción del jugador
         GameManager.Instance.HUD.UpdatePlayer(playerData);
-        GameManager.Instance.UpdateTurn();
+        yield return GameManager.Instance.UpdateTurn();
     }
 }

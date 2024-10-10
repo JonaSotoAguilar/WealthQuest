@@ -1,26 +1,26 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Linq;
+using System.Collections;
+
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; } // Singleton instance
-    private bool initTurn = true;  // Controla si es posible iniciar el turno
 
     [Header("Game Components")]
     [SerializeField] private HUDManager hud; // Controlador del HUD (asegúrate de asignarlo en el Inspector o por código)
     [SerializeField] private DiceController dice; // Controlador del dado
     [SerializeField] private SquareLoader squares; // Cargador de casillas
+    [SerializeField] private CameraManager cameras; // Controlador de cámaras
 
-    [Header("Game Cameras")]
-    [SerializeField] private PlayerCamera playerCamera; // Cámara para el jugador
-    [SerializeField] private Camera diceCamera; // Cámara para el dado
+    [Header("Player")]
+    [SerializeField] private PlayerData currentPlayer;
 
-    public bool InitTurn { get => initTurn; set => initTurn = value; }
     public HUDManager HUD { get => hud; }
     public DiceController Dice { get => dice; }
     public SquareLoader Squares { get => squares; }
+    public CameraManager Cameras { get => cameras; }
 
     // Singleton
     private void Awake()
@@ -41,10 +41,9 @@ public class GameManager : MonoBehaviour
     {
         // Inicializar componentes
         hud = FindFirstObjectByType<HUDManager>();
-        playerCamera = FindFirstObjectByType<PlayerCamera>();
         dice = FindFirstObjectByType<DiceController>();
         squares = FindFirstObjectByType<SquareLoader>();
-        diceCamera = GameObject.Find("DiceCamera").GetComponent<Camera>();
+        cameras = FindFirstObjectByType<CameraManager>();
     }
 
     // Inicialización
@@ -67,18 +66,15 @@ public class GameManager : MonoBehaviour
 
     public void InitFirstTurn()
     {
-        // Inicializar el primer turno
-        var currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
-        playerCamera.Player = currentPlayer.transform;
+        currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
+        cameras.CurrentCamera(currentPlayer.transform);
         hud.UpdatePlayer(currentPlayer);
-        // Actualizar el mapa de acciones
-        PlayerInput playerInput = currentPlayer.GetComponent<PlayerInput>();
-        playerInput.SwitchCurrentActionMap("Player");
-        ChangePlayerView();
+        cameras.ChangePlayerView();
+        UpdateActionMap(currentPlayer, "Player");
     }
 
     // Actualizar el turno
-    public void UpdateTurn()
+    public IEnumerator UpdateTurn()
     {
         HUD.ShowPanel(true);
         var players = GameData.Instance.Players;
@@ -87,37 +83,33 @@ public class GameManager : MonoBehaviour
             GameData.Instance.GameState = GameState.Finalizado; // Cambiar el estado del juego a Finalizado
         else
         {
-            int turnPlayer = GameData.Instance.TurnPlayer;
-            PlayerData currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer);
-            do
-            {
-                turnPlayer = (turnPlayer + 1) % players.Length;                     // Cambiar al siguiente jugador en el array
-                currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer); // Obtener jugador con indice igual al turno actual
-            } while (currentPlayer.State != GameState.EnCurso);                     // Solo pasar si está en curso
-            GameData.Instance.TurnPlayer = turnPlayer;                              // Actualizar el turno
-            playerCamera.Player = currentPlayer.transform;                           // Cambiar la cámara al jugador actual
-            PlayerInput playerInput = currentPlayer.GetComponent<PlayerInput>();
-            playerInput.SwitchCurrentActionMap("Player");
+            NextPlayer(players);
+            yield return StartCoroutine(cameras.UpdateCurrentCamera(currentPlayer.transform));
             hud.UpdatePlayer(currentPlayer);
-            //initTurn = true;
+            UpdateActionMap(currentPlayer, "Player");
         }
     }
 
-    // Comprobar si es posible jugar el turno
-    public bool CanPlayTurn(int playerIndex) => initTurn && playerIndex == GameData.Instance.TurnPlayer;
-
-    // Cambiar a la vista del dado
-    public void ChangeDiceView()
+    // Cambiar al siguiente jugador
+    public void NextPlayer(PlayerData[] players)
     {
-        playerCamera.enabled = false;
-        diceCamera.enabled = true;
+        int turnPlayer = GameData.Instance.TurnPlayer;
+        var nextPlayer = currentPlayer;
+
+        do
+        {
+            turnPlayer = (turnPlayer + 1) % players.Length;                     // Cambiar al siguiente jugador en el array
+            nextPlayer = players.FirstOrDefault(p => p.Index == turnPlayer);    // Obtener jugador con indice igual al turno actual
+        } while (currentPlayer.State != GameState.EnCurso);                     // Solo pasar si está en curso
+
+        GameData.Instance.TurnPlayer = turnPlayer;
+        currentPlayer = nextPlayer;
     }
 
-    // Cambiar a la vista del jugador
-    public void ChangePlayerView()
+    public void UpdateActionMap(PlayerData player, string actionMap)
     {
-        playerCamera.enabled = true;
-        diceCamera.enabled = false;
+        PlayerInput playerInput = currentPlayer.GetComponent<PlayerInput>();
+        playerInput.SwitchCurrentActionMap(actionMap);
     }
 }
 

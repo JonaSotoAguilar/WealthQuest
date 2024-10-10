@@ -3,10 +3,10 @@ using System.Collections;
 
 public class SquareQuestion : Square
 {
-    private CanvasPlayer canvasPlayer;
+    private PlayerCanvas canvasPlayer;
 
     // Implementación de ActiveSquare como una corrutina
-    public override IEnumerator ActiveSquare(PlayerData player, CanvasPlayer canvas)
+    public override IEnumerator ActiveSquare(PlayerData player, PlayerCanvas canvas)
     {
         canvasPlayer = canvas;
         QuestionData selectedQuestion = GameData.Instance.GetRandomQuestion();

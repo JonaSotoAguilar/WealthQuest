@@ -5,10 +5,10 @@ using System.Linq;
 
 public class SquareExpense : Square
 {
-    private CanvasPlayer canvasPlayer;
+    private PlayerCanvas canvasPlayer;
 
     // Implementación de ActiveSquare como una corrutina
-    public override IEnumerator ActiveSquare(PlayerData player, CanvasPlayer canvas)
+    public override IEnumerator ActiveSquare(PlayerData player, PlayerCanvas canvas)
     {
         canvasPlayer = canvas;
 

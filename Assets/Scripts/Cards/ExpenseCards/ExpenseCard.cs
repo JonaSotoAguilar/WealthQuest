@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ExpenseCard", menuName = "Cards/ExpenseCard")]
 public class ExpenseCard : CardBase
 {
+    //FIXME: Dejar solo uan variable de costo y hsea recurrente en base a la duración
     public int immediateCost;   // Costo inmediato, si existe
     public int recurrentCost;   // Costo recurrente, si existe
     public int duration;        // Duración en turnos del costo recurrente

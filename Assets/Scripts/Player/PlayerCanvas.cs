@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CanvasPlayer : MonoBehaviour
+public class PlayerCanvas : MonoBehaviour
 {
     private QuestionPanel questionPanel;
     private CardsPanel cardsPanel;

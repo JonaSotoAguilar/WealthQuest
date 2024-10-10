@@ -1401,7 +1401,7 @@ MonoBehaviour:
   playerData: {fileID: 8430738857193635572}
   playerInput: {fileID: 2477964767844041963}
   playerMovement: {fileID: 3254809111063842486}
-  canvasPlayer: {fileID: 4019174252073527022}
+  playerCanvas: {fileID: 4019174252073527022}
 --- !u!114 &3254809111063842486
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1416,7 +1416,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speedMovement: 2
   cornerOffset: {x: 0, y: 0, z: 0}
-  playerSleeping: 0
 --- !u!114 &8430738857193635572
 MonoBehaviour:
   m_ObjectHideFlags: 0
