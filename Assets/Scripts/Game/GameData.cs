@@ -97,7 +97,6 @@ public class GameData : MonoBehaviour
         if (jsonFile != null)
         {
             LoadQuestionListFromJson(jsonFile);
-            Debug.Log("Preguntas cargadas correctamente.");
         }
         else
         {

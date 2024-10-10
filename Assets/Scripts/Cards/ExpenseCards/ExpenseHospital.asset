@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   description: Te rompiste el brazo
   image: {fileID: 21300000, guid: 423f230b102fc4e4e9be9a75d471a3e2, type: 3}
-  immediateCost: 300
-  recurrentCost: 0
-  duration: 0
+  cost: 300
+  duration: 3
+  KFPForDiscount: 5
+  discounted: 0.1

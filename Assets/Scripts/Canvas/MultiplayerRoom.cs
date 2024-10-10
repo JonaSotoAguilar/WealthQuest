@@ -89,7 +89,6 @@ public class MultiplayerRoom : MonoBehaviour
 
     public void StartGame()
     {
-        Debug.Log("Iniciando el juego...");
         if (string.IsNullOrEmpty(selectedBundle))
         {
             Debug.LogWarning("Debe seleccionarse un tema (Asset Bundle) para iniciar el juego.");

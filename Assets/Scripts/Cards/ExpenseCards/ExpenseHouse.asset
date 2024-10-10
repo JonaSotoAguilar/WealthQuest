@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   description: Compraste una casa
   image: {fileID: 21300000, guid: 423f230b102fc4e4e9be9a75d471a3e2, type: 3}
-  immediateCost: 0
-  recurrentCost: 300
+  cost: 100
   duration: 10
+  KFPForDiscount: 5
+  discounted: 0.1

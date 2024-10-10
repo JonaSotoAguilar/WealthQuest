@@ -8,10 +8,10 @@ using System.Linq;
 [System.Serializable]
 public class PlayerManager : MonoBehaviour
 {
-    [SerializeField] private PlayerData playerData; // Datos del jugador
-    [SerializeField] private PlayerInput playerInput; // Entrada del jugador
+    [SerializeField] private PlayerData playerData;         // Datos del jugador
+    [SerializeField] private PlayerInput playerInput;       // Entrada del jugador
     [SerializeField] private PlayerMovement playerMovement; // Movimiento del jugador
-    [SerializeField] private PlayerCanvas playerCanvas; // Canvas del jugador
+    [SerializeField] private PlayerCanvas playerCanvas;     // Canvas del jugador
 
     // Inicialización los Input del jugador
     public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input, PlayerMovement movement, PlayerCanvas canvas)
@@ -29,7 +29,6 @@ public class PlayerManager : MonoBehaviour
     {
         if (context.phase == InputActionPhase.Performed)
         {
-            Debug.Log("Throw");
             playerInput.SwitchCurrentActionMap("UI");
             StartCoroutine(ThrowDice());
         }

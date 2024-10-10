@@ -2,16 +2,17 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Linq;
 using System.Collections;
+using UnityEditor;
 
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; } // Singleton instance
+    public static GameManager Instance { get; private set; }
 
     [Header("Game Components")]
-    [SerializeField] private HUDManager hud; // Controlador del HUD (asegúrate de asignarlo en el Inspector o por código)
-    [SerializeField] private DiceController dice; // Controlador del dado
-    [SerializeField] private SquareLoader squares; // Cargador de casillas
+    [SerializeField] private HUDManager hud;        // Controlador del HUD 
+    [SerializeField] private DiceController dice;   // Controlador del dado
+    [SerializeField] private SquareLoader squares;  // Cargador de casillas
     [SerializeField] private CameraManager cameras; // Controlador de cámaras
 
     [Header("Player")]
@@ -84,8 +85,10 @@ public class GameManager : MonoBehaviour
         else
         {
             NextPlayer(players);
-            yield return StartCoroutine(cameras.UpdateCurrentCamera(currentPlayer.transform));
+            if (GameData.Instance.TurnPlayer == 0) // Finalizo ronda
+                yield return FinishRound();
             hud.UpdatePlayer(currentPlayer);
+            yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
             UpdateActionMap(currentPlayer, "Player");
         }
     }
@@ -104,6 +107,17 @@ public class GameManager : MonoBehaviour
 
         GameData.Instance.TurnPlayer = turnPlayer;
         currentPlayer = nextPlayer;
+    }
+
+    public IEnumerator FinishRound()
+    {
+        var players = GameData.Instance.Players.Where(p => p.State == GameState.EnCurso).ToArray();
+        if (players == null)
+            yield break;
+        foreach (var player in players)
+        {
+            player.ProcessRecurrentExpenses();
+        }
     }
 
     public void UpdateActionMap(PlayerData player, string actionMap)
