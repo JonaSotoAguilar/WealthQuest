@@ -4,15 +4,15 @@ using UnityEngine;
 public class PlayerExpense
 {
     [SerializeField] private int turns;
-    [SerializeField] private int capital;
+    [SerializeField] private int amount;
 
     public int Turns { get => turns; set => turns = value; }
-    public int Capital { get => capital; set => capital = value; }
+    public int Amount { get => amount; set => amount = value; }
 
-    public PlayerExpense(int turns, int capital)
+    public PlayerExpense(int playerTurns, int amountTurn)
     {
-        Turns = turns;
-        Capital = capital;
+        turns = playerTurns;
+        amount = amountTurn;
     }
 
 }

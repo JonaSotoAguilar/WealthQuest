@@ -18,7 +18,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerData currentPlayer;
 
     public HUDManager HUD { get => hud; }
-    //public DiceController Dice { get => dice; }
     public SquareLoader Squares { get => squares; }
     public CameraManager Cameras { get => cameras; }
 
@@ -75,7 +74,6 @@ public class GameManager : MonoBehaviour
     // Actualizar el turno
     public IEnumerator UpdateTurn()
     {
-        HUD.ShowPanel(true);
         var players = GameData.Instance.Players;
 
         if (players.All(p => p.State != GameState.EnCurso))     // Si todos los jugadores han terminado
@@ -84,7 +82,7 @@ public class GameManager : MonoBehaviour
         {
             NextPlayer(players);
             if (GameData.Instance.TurnPlayer == 0) // Finalizo ronda
-                yield return FinishRound();
+                yield return FinishYear();
             hud.UpdatePlayer(currentPlayer);
             yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
             ActiveDice();
@@ -108,14 +106,16 @@ public class GameManager : MonoBehaviour
         currentPlayer = nextPlayer;
     }
 
-    public IEnumerator FinishRound()
+    public IEnumerator FinishYear()
     {
         var players = GameData.Instance.Players.Where(p => p.State == GameState.EnCurso).ToArray();
         if (players == null)
             yield break;
         foreach (var player in players)
         {
+            player.ProcessIncome();
             player.ProcessRecurrentExpenses();
+            player.ProcessInvestments();
         }
     }
 

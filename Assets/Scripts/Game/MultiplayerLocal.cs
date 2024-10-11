@@ -54,7 +54,9 @@ public class MultiplayerLocal : MonoBehaviour
         var playerCanvas = playerInput.GetComponentInChildren<PlayerCanvas>();
         var playerDice = playerInput.GetComponentInChildren<PlayerDice>();
 
-        playerData.InitializePlayer(index, "Jugador " + (index + 1), 0, GameState.EnCurso, 0, 10000, 0, 0, new List<PlayerInvestment>(), new List<PlayerExpense>());
+        playerData.InitializePlayer(index, "Jugador " + (index + 1), 0, GameState.EnCurso,
+                                    0, 10000, 0, 0, 0, 0, 0,
+                                    new List<PlayerInvestment>(), new List<PlayerExpense>());
         playerInputHandler.InitializePlayer(playerData, playerInput, playerMovement, playerCanvas, playerDice);
 
         playerInputs[index] = playerInput;

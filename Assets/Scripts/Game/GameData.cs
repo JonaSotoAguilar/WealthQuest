@@ -16,9 +16,10 @@ public class GameData : MonoBehaviour
     [SerializeField] private int turnPlayer;
 
     [Header("Cards & Questions")]
+    [SerializeField] private TextAsset jsonFile; // Esto ya se cargará desde el AssetBundle
     [SerializeField] private List<QuestionData> questionList;
     [SerializeField] private List<ExpenseCard> expenseCards;
-    [SerializeField] private TextAsset jsonFile; // Esto ya se cargará desde el AssetBundle
+    [SerializeField] private List<InvestmentCard> investmentCards;
 
     [Header("Asset Bundle Settings")]
     private string assetBundleDirectory;                                                // Ruta a la carpeta de Asset Bundles
@@ -30,6 +31,7 @@ public class GameData : MonoBehaviour
     public PlayerData[] Players { get => players; set => players = value; }
     public List<QuestionData> QuestionList { get => questionList; set => questionList = value; }
     public List<ExpenseCard> ExpenseCards { get => expenseCards; set => expenseCards = value; }
+    public List<InvestmentCard> InvestmentCards { get => investmentCards; set => investmentCards = value; }
 
     private void Awake()
     {
@@ -85,14 +87,18 @@ public class GameData : MonoBehaviour
         }
 
         // Cargar todas las ExpenseCards
-        AssetBundleRequest loadCardsRequest = bundle.LoadAllAssetsAsync<ExpenseCard>();
-        yield return loadCardsRequest;
-        expenseCards = loadCardsRequest.allAssets.OfType<ExpenseCard>().ToList();
+        AssetBundleRequest loadExpenseCardsRequest = bundle.LoadAllAssetsAsync<ExpenseCard>();
+        yield return loadExpenseCardsRequest;
+        expenseCards = loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>().ToList();
+
+        // Cargar todas las InvestmentCards
+        AssetBundleRequest loadInvestmentCardsRequest = bundle.LoadAllAssetsAsync<InvestmentCard>();
+        yield return loadInvestmentCardsRequest;
+        investmentCards = loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>().ToList();
 
         // Cargar el archivo JSON de las preguntas
         AssetBundleRequest loadJsonRequest = bundle.LoadAssetAsync<TextAsset>("Questions");
         yield return loadJsonRequest;
-
         jsonFile = loadJsonRequest.asset as TextAsset;
         if (jsonFile != null)
         {
@@ -105,6 +111,7 @@ public class GameData : MonoBehaviour
 
         bundle.Unload(false); // Descargar el Asset Bundle de la memoria
     }
+
 
     // Método para cargar las preguntas desde el archivo JSON
     private void LoadQuestionListFromJson(TextAsset json)
@@ -149,4 +156,34 @@ public class GameData : MonoBehaviour
 
         return selectedCards;
     }
+
+    // Selecciona tarjetas aleatorias de la lista de tarjetas de inversión y las retorna sin eliminarlas
+    public List<InvestmentCard> GetRandomInvestmentCards(int count)
+    {
+        List<InvestmentCard> selectedCards = new List<InvestmentCard>();
+
+        // Obtiene cartas aleatorias de la lista de cartas de inversión, asegurándose de que sean diferentes
+        if (investmentCards != null && investmentCards.Count > 0)
+        {
+            List<InvestmentCard> availableCards = new List<InvestmentCard>(investmentCards);
+            for (int i = 0; i < count; i++)
+            {
+                if (availableCards.Count == 0)
+                {
+                    Debug.LogWarning("No hay suficientes tarjetas de inversión disponibles para seleccionar la cantidad solicitada.");
+                    break;
+                }
+                int randomIndex = Random.Range(0, availableCards.Count);
+                selectedCards.Add(availableCards[randomIndex]);
+                availableCards.RemoveAt(randomIndex); // Asegúrate de que las tarjetas seleccionadas sean diferentes
+            }
+        }
+        else
+        {
+            Debug.LogError("La lista de tarjetas de inversión está vacía o no existe.");
+        }
+
+        return selectedCards;
+    }
+
 }

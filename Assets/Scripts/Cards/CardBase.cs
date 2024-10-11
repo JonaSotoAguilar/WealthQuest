@@ -8,7 +8,7 @@ public abstract class CardBase : ScriptableObject
     // Método abstracto que deberá ser implementado por las subclases para formatear el texto
     public abstract string GetFormattedText(int playerKFP);
 
-    public abstract void ApplyEffect(PlayerData player);
+    public abstract void ApplyEffect(PlayerData player, int capital = 0);
 
     public abstract void RemoveFromGameData();
 }

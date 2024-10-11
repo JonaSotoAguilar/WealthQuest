@@ -66,7 +66,6 @@ public class PlayerManager : MonoBehaviour
     private IEnumerator PlaySquare()
     {
         Square square = GameManager.Instance.Squares.Squares[playerData.CurrentPosition].GetComponent<Square>();
-        GameManager.Instance.HUD.ShowPanel(false);
 
         // Llamar a la corrutina de la casilla
         yield return square.ActiveSquare(playerData, playerCanvas);
