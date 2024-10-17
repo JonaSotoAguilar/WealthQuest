@@ -20,10 +20,12 @@ public class GameData : MonoBehaviour
     [SerializeField] private List<QuestionData> questionList;
     [SerializeField] private List<ExpenseCard> expenseCards;
     [SerializeField] private List<InvestmentCard> investmentCards;
+    [SerializeField] private List<IncomeCard> incomeCards;
+    [SerializeField] private List<EventCard> eventCards;
 
     [Header("Asset Bundle Settings")]
-    private string assetBundleDirectory;                                                // Ruta a la carpeta de Asset Bundles
     private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";    // Ruta del DefaultBundle
+    private string assetBundleDirectory;                                                // Ruta a la carpeta de Asset Bundles
     private string currentBundlePath;                                                   // La ruta del Asset Bundle seleccionado
 
     public GameState GameState { get => gameState; set => gameState = value; }
@@ -96,6 +98,16 @@ public class GameData : MonoBehaviour
         yield return loadInvestmentCardsRequest;
         investmentCards = loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>().ToList();
 
+        // Cargar todas las IncomeCards
+        AssetBundleRequest loadIncomeCardsRequest = bundle.LoadAllAssetsAsync<IncomeCard>();
+        yield return loadIncomeCardsRequest;
+        incomeCards = loadIncomeCardsRequest.allAssets.OfType<IncomeCard>().ToList();
+
+        // Cargar todas las EventCards
+        AssetBundleRequest loadEventCardsRequest = bundle.LoadAllAssetsAsync<EventCard>();
+        yield return loadEventCardsRequest;
+        eventCards = loadEventCardsRequest.allAssets.OfType<EventCard>().ToList();
+
         // Cargar el archivo JSON de las preguntas
         AssetBundleRequest loadJsonRequest = bundle.LoadAssetAsync<TextAsset>("Questions");
         yield return loadJsonRequest;
@@ -112,7 +124,6 @@ public class GameData : MonoBehaviour
         bundle.Unload(false); // Descargar el Asset Bundle de la memoria
     }
 
-
     // Método para cargar las preguntas desde el archivo JSON
     private void LoadQuestionListFromJson(TextAsset json)
     {
@@ -127,8 +138,6 @@ public class GameData : MonoBehaviour
         {
             int randomIndex = Random.Range(0, questionList.Count);
             QuestionData selectedQuestion = questionList[randomIndex];
-            questionList.RemoveAt(randomIndex);
-
             return selectedQuestion;
         }
         else
@@ -185,5 +194,62 @@ public class GameData : MonoBehaviour
 
         return selectedCards;
     }
+
+    // Selecciona tarjetas aleatorias de la lista de tarjetas de ingreso y las retorna sin eliminarlas
+    public List<IncomeCard> GetRandomIncomeCards(int count)
+    {
+        List<IncomeCard> selectedCards = new List<IncomeCard>();
+
+        if (incomeCards != null && incomeCards.Count > 0)
+        {
+            List<IncomeCard> availableCards = new List<IncomeCard>(incomeCards);
+            for (int i = 0; i < count; i++)
+            {
+                if (availableCards.Count == 0)
+                {
+                    Debug.LogWarning("No hay suficientes tarjetas de ingreso disponibles para seleccionar la cantidad solicitada.");
+                    break;
+                }
+                int randomIndex = Random.Range(0, availableCards.Count);
+                selectedCards.Add(availableCards[randomIndex]);
+                availableCards.RemoveAt(randomIndex); // Asegúrate de que las tarjetas seleccionadas sean diferentes
+            }
+        }
+        else
+        {
+            Debug.LogError("La lista de tarjetas de ingreso está vacía o no existe.");
+        }
+
+        return selectedCards;
+    }
+
+    // Selecciona tarjetas aleatorias de la lista de tarjetas de evento y las retorna sin eliminarlas
+    public List<EventCard> GetRandomEventCards(int count)
+    {
+        List<EventCard> selectedCards = new List<EventCard>();
+
+        if (eventCards != null && eventCards.Count > 0)
+        {
+            List<EventCard> availableCards = new List<EventCard>(eventCards);
+            for (int i = 0; i < count; i++)
+            {
+                if (availableCards.Count == 0)
+                {
+                    Debug.LogWarning("No hay suficientes tarjetas de evento disponibles para seleccionar la cantidad solicitada.");
+                    break;
+                }
+                int randomIndex = Random.Range(0, availableCards.Count);
+                selectedCards.Add(availableCards[randomIndex]);
+                availableCards.RemoveAt(randomIndex); // Asegúrate de que las tarjetas seleccionadas sean diferentes
+            }
+        }
+        else
+        {
+            Debug.LogError("La lista de tarjetas de evento está vacía o no existe.");
+        }
+
+        return selectedCards;
+    }
+
 
 }

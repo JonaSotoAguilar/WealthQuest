@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 118b2dab2df296e43912ffeab125576b, type: 3}
   m_Name: NVDIA 2018
   m_EditorClassIdentifier: 
-  description: NVDIA 2018
+  title: NVDIA 018
   image: {fileID: 21300000, guid: 6b8a05b5318235b4e82a939766f70fcc, type: 3}
   duration: 4
-  capital: 500
   pctChange:
   - 0.4006
   - 0.7626

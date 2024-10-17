@@ -39,26 +39,31 @@ public class TopicsMenu : MonoBehaviour
 
             // Obtener el botón de descarga y configurar su visibilidad
             GameObject downloadButton = newPanel.transform.Find("Download").gameObject;
+            GameObject downloadedButton = newPanel.transform.Find("Downloaded").gameObject;
             downloadButton.SetActive(!isDownloaded);
-            newPanel.transform.Find("Downloaded").gameObject.SetActive(isDownloaded);
+            downloadedButton.SetActive(isDownloaded);
 
             // Si el botón está activo (no descargado), asignar la funcionalidad de descarga
             if (!isDownloaded)
             {
                 downloadButton.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(() =>
-                    StartCoroutine(DownloadBundle(bundleName, downloadButton)));
+                    StartCoroutine(DownloadBundle(bundleName, downloadButton, downloadedButton)));
             }
         }
     }
 
     // Método para descargar un bundle y actualizar la UI
-    private IEnumerator DownloadBundle(string bundleName, GameObject downloadButton)
+    private IEnumerator DownloadBundle(string bundleName, GameObject downloadButton, GameObject downloadedButton)
     {
+        // Se bloquea el botón de descarga mientras se realiza la descarga
+        downloadButton.GetComponent<UnityEngine.UI.Button>().interactable = false;
+        
         // Iniciar la descarga del Asset Bundle
         yield return StartCoroutine(topicsLoader.DownloadAssetBundle(bundleName));
 
         // Ocultar el botón de descarga ya que el asset ahora está disponible localmente
         downloadButton.SetActive(false);
+        downloadedButton.SetActive(true);
     }
 
     // Limpiar los paneles existentes del ScrollView

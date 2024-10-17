@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 118b2dab2df296e43912ffeab125576b, type: 3}
   m_Name: KO 2014
   m_EditorClassIdentifier: 
-  description: Coca-Cola Company 2014
+  title: Coca Cola 2014
   image: {fileID: 21300000, guid: d582e5a452fd2c445bfe4bfe0acf8b38, type: 3}
   duration: 5
-  capital: 300
   pctChange:
   - 0.039
   - 0.031

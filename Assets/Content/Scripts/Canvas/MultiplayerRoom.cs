@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class MultiplayerRoom : MonoBehaviour
 {
-    [SerializeField] private MultiplayerLocal multiplayerLocal;      // Referencia al script de MultiplayerLocal
+    [SerializeField] private LocalRoom multiplayerLocal;      // Referencia al script de MultiplayerLocal
     [SerializeField] private TopicsLoader topicsLoader;             // Referencia al script de TopicsLoader
     [SerializeField] private TextMeshProUGUI[] playerNames;         // Lista de nombres de los jugadores
     [SerializeField] private GameObject[] playerPanels;             // Lista de paneles para los jugadores

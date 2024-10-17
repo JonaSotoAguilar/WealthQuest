@@ -19,12 +19,16 @@ public class PlayerData : MonoBehaviour
     [SerializeField] private List<PlayerInvestment> investments;    // Lista de inversiones
     [SerializeField] private List<PlayerExpense> expenses;          // Lista de gastos
 
-    public string PlayerName { get => playerName; set => playerName = value; }
     public int Index { get => index; set => index = value; }
+    public string PlayerName { get => playerName; set => playerName = value; }
     public int CurrentPosition { get => currentPosition; set => currentPosition = value; }
     public GameState State { get => state; set => state = value; }
+
     public int ScoreKFP { get => scoreKFP; set => scoreKFP = value; }
     public int Money { get => money; set => money = value; }
+    public int Invest { get => invest; set => invest = value; }
+    public int Debt { get => debt; set => debt = value; }
+    public int Salary { get => salary; set => salary = value; }
     public int IncomeTurn { get => incomeTurn; set => incomeTurn = value; }
     public int ExpenseTurn { get => debt; set => debt = value; }
     public List<PlayerInvestment> Investments { get => investments; }
@@ -114,6 +118,9 @@ public class PlayerData : MonoBehaviour
     {
         if (expenses.Count == 0)
             return;
+
+        List<PlayerExpense> toRemove = new List<PlayerExpense>();
+
         foreach (var expense in expenses)
         {
             // Restar el capital por cada turno
@@ -125,29 +132,38 @@ public class PlayerData : MonoBehaviour
 
                 Debug.Log($"{PlayerName} ha pagado {expense.Amount} por un gasto recurrente. Le quedan {expense.Turns} turnos de pago.");
 
-                // Si se han completado todos los turnos, remover el gasto/deuda
+                // Si se han completado todos los turnos, agregar el gasto a la lista de eliminación
                 if (expense.Turns == 0)
                 {
                     expenseTurn -= expense.Amount;
-                    expenses.Remove(expense);
+                    toRemove.Add(expense);
                 }
             }
             else // Se agrega un turno adicional e interés por no pagar el gasto a tiempo
             {
                 int interestMount = (int)(expense.Amount * 0.05f);
                 expense.Amount += interestMount;        // Añadir interés al capital como penalización
-                expense.Turns++;                         // Añadir un turno adicional
-                debt += interestMount * expense.Turns;   // Añadir monto al total de gastos por turno
-                expenseTurn += interestMount;            // Añadir monto al total de gastos por turno
+                expense.Turns++;                        // Añadir un turno adicional
+                debt += interestMount * expense.Turns;  // Añadir monto al total de gastos por turno
+                expenseTurn += interestMount;           // Añadir monto al total de gastos por turno
                 Debug.LogError($"{PlayerName} no tiene suficiente dinero para pagar el gasto recurrente de {expense.Amount}. Dinero disponible: {money}.");
             }
         }
+
+        foreach (var item in toRemove)
+        {
+            expenses.Remove(item);
+        }
     }
+
 
     public void ProcessInvestments()
     {
         if (investments.Count == 0)
             return;
+
+        List<PlayerInvestment> toRemove = new List<PlayerInvestment>();
+
         foreach (var investment in investments)
         {
             if (investment.Turns == 0)
@@ -155,7 +171,7 @@ public class PlayerData : MonoBehaviour
                 incomeTurn -= investment.Dividend;
                 money += investment.Capital;
                 invest -= investment.Capital;
-                investments.Remove(investment);
+                toRemove.Add(investment);
             }
             else
             {
@@ -169,6 +185,12 @@ public class PlayerData : MonoBehaviour
                 incomeTurn += investment.Dividend - beforeDividend;
             }
         }
+
+        foreach (var item in toRemove)
+        {
+            investments.Remove(item);
+        }
     }
+
 }
 

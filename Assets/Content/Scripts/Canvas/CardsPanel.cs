@@ -60,7 +60,7 @@ public class CardsPanel : MonoBehaviour
 
         // Asignar la descripción de la tarjeta
         TextMeshProUGUI descriptionText = cardInstance.transform.Find("DescriptionText").GetComponent<TextMeshProUGUI>();
-        descriptionText.text = card.description;
+        descriptionText.text = card.title;
 
         // Asignar el costo de la tarjeta
         TextMeshProUGUI costText = cardInstance.transform.Find("CostText").GetComponent<TextMeshProUGUI>();
@@ -85,9 +85,6 @@ public class CardsPanel : MonoBehaviour
 
         // Aplicar el efecto de la tarjeta seleccionada
         selectedCard.ApplyEffect(player, amountInt);
-
-        // Eliminar la tarjeta de su respectiva lista
-        // FIXME: selectedCard.RemoveFromGameData();
 
         // Invocar el evento para notificar que se ha seleccionado una opción
         OnCardSelected?.Invoke();

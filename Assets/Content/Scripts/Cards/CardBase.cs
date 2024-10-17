@@ -2,8 +2,8 @@ using UnityEngine;
 
 public abstract class CardBase : ScriptableObject
 {
-    public string description;  // Descripción de la carta
-    public Sprite image;        // Imagen de la carta
+    [Tooltip("Titulo carta")] public string title;  // Descripción de la carta
+    [Tooltip("Imagen de carta")] public Sprite image;        // Imagen de la carta
 
     // Método abstracto que deberá ser implementado por las subclases para formatear el texto
     public abstract string GetFormattedText(int playerKFP);

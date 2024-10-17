@@ -3313,7 +3313,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 469753392}
   m_HandleRect: {fileID: 469753391}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -8756,6 +8756,8 @@ MonoBehaviour:
   questionList: []
   expenseCards: []
   investmentCards: []
+  incomeCards: []
+  eventCards: []
 --- !u!4 &2024025774
 Transform:
   m_ObjectHideFlags: 0

@@ -2,10 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 using System.Collections;
-using UnityEditor.Callbacks;
 
-
-[System.Serializable]
 public class PlayerController : MonoBehaviour
 {
     [Header("Player Components")]

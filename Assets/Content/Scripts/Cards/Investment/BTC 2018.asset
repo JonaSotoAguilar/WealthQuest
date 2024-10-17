@@ -12,10 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 118b2dab2df296e43912ffeab125576b, type: 3}
   m_Name: BTC 2018
   m_EditorClassIdentifier: 
-  description: BTC 2018
+  title: BTC 2018
   image: {fileID: 21300000, guid: 5199e440f411a404b9987711c1985ba1, type: 3}
   duration: 2
-  capital: 500
   pctChange:
   - -0.73
   - 0.92

@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using System;
 
-public class MultiplayerLocal : MonoBehaviour
+public class LocalRoom : MonoBehaviour
 {
     [SerializeField] private PlayerInputManager playerInputManager;
     [SerializeField] private PlayerInput[] playerInputs;

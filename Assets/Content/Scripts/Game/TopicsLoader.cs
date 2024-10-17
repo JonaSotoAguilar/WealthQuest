@@ -84,7 +84,7 @@ public class TopicsLoader : MonoBehaviour
     // Método para descargar un Asset Bundle desde GitHub
     public IEnumerator DownloadAssetBundle(string bundleName)
     {
-        string url = $"{GitHubBaseUrl}{bundleName}";
+        string url = $"{GitHubBaseUrl}/{bundleName}";
         string localPath = Path.Combine(assetBundleDirectory, bundleName);
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))

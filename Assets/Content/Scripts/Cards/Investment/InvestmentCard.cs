@@ -1,20 +1,19 @@
-using UnityEngine;  
+using UnityEngine;
 using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "InvestmentCard", menuName = "Cards/InvestmentCard")]
 public class InvestmentCard : CardBase
 {
-    [Min(2)] public int duration;           // Duración en turnos del costo recurrente
-    [Range(-1, 10)] public List<float> pctChange; // Porcentaje de cambio anual
-    [Range(0, 1)] public List<float> pctDividend;    // Porcentaje de dividendos anual
+    [Min(2), Tooltip("Duracion de pago.")] public int duration;                             // Duración en turnos del costo recurrente
+    [Range(-1, 100), Tooltip("Porcentaje de cambio.")] public List<float> pctChange;         // Porcentaje de cambio anual
+    [Range(0, 1), Tooltip("Porcentaje de dividendos.")] public List<float> pctDividend;     // Porcentaje de dividendos anual
 
-    // Método que construye automáticamente el texto basado en los costos y el score del jugador
+
     public override string GetFormattedText(int scoreKFP)
     {
         return $"Invertir durante {duration} años";
     }
 
-    // Crear un PlayerExpense basado en los valores de la tarjeta y el score del jugador
     public override void ApplyEffect(PlayerData player, int capital)
     {
         if (capital <= 0)

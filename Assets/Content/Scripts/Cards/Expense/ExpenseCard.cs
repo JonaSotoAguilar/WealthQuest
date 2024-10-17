@@ -8,7 +8,6 @@ public class ExpenseCard : CardBase
     [Min(0)] public int KFPForDiscount;     // KPF necesario para obtener un descuento
     [Range(0, 1)] public float discounted;  // Porcentaje de descuento 
 
-    // Método que construye automáticamente el texto basado en los costos y el score del jugador
     public override string GetFormattedText(int scoreKFP)
     {
         if (scoreKFP >= KFPForDiscount)
@@ -34,9 +33,7 @@ public class ExpenseCard : CardBase
         return "Sin costo."; // En caso de que no haya ni costo inmediato ni recurrente
     }
 
-
-    // Crear un PlayerExpense basado en los valores de la tarjeta y el score del jugador
-    public override void ApplyEffect(PlayerData player, int amount)
+    public override void ApplyEffect(PlayerData player, int capital = 0)
     {
         bool hasDiscount = player.ScoreKFP >= KFPForDiscount;
         int finalCapital = hasDiscount ? Mathf.CeilToInt(cost * (1 - discounted)) : cost;

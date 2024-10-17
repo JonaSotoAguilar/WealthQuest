@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e30a4035defec84cae5bee5e058ecbf, type: 3}
   m_Name: ExpenseCar
   m_EditorClassIdentifier: 
-  description: Chocaste tu auto
+  title: Chocaste tu auto
   image: {fileID: 21300000, guid: 423f230b102fc4e4e9be9a75d471a3e2, type: 3}
-  cost: 300
   duration: 1
+  cost: 300
   KFPForDiscount: 5
   discounted: 0.1

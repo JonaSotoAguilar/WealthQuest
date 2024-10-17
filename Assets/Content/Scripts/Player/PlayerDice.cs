@@ -28,6 +28,16 @@ public class PlayerDice : MonoBehaviour
         StartCoroutine(ChangeRotationDirection());
     }
 
+    void OnEnable()
+    {
+        StartCoroutine(ChangeRotationDirection());
+    }
+
+    void OnDisable()
+    {
+        StopCoroutine(ChangeRotationDirection());
+    }
+
     void Update()
     {
         if (isSpinning)

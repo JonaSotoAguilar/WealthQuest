@@ -34,6 +34,7 @@ public class QuestionPanel : MonoBehaviour
         if (index == questionData.indexCorrectAnswer)
         {
             player.ScoreKFP = questionData.scoreForCorrectAnswer;
+            GameData.Instance.QuestionList.Remove(questionData);
         }
 
         ShowPanel(false);

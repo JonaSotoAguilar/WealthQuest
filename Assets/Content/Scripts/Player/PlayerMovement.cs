@@ -7,15 +7,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector3 cornerOffset;
     [SerializeField] private Vector2 direction;
     private Animator playerAnimator;
-    private int layerMask;
+    private int groundLayerMask;
 
-    public Animator PlayerAnimator { get => playerAnimator; set => playerAnimator = value; }
     public Vector3 CornerOffset { get => cornerOffset; set => cornerOffset = value; }
+    public Animator PlayerAnimator { get => playerAnimator; set => playerAnimator = value; }
 
-    private void Awake()
+    void Awake()
     {
-        // Inicializa la máscara de Layer para ignorar el Layer "Trigger"
-        layerMask = ~(1 << LayerMask.NameToLayer("Trigger"));
+        groundLayerMask = LayerMask.GetMask("Ground");
     }
 
     public IEnumerator MovePlayer(int steps, PlayerData player)
@@ -47,7 +46,7 @@ public class PlayerMovement : MonoBehaviour
             RaycastHit hit;
             Vector3 rayStart = positionCenterBox + Vector3.up * 10;
 
-            if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity, layerMask))
+            if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity, groundLayerMask))
             {
                 Vector3 destinyPosition = hit.point + cornerOffset;
                 Vector3 movementDirection = (destinyPosition - initialPosition).normalized;
@@ -75,25 +74,26 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
     public void InitPosition()
     {
         Transform squareTransform = GameManager.Instance.Squares.Squares[0];
-        Vector3 squareCenterPosition = squareTransform.position;
+        Vector3 positionCenterBox = squareTransform.position;
         RaycastHit hit;
-        Vector3 rayStart = squareCenterPosition + Vector3.up * 10;
+        Vector3 rayStart = positionCenterBox + Vector3.up * 10;
 
-        if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity, layerMask))
+        if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity, groundLayerMask))
         {
-            transform.position = hit.point + cornerOffset;
-            transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-            direction = Vector2.zero;
-            playerAnimator.SetFloat("X", direction.x);
-            playerAnimator.SetFloat("Y", direction.y);
+            Vector3 destinyPosition = hit.point + cornerOffset;  // Utiliza el mismo cornerOffset directamente como en Move()
+            transform.position = destinyPosition;  // Coloca directamente sin Lerp para posición inicial
+
+            // Ajustar la rotación inicialmente si necesario
+            transform.forward = squareTransform.forward;
         }
         else
         {
-            Debug.LogError("No surface found beneath the square.");
+            Debug.LogError("No se encontró la superficie bajo la casilla.");
         }
     }
+
+
 }
