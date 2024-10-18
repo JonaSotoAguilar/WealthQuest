@@ -10,14 +10,12 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Header("Game Components")]
-    [SerializeField] private HUDManager hud;        // Controlador del HUD 
-    [SerializeField] private SquareLoader squares;  // Cargador de casillas
-    [SerializeField] private CameraManager cameras; // Controlador de cámaras
+    [SerializeField] private SquareLoader squares;
+    [SerializeField] private CameraManager cameras;
 
     [Header("Player")]
-    [SerializeField] private PlayerData currentPlayer;
+    private PlayerController currentPlayer;
 
-    public HUDManager HUD { get => hud; }
     public SquareLoader Squares { get => squares; }
     public CameraManager Cameras { get => cameras; }
 
@@ -38,22 +36,18 @@ public class GameManager : MonoBehaviour
 
     private void InitComponents()
     {
-        // Inicializar componentes
-        hud = FindFirstObjectByType<HUDManager>();
         squares = FindFirstObjectByType<SquareLoader>();
         cameras = FindFirstObjectByType<CameraManager>();
     }
 
-    // Inicialización
     private void Start()
     {
         InitPositions();
-        InitFirstTurn();
+        InitTurn();
     }
 
     public void InitPositions()
     {
-        // Busca todos los playersMovement en la escena
         var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
         foreach (var player in players)
         {
@@ -61,73 +55,49 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void InitFirstTurn()
+    public void InitTurn()
     {
-        currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer);
+        currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer).GetComponent<PlayerController>();
         cameras.CurrentCamera(currentPlayer.transform);
-        hud.UpdatePlayer(currentPlayer);
-        ActiveDice();
-        UpdateActionMap("Player");
+        currentPlayer.EnableDice();
     }
 
-    // Actualizar el turno
     public IEnumerator UpdateTurn()
     {
-        var players = GameData.Instance.Players;
-
-        if (players.All(p => p.State != GameState.EnCurso))     // Si todos los jugadores han terminado
-            GameData.Instance.GameState = GameState.Finalizado; // Cambiar el estado del juego a Finalizado
-        else
-        {
-            NextPlayer(players);
-            if (GameData.Instance.TurnPlayer == 0) // Finalizo ronda
-                yield return FinishYear();
-            hud.UpdatePlayer(currentPlayer);
-            yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
-            ActiveDice();
-            UpdateActionMap("Player");
-        }
+        NextPlayer();
+        if (GameData.Instance.InitialPlayerIndex == GameData.Instance.TurnPlayer)
+            yield return FinishYear();
+        yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
+        currentPlayer.EnableDice();
     }
 
-    // Cambiar al siguiente jugador
-    public void NextPlayer(PlayerData[] players)
+    public void NextPlayer()
     {
-        int turnPlayer = GameData.Instance.TurnPlayer;
-        var nextPlayer = currentPlayer;
-
-        do
-        {
-            turnPlayer = (turnPlayer + 1) % players.Length;                     // Cambiar al siguiente jugador en el array
-            nextPlayer = players.FirstOrDefault(p => p.Index == turnPlayer);    // Obtener jugador con indice igual al turno actual
-        } while (currentPlayer.State != GameState.EnCurso);                     // Solo pasar si está en curso
-
+        var players = GameData.Instance.Players;
+        int turnPlayer = (GameData.Instance.TurnPlayer + 1) % players.Length;
+        currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer).GetComponent<PlayerController>();
         GameData.Instance.TurnPlayer = turnPlayer;
-        currentPlayer = nextPlayer;
     }
 
     public IEnumerator FinishYear()
     {
-        var players = GameData.Instance.Players.Where(p => p.State == GameState.EnCurso).ToArray();
-        if (players == null)
-            yield break;
-        foreach (var player in players)
+        int newYear = GameData.Instance.CurrentYear + 1;
+        if (newYear > GameData.Instance.YearsToPlay)
         {
-            player.ProcessIncome();
-            player.ProcessRecurrentExpenses();
-            player.ProcessInvestments();
+            GameData.Instance.GameState = GameState.Finalizado;
+            yield break;
         }
-    }
-
-    public void UpdateActionMap(string actionMap)
-    {
-        PlayerInput playerInput = currentPlayer.GetComponent<PlayerInput>();
-        playerInput.SwitchCurrentActionMap(actionMap);
-    }
-
-    public void ActiveDice()
-    {
-        PlayerDice playerDice = currentPlayer.GetComponent<PlayerController>().PlayerDice;
-        playerDice.ShowDice(true);
+        else
+        {
+            var players = GameData.Instance.Players;
+            foreach (var player in players)
+            {
+                player.ProcessIncome();
+                player.ProcessInvestments();
+                player.ProcessRecurrentExpenses();
+            }
+            GameData.Instance.CurrentYear = newYear;
+        }
     }
 }
 

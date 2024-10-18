@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4479000543768042793}
   - component: {fileID: 4957417358053548752}
   - component: {fileID: 3182736331935818605}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: SquareEvent
   m_TagString: Untagged
   m_Icon: {fileID: 0}

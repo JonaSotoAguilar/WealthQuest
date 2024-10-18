@@ -22,13 +22,14 @@ public class EventCard : CardBase
     public override void ApplyEffect(PlayerData player, int capital = 0)
     {
         // A todos los jugadores de la List de jugadores, se les suma o resta el monto de la carta
-        foreach (PlayerData p in GameData.Instance.Players) {
-            p.Money += amount;
+        foreach (PlayerData p in GameData.Instance.Players)
+        {
+            p.ChangeMoney(amount);
         }
     }
 
     public override void RemoveFromGameData()
     {
-
+        GameData.Instance.EventCards.Remove(this);
     }
 }

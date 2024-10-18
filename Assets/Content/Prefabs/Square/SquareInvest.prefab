@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6436360020062590694}
   - component: {fileID: 4364212822533310562}
   - component: {fileID: 5658961389972891703}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: SquareInvest
   m_TagString: Untagged
   m_Icon: {fileID: 0}

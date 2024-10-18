@@ -8,32 +8,45 @@ using System.IO;
 public class GameData : MonoBehaviour
 {
     public static GameData Instance { get; private set; } // Instancia única de GameData
-    private int gameID; // ID del juego. Considera usar solo la propiedad si no necesitas serializarlo.
 
     [Header("Game State")]
-    [SerializeField] private PlayerData[] players;
-    [SerializeField] private GameState gameState;
-    [SerializeField] private int turnPlayer;
+    //private int gameID;
+    private GameState gameState;
+    private int yearsToPlay = 10;
+    private int currentYear;
+
+    [Header("Players")]
+    private PlayerData[] players;
+    private int initialPlayerIndex = 0;
+    private int turnPlayer;
 
     [Header("Cards & Questions")]
-    [SerializeField] private TextAsset jsonFile; // Esto ya se cargará desde el AssetBundle
-    [SerializeField] private List<QuestionData> questionList;
-    [SerializeField] private List<ExpenseCard> expenseCards;
-    [SerializeField] private List<InvestmentCard> investmentCards;
-    [SerializeField] private List<IncomeCard> incomeCards;
-    [SerializeField] private List<EventCard> eventCards;
+    private List<QuestionData> questionList;
+    private List<ExpenseCard> expenseCards;
+    private List<InvestmentCard> investmentCards;
+    private List<IncomeCard> incomeCards;
+    private List<EventCard> eventCards;
+    private TextAsset jsonFile;
 
     [Header("Asset Bundle Settings")]
-    private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";    // Ruta del DefaultBundle
-    private string assetBundleDirectory;                                                // Ruta a la carpeta de Asset Bundles
-    private string currentBundlePath;                                                   // La ruta del Asset Bundle seleccionado
+    private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
+    private string assetBundleDirectory;
+    private string currentBundlePath;
 
+    // TODO: Getters y Setters
     public GameState GameState { get => gameState; set => gameState = value; }
-    public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
+    public int YearsToPlay { get => yearsToPlay; set => yearsToPlay = value; }
+    public int CurrentYear { get => currentYear; set => currentYear = value; }
+
     public PlayerData[] Players { get => players; set => players = value; }
+    public int InitialPlayerIndex { get => initialPlayerIndex; set => initialPlayerIndex = value; }
+    public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
+
     public List<QuestionData> QuestionList { get => questionList; set => questionList = value; }
     public List<ExpenseCard> ExpenseCards { get => expenseCards; set => expenseCards = value; }
     public List<InvestmentCard> InvestmentCards { get => investmentCards; set => investmentCards = value; }
+    public List<IncomeCard> IncomeCards { get => incomeCards; set => incomeCards = value; }
+    public List<EventCard> EventCards { get => eventCards; set => eventCards = value; }
 
     private void Awake()
     {
@@ -53,7 +66,6 @@ public class GameData : MonoBehaviour
     {
         players = players.Where(p => p != null).ToArray();
 
-        // Verificar si se ha seleccionado el bundle "Default"
         if (bundleName == "Default")
             currentBundlePath = defaultBundlePath;
         else

@@ -20,14 +20,17 @@ public class IncomeCard : CardBase
     public override void ApplyEffect(PlayerData player, int capital = 0)
     {
         if (affectSalary)
-            player.Salary = (int)(player.Salary * (1 + salaryChange));
+        {
+            int newSalary = (int)(player.Salary * (1 + salaryChange));
+            player.ChangeSalary(newSalary);
+        }
         else
-            player.Money += income;
+            player.ChangeMoney(income);
     }
 
     public override void RemoveFromGameData()
     {
-        //GameData.Instance.IncomeCards.Remove(this);
+        GameData.Instance.IncomeCards.Remove(this);
     }
 
     private void OnValidate()

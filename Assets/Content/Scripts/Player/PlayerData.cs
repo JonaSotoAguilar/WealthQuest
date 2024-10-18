@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Globalization;
 
 public class PlayerData : MonoBehaviour
 {
     [SerializeField] private int index;                             // Índice del jugador
     private string playerName;                                      // Nombre del jugador
     private int currentPosition;                                    // Posición actual del jugador
-    private GameState state;                                        // Estado del jugador      
 
     [Header("Finances")]
     [SerializeField] private int scoreKFP;                          // financial knowledge points: puntos de conocimiento financiero
@@ -19,10 +19,13 @@ public class PlayerData : MonoBehaviour
     [SerializeField] private List<PlayerInvestment> investments;    // Lista de inversiones
     [SerializeField] private List<PlayerExpense> expenses;          // Lista de gastos
 
+    [Header("Player HUD")]
+    [SerializeField] private PlayerHUD playerHUD;                   // HUD del jugador
+    private CultureInfo chileanCulture = new CultureInfo("es-CL");  // Cultura chilena para formato de moneda
+
     public int Index { get => index; set => index = value; }
     public string PlayerName { get => playerName; set => playerName = value; }
     public int CurrentPosition { get => currentPosition; set => currentPosition = value; }
-    public GameState State { get => state; set => state = value; }
 
     public int ScoreKFP { get => scoreKFP; set => scoreKFP = value; }
     public int Money { get => money; set => money = value; }
@@ -34,8 +37,10 @@ public class PlayerData : MonoBehaviour
     public List<PlayerInvestment> Investments { get => investments; }
     public List<PlayerExpense> Expenses { get => expenses; }
 
+    public PlayerHUD PlayerHUD { get => playerHUD; set => playerHUD = value; }
+
     // Inicializar datos del jugador
-    public void InitializePlayer(int playerIndex, string name, int position, GameState playerState,
+    public void InitializePlayer(int playerIndex, string name, int position,
                                  int playerScoreKFP, int playerMoney, int playerInvest, int playerDebt,
                                  int playerSalary, int playerIncomeTurn, int playerExpenseTurn,
                                  List<PlayerInvestment> playerInvestments, List<PlayerExpense> playerExpenses)
@@ -43,7 +48,6 @@ public class PlayerData : MonoBehaviour
         index = playerIndex;
         playerName = name;
         currentPosition = position;
-        state = playerState;
         scoreKFP = playerScoreKFP;
         money = playerMoney;
         invest = playerInvest;
@@ -55,107 +59,92 @@ public class PlayerData : MonoBehaviour
         expenses = playerExpenses;
     }
 
-    public void ProcessIncome()
+    // TODO: Método para cambiar datos financieros
+
+    public void ChangeMoney(int amount)
     {
-        money += incomeTurn;
+        money += amount;
+        playerHUD.Money.text = money.ToString("C0", chileanCulture);
+    }
+
+    public void ChangeKFP(int score)
+    {
+        scoreKFP += score;
+        playerHUD.Kpf.text = scoreKFP.ToString();
+    }
+
+    public void ChangeDebt(int amount)
+    {
+        debt += amount;
+        playerHUD.Debt.text = debt.ToString("C0", chileanCulture);
+    }
+
+    public void ChangeInvest(int amount)
+    {
+        invest += amount;
+        playerHUD.Invest.text = invest.ToString("C0", chileanCulture);
+    }
+
+    public void ChangeIncome(int amount)
+    {
+        incomeTurn += amount;
+        playerHUD.Income.text = incomeTurn.ToString("C0", chileanCulture);
+    }
+
+    public void ChangeExpense(int amount)
+    {
+        expenseTurn += amount;
+        playerHUD.Expense.text = expenseTurn.ToString("C0", chileanCulture);
     }
 
     public void ChangeSalary(int newSalary)
     {
         incomeTurn += newSalary - salary;
         salary = newSalary;
+        playerHUD.Income.text = incomeTurn.ToString("C0", chileanCulture);
     }
 
-    // Método para aplicar un gasto
+    // TODO: Métodos para crear gastos e inversiones
+    public void CreateInvestment(PlayerInvestment investment)
+    {
+        if (money < investment.Capital)
+            return;
+        investments.Add(investment);
+        ChangeMoney(-investment.Capital);
+        ChangeInvest(investment.Capital);
+        ChangeIncome(investment.Dividend);
+    }
+
     public void CreateExpense(PlayerExpense expense, bool isRecurrent)
     {
         if (isRecurrent)
         {
-            // Añadir el gasto recurrente a la lista de gastos
             expenses.Add(expense);
-            debt += expense.Amount * expense.Turns;
-            expenseTurn += expense.Amount;
-            Debug.Log($"{PlayerName} ha adquirido un gasto recurrente de {expense.Amount} durante {expense.Turns} turnos");
+            ChangeDebt(expense.Amount * expense.Turns);
+            ChangeExpense(expense.Amount);
         }
-        else // Gasto fijo
+        else
         {
-            // Restar el capital directamente si es un gasto único (fijo)
             if (money >= expense.Amount)
-            {
-                money -= expense.Amount;
-                Debug.Log($"{PlayerName} ha pagado un gasto único de {expense.Amount}. Dinero restante: {money}.");
-            }
-            else // Se crea gasto pendiente con interes por no pagar a tiempo
+                ChangeMoney(-expense.Amount);
+            else
             {
                 int interestMount = (int)(expense.Amount * 0.1f);
                 expense.Amount += interestMount;
                 expense.Turns++;
                 expenses.Add(expense);
-                debt += expense.Amount * expense.Turns;
-                expenseTurn += expense.Amount;
-                Debug.LogError($"{PlayerName} no tiene suficiente dinero para pagar el gasto, se crea deuda de {expense.Amount}.");
+                ChangeDebt(interestMount * expense.Turns);
+                ChangeExpense(interestMount);
             }
         }
     }
 
-    public void CreateInvestment(PlayerInvestment investment)
+    // TODO: Método para procesar datos financieros
+
+    public void ProcessIncome()
     {
-        if (money < investment.Capital)
-            return;
-        // Añadir la inversión a la lista de inversiones
-        investments.Add(investment);
-
-        // Muevo el dinero a inversion
-        money -= investment.Capital;
-        invest += investment.Capital;
-
-        // Añadir el dividendo de la inversión a los ingresos por turno
-        incomeTurn += investment.Dividend;
+        ChangeMoney(incomeTurn);
     }
-
-    // Procesar gastos recurrentes al final de cada turno
-    public void ProcessRecurrentExpenses()
-    {
-        if (expenses.Count == 0)
-            return;
-
-        List<PlayerExpense> toRemove = new List<PlayerExpense>();
-
-        foreach (var expense in expenses)
-        {
-            // Restar el capital por cada turno
-            if (money >= expense.Amount)
-            {
-                money -= expense.Amount;
-                debt -= expense.Amount;
-                expense.Turns--;
-
-                Debug.Log($"{PlayerName} ha pagado {expense.Amount} por un gasto recurrente. Le quedan {expense.Turns} turnos de pago.");
-
-                // Si se han completado todos los turnos, agregar el gasto a la lista de eliminación
-                if (expense.Turns == 0)
-                {
-                    expenseTurn -= expense.Amount;
-                    toRemove.Add(expense);
-                }
-            }
-            else // Se agrega un turno adicional e interés por no pagar el gasto a tiempo
-            {
-                int interestMount = (int)(expense.Amount * 0.05f);
-                expense.Amount += interestMount;        // Añadir interés al capital como penalización
-                expense.Turns++;                        // Añadir un turno adicional
-                debt += interestMount * expense.Turns;  // Añadir monto al total de gastos por turno
-                expenseTurn += interestMount;           // Añadir monto al total de gastos por turno
-                Debug.LogError($"{PlayerName} no tiene suficiente dinero para pagar el gasto recurrente de {expense.Amount}. Dinero disponible: {money}.");
-            }
-        }
-
-        foreach (var item in toRemove)
-        {
-            expenses.Remove(item);
-        }
-    }
-
 
     public void ProcessInvestments()
     {
@@ -168,27 +157,61 @@ public class PlayerData : MonoBehaviour
         {
             if (investment.Turns == 0)
             {
-                incomeTurn -= investment.Dividend;
-                money += investment.Capital;
-                invest -= investment.Capital;
+                ChangeIncome(-investment.Dividend);
+                ChangeMoney(investment.Capital);
+                ChangeInvest(-investment.Capital);
                 toRemove.Add(investment);
             }
             else
             {
                 int beforeDividend = investment.Dividend;
                 int beforeCapital = investment.Capital;
-
                 investment.UpdateInvestment();
                 investment.Turns--;
-
-                invest += investment.Capital - beforeCapital;
-                incomeTurn += investment.Dividend - beforeDividend;
+                ChangeInvest(investment.Capital - beforeCapital);
+                ChangeIncome(investment.Dividend - beforeDividend);
             }
         }
 
         foreach (var item in toRemove)
         {
             investments.Remove(item);
+        }
+    }
+
+    public void ProcessRecurrentExpenses()
+    {
+        if (expenses.Count == 0)
+            return;
+
+        List<PlayerExpense> toRemove = new List<PlayerExpense>();
+
+        foreach (var expense in expenses)
+        {
+            if (money >= expense.Amount)
+            {
+                ChangeMoney(-expense.Amount);
+                ChangeDebt(-expense.Amount);
+                expense.Turns--;
+                if (expense.Turns == 0)
+                {
+                    ChangeExpense(-expense.Amount);
+                    toRemove.Add(expense);
+                }
+            }
+            else
+            {
+                int interestMount = (int)(expense.Amount * 0.05f);
+                expense.Amount += interestMount;
+                expense.Turns++;
+                ChangeDebt(interestMount * expense.Turns);
+                ChangeExpense(interestMount);
+            }
+        }
+
+        foreach (var item in toRemove)
+        {
+            expenses.Remove(item);
         }
     }
 
