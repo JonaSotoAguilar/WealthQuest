@@ -15,8 +15,7 @@ public class SquareLoader: MonoBehaviour
 
     private void InitializeSquares()
     {
-        // Asumimos que el script está en el objeto "Squares", por lo que no necesitamos buscarlo.
-        Transform containerSquares = transform; // Nos referimos a sí mismo
+        Transform containerSquares = transform;
         squares = new Transform[containerSquares.childCount];
         for (int i = 0; i < squares.Length; i++)
         {

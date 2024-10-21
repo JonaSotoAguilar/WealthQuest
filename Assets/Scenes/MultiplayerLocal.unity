@@ -147,9 +147,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf45d4e8be285034b9af5e77a0f9a63c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cinemachineCamera: {fileID: 0}
   cameraTarget: {fileID: 136273358}
   transitionDuration: 1.5
-  elapsedTime: 0
 --- !u!4 &96077775
 Transform:
   m_ObjectHideFlags: 0
@@ -217,7 +217,7 @@ GameObject:
   - component: {fileID: 191558209}
   - component: {fileID: 191558208}
   m_Layer: 5
-  m_Name: CanvasHUD
+  m_Name: UI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -342,7 +342,7 @@ MonoBehaviour:
     ScreenPosition: {x: 0, y: 0.3}
     DeadZone:
       Enabled: 1
-      Size: {x: 0.2, y: 0.2}
+      Size: {x: 0, y: 0}
     HardLimits:
       Enabled: 1
       Size: {x: 0.8, y: 0.8}
@@ -351,7 +351,7 @@ MonoBehaviour:
   TargetOffset: {x: 0, y: 0, z: 0}
   Damping: {x: 0, y: 0}
   Lookahead:
-    Enabled: 0
+    Enabled: 1
     Time: 0
     Smoothing: 0
     IgnoreY: 0
@@ -368,12 +368,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TrackerSettings:
-    BindingMode: 4
+    BindingMode: 3
     PositionDamping: {x: 1, y: 1, z: 1}
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 3, y: 2, z: 0}
+  FollowOffset: {x: 3.5, y: 2, z: 0}
 --- !u!114 &248906865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -448,9 +448,9 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
-  field of view: 60
+  field of view: 70
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -476,8 +476,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 248906862}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09102613, y: -0.7012234, z: 0.09102613, w: 0.70122343}
-  m_LocalPosition: {x: 3, y: 2, z: 0}
+  m_LocalRotation: {x: 0.06555106, y: -0.70406187, z: 0.06555105, w: 0.70406187}
+  m_LocalPosition: {x: 3.5, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -720,8 +720,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 457836359}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.09102613, y: -0.7012234, z: 0.09102612, w: 0.70122343}
-  m_LocalPosition: {x: 3, y: 2, z: 0}
+  m_LocalRotation: {x: 0.06555105, y: -0.70406187, z: 0.06555106, w: 0.70406187}
+  m_LocalPosition: {x: 3.5, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2042,7 +2042,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   squares: {fileID: 1303122022}
   cameras: {fileID: 96077774}
-  currentPlayer: {fileID: 0}
 --- !u!1001 &1404862337447013499
 PrefabInstance:
   m_ObjectHideFlags: 0

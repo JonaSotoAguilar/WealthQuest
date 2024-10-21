@@ -14,4 +14,9 @@ public class OptionMenu : MonoBehaviour
     {
         audioMixer.SetFloat("Volume", volume);
     }
+
+    public void ShowPanel(bool visible)
+    {
+        gameObject.SetActive(visible);
+    }
 }

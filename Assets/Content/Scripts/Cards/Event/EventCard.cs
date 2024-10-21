@@ -1,30 +1,37 @@
 using UnityEngine;
+using System.Globalization;
 
 [CreateAssetMenu(fileName = "EventCard", menuName = "Cards/EventCard")]
 public class EventCard : CardBase
 {
     [TextArea(minLines: 2, maxLines: 4), Tooltip("Descripcion de carta.")] public string description;
     [Tooltip("Monto a ganar/perder")] public int amount;
+    private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
     public override string GetFormattedText(int playerKFP)
     {
         if (amount > 0)
         {
-            return $"{description}. Todos reciben: ${amount}";
+            return $"{description}. Todos ganan: <color=green>{amount.ToString("C0", chileanCulture)}</color>.";
         }
         else
         {
-            return $"{description}. Todos pierden: ${-amount}";
+            return $"{description}. Todos pagan: <color=red>{amount.ToString("C0", chileanCulture)}</color>.";
         }
     }
 
 
     public override void ApplyEffect(PlayerData player, int capital = 0)
     {
-        // A todos los jugadores de la List de jugadores, se les suma o resta el monto de la carta
         foreach (PlayerData p in GameData.Instance.Players)
         {
-            p.ChangeMoney(amount);
+            if (amount > 0)
+                p.ChangeMoney(amount);
+            else
+            {
+                PlayerExpense expense = new PlayerExpense(1, amount);
+                p.CreateExpense(expense, false);
+            }
         }
     }
 

@@ -24,7 +24,6 @@ public class PlayerMovement : MonoBehaviour
             int remainingSquares = GameManager.Instance.Squares.SquareCount - player.CurrentPosition - 1;
             steps = Mathf.Min(steps, remainingSquares);
             yield return StartCoroutine(Move(steps, player));
-            // Resetear la dirección a cero al final del movimiento completo
             direction = Vector2.zero;
             playerAnimator.SetFloat("X", direction.x);
             playerAnimator.SetFloat("Y", direction.y);
@@ -50,14 +49,9 @@ public class PlayerMovement : MonoBehaviour
             {
                 Vector3 destinyPosition = hit.point + cornerOffset;
                 Vector3 movementDirection = (destinyPosition - initialPosition).normalized;
-
-                // Calcular la rotación deseada para mirar hacia la dirección del destino
                 Quaternion targetRotation = Quaternion.LookRotation(movementDirection);
-
-                // Establece la animación para moverse hacia adelante
-                playerAnimator.SetFloat("X", 0); // Asumiendo que el Blend Tree ya no usa 'X' y 'Y' para la dirección
-                playerAnimator.SetFloat("Y", 1); // Siempre activa correr hacia adelante
-
+                playerAnimator.SetFloat("X", 0); 
+                playerAnimator.SetFloat("Y", 1); 
                 float time = 0f;
                 while (time < 1f)
                 {
@@ -83,10 +77,8 @@ public class PlayerMovement : MonoBehaviour
 
         if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity, groundLayerMask))
         {
-            Vector3 destinyPosition = hit.point + cornerOffset;  // Utiliza el mismo cornerOffset directamente como en Move()
-            transform.position = destinyPosition;  // Coloca directamente sin Lerp para posición inicial
-
-            // Ajustar la rotación inicialmente si necesario
+            Vector3 destinyPosition = hit.point + cornerOffset; 
+            transform.position = destinyPosition; 
             transform.forward = squareTransform.forward;
         }
         else

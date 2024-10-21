@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
         if (newYear > GameData.Instance.YearsToPlay)
         {
             GameData.Instance.GameState = GameState.Finalizado;
-            yield break;
+            yield return null;
         }
         else
         {

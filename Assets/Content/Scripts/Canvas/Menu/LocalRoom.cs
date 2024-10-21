@@ -7,11 +7,11 @@ using System.Collections.Generic;
 public class LocalRoom : MonoBehaviour
 {
     [SerializeField] private MultiplayerLocal multiplayerLocal;
-    [SerializeField] private TopicsLoader topicsLoader;
-    [SerializeField] private TextMeshProUGUI[] playerNames;
+    [SerializeField] private Topics topics;
     [SerializeField] private GameObject[] playerPanels;
     [SerializeField] private GameObject connectedPanelPrefab;
     [SerializeField] private TMP_Dropdown bundleDropdown;
+    private TextMeshProUGUI[] playerNames;
     private string assetBundleDirectory;
     private string selectedBundle;
 
@@ -19,13 +19,6 @@ public class LocalRoom : MonoBehaviour
     {
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
         multiplayerLocal.OnPlayerJoinedEvent += ReplacePanelWithConnected;
-        StartCoroutine(InitializeAndPopulateBundleDropdown());
-    }
-
-    // Inicia la carga de los temas y llena el ScrollView
-    private IEnumerator InitializeAndPopulateBundleDropdown()
-    {
-        yield return StartCoroutine(topicsLoader.InicializateTopics());
         PopulateBundleDropdown();
     }
 
@@ -39,7 +32,7 @@ public class LocalRoom : MonoBehaviour
         List<string> options = new List<string> { "Default" }; // Agregar "Default" como la primera opción
 
         // Agregar los bundles locales a las opciones del Dropdown
-        options.AddRange(topicsLoader.LocalTopicList);
+        options.AddRange(topics.LocalTopicList);
 
         // Actualizar el Dropdown con las nuevas opciones
         bundleDropdown.AddOptions(options);
@@ -97,5 +90,10 @@ public class LocalRoom : MonoBehaviour
 
         multiplayerLocal.OnPlayerJoinedEvent -= ReplacePanelWithConnected;
         StartCoroutine(GameData.Instance.NewGame(selectedBundle));
+    }
+
+    public void ShowPanel(bool visible)
+    {
+        gameObject.SetActive(visible);
     }
 }

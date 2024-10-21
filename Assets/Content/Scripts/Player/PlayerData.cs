@@ -150,9 +150,7 @@ public class PlayerData : MonoBehaviour
     {
         if (investments.Count == 0)
             return;
-
         List<PlayerInvestment> toRemove = new List<PlayerInvestment>();
-
         foreach (var investment in investments)
         {
             if (investment.Turns == 0)
@@ -200,7 +198,7 @@ public class PlayerData : MonoBehaviour
                 }
             }
             else
-            {
+            {   
                 int interestMount = (int)(expense.Amount * 0.05f);
                 expense.Amount += interestMount;
                 expense.Turns++;

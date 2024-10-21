@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic;
+using System.Globalization;
 
 [CreateAssetMenu(fileName = "IncomeCard", menuName = "Cards/IncomeCard")]
 public class IncomeCard : CardBase
@@ -8,13 +8,14 @@ public class IncomeCard : CardBase
     [Tooltip("Afecta al salario")] public bool affectSalary;
     [Tooltip("affectSalary = true: Aplica salaryChange al salario")] public float salaryChange;
     [Tooltip("affectSalary = false: Agrega Income al dinero")] public int income;
+    private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
     public override string GetFormattedText(int playerKFP)
     {
         if (affectSalary)
-            return $"{description}. Tu salario aumenta un {salaryChange * 100}%";
+            return $"{description}. Tu salario aumenta un <color=green>{salaryChange * 100}%</color>.";
         else
-            return $"{description}. Recibes: ${income}";
+            return $"{description}. Recibes <color=green>{income.ToString("C0", chileanCulture)}</color>.";
     }
 
     public override void ApplyEffect(PlayerData player, int capital = 0)

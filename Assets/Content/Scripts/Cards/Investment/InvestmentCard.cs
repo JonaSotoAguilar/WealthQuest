@@ -1,12 +1,14 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Globalization;
 
 [CreateAssetMenu(fileName = "InvestmentCard", menuName = "Cards/InvestmentCard")]
 public class InvestmentCard : CardBase
 {
-    [Min(2), Tooltip("Duracion de pago.")] public int duration;                             // Duración en turnos del costo recurrente
-    [Range(-1, 100), Tooltip("Porcentaje de cambio.")] public List<float> pctChange;         // Porcentaje de cambio anual
-    [Range(0, 1), Tooltip("Porcentaje de dividendos.")] public List<float> pctDividend;     // Porcentaje de dividendos anual
+    [Min(2), Tooltip("Duracion de pago.")] public int duration;                           
+    [Range(-1, 100), Tooltip("Porcentaje de cambio.")] public List<float> pctChange;        
+    [Range(0, 1), Tooltip("Porcentaje de dividendos.")] public List<float> pctDividend;
+    private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
 
     public override string GetFormattedText(int scoreKFP)
@@ -18,10 +20,12 @@ public class InvestmentCard : CardBase
     {
         if (capital <= 0)
             return;
+
         int dividend = (int)(capital * pctDividend[0]);
-        PlayerInvestment investment = new PlayerInvestment(duration, capital, dividend, pctChange, pctDividend);
+        PlayerInvestment investment = new PlayerInvestment(title, duration, capital, dividend, new List<float>(pctChange), new List<float>(pctDividend));
         player.CreateInvestment(investment);
     }
+
 
     public override void RemoveFromGameData()
     {
@@ -30,8 +34,8 @@ public class InvestmentCard : CardBase
 
     private void OnValidate()
     {
-        AdjustListSize(ref pctChange, duration, 0);  // Ajusta pctChange a la duración con un valor por defecto de 0
-        AdjustListSize(ref pctDividend, duration, 0);  // Ajusta pctDividend a la duración con un valor por defecto de 0
+        AdjustListSize(ref pctChange, duration, 0);  
+        AdjustListSize(ref pctDividend, duration, 0);  
     }
 
     private void AdjustListSize<T>(ref List<T> list, int newSize, T defaultValue)

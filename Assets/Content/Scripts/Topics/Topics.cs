@@ -4,24 +4,18 @@ using System.IO;
 using System.Collections;
 using UnityEngine.Networking;
 
-[System.Serializable]
-public class AssetBundleList
+[CreateAssetMenu(fileName = "Topics", menuName = "Scriptable Objects/Topics")]
+public class Topics : ScriptableObject
 {
-    public List<string> bundles;
-}
-
-public class TopicsLoader : MonoBehaviour
-{
-    [SerializeField] private string assetBundleDirectory; // Carpeta de los Asset Bundles
-    [SerializeField] private List<string> localTopicList; // Lista de bundles locales
-    [SerializeField] private List<string> remoteTopicList; // Lista de bundles disponibles en GitHub
+    [SerializeField] private List<string> localTopicList;
+    [SerializeField] private List<string> remoteTopicList;
+    private string assetBundleDirectory;
     private const string GitHubBaseUrl = "https://github.com/JonaSotoAguilar/WealthQuest/raw/Assets";
 
-    public List<string> LocalTopicList { get => localTopicList; }
-    public List<string> RemoteTopicList { get => remoteTopicList; }
-    public string AssetBundleDirectory { get => assetBundleDirectory; set => assetBundleDirectory = value; }
+    public List<string> LocalTopicList { get => localTopicList; set => localTopicList = value; }
+    public List<string> RemoteTopicList { get => remoteTopicList; set => remoteTopicList = value; }
 
-    private void Awake()
+    private void OnEnable()
     {
         localTopicList = new List<string>();
         remoteTopicList = new List<string>();
@@ -32,17 +26,7 @@ public class TopicsLoader : MonoBehaviour
             Directory.CreateDirectory(assetBundleDirectory);
         }
 
-        StartCoroutine(InicializateTopics());
-    }
-
-    // Método de inicialización de los temas desde GitHub
-    public IEnumerator InicializateTopics()
-    {
-        // Obtener lista de bundles locales
         InicializateLocalTopics();
-
-        // Obtener la lista de bundles remotos desde el archivo JSON
-        yield return StartCoroutine(FetchRemoteTopicList());
     }
 
     // Método para inicializar los temas locales
@@ -62,7 +46,7 @@ public class TopicsLoader : MonoBehaviour
     }
 
     // Método para obtener la lista de temas remotos desde un JSON alojado en GitHub
-    private IEnumerator FetchRemoteTopicList()
+    public IEnumerator InicializateRemoteTopics(System.Action<string> onTopicLoaded)
     {
         using (UnityWebRequest request = UnityWebRequest.Get(GitHubBaseUrl + "/assetBundles.json"))
         {
@@ -76,7 +60,15 @@ public class TopicsLoader : MonoBehaviour
             {
                 string jsonText = request.downloadHandler.text;
                 AssetBundleList bundleList = JsonUtility.FromJson<AssetBundleList>(jsonText);
-                remoteTopicList = bundleList.bundles;
+                remoteTopicList.Clear();
+
+                // Procesar cada bundle de la lista
+                foreach (string bundleName in bundleList.bundles)
+                {
+                    remoteTopicList.Add(bundleName);
+                    onTopicLoaded?.Invoke(bundleName);
+                    yield return null;
+                }
             }
         }
     }
@@ -108,4 +100,20 @@ public class TopicsLoader : MonoBehaviour
             }
         }
     }
-}
+
+    public bool DeleteLocalTopic(string bundleName)
+    {
+        string localPath = Path.Combine(assetBundleDirectory, bundleName);
+
+        // Verificar si el archivo existe
+        if (File.Exists(localPath))
+        {
+            File.Delete(localPath);
+            Debug.Log($"Archivo {bundleName} eliminado localmente.");
+            localTopicList.Remove(bundleName);
+            return true;
+        }
+
+        return false;
+    }
+}   

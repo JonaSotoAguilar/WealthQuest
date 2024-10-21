@@ -4,19 +4,21 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.IO;
+using UnityEngine.InputSystem;
 
 public class GameData : MonoBehaviour
 {
-    public static GameData Instance { get; private set; } // Instancia única de GameData
+    public static GameData Instance { get; private set; }
 
     [Header("Game State")]
     //private int gameID;
     private GameState gameState;
     private int yearsToPlay = 10;
-    private int currentYear;
+    [SerializeField] private int currentYear = 1;
 
     [Header("Players")]
-    private PlayerData[] players;
+    [SerializeField] private PlayerData[] players;
+    private PlayerInput[] playerInputs;
     private int initialPlayerIndex = 0;
     private int turnPlayer;
 
@@ -32,6 +34,7 @@ public class GameData : MonoBehaviour
     private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
     private string assetBundleDirectory;
     private string currentBundlePath;
+    private AssetBundle assetbundle;
 
     // TODO: Getters y Setters
     public GameState GameState { get => gameState; set => gameState = value; }
@@ -60,8 +63,11 @@ public class GameData : MonoBehaviour
             Destroy(gameObject);
         }
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
+        players = new PlayerData[4];
+        playerInputs = new PlayerInput[4];
     }
 
+    // TODO: Establecer el estado del juego
     public IEnumerator NewGame(string bundleName)
     {
         players = players.Where(p => p != null).ToArray();
@@ -71,7 +77,7 @@ public class GameData : MonoBehaviour
         else
             currentBundlePath = Path.Combine(assetBundleDirectory, bundleName);
 
-        yield return StartCoroutine(LoadDataFromBundle(currentBundlePath));
+        yield return StartCoroutine(LoadDataFromBundle());
         SceneManager.LoadScene("MultiplayerLocal");
     }
 
@@ -87,63 +93,89 @@ public class GameData : MonoBehaviour
 
     }
 
-    // Método para cargar los datos desde el Asset Bundle
-    private IEnumerator LoadDataFromBundle(string bundlePath)
+    // TODO: Obtener el directorio de los Asset Bundles
+    private IEnumerator LoadDataFromBundle()
     {
-        AssetBundleCreateRequest bundleRequest = AssetBundle.LoadFromFileAsync(bundlePath);
-        yield return bundleRequest;
-
-        AssetBundle bundle = bundleRequest.assetBundle;
-        if (bundle == null)
-        {
-            Debug.LogError("Error al cargar el Asset Bundle: " + bundlePath);
+        yield return LoadBundle();
+        if (assetbundle == null)
             yield break;
-        }
+        yield return LoadQuestionsFromBundle();
+        yield return LoadCardsFromBundle();
+        assetbundle.Unload(false);
+    }
 
-        // Cargar todas las ExpenseCards
+    private IEnumerator LoadBundle()
+    {
+        AssetBundleCreateRequest bundleRequest = AssetBundle.LoadFromFileAsync(currentBundlePath);
+        yield return bundleRequest;
+        assetbundle = bundleRequest.assetBundle;
+    }
+
+    private IEnumerator LoadCardsFromBundle()
+    {
+        yield return LoadExpenseCards(assetbundle);
+        yield return LoadInvestmentCards(assetbundle);
+        yield return LoadIncomeCards(assetbundle);
+        yield return LoadEventCards(assetbundle);
+    }
+
+    private IEnumerator LoadExpenseCards(AssetBundle bundle)
+    {
         AssetBundleRequest loadExpenseCardsRequest = bundle.LoadAllAssetsAsync<ExpenseCard>();
         yield return loadExpenseCardsRequest;
-        expenseCards = loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>().ToList();
+        if (expenseCards != null)
+            expenseCards.AddRange(loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>());
+        else
+            expenseCards = loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>().ToList();
+    }
 
-        // Cargar todas las InvestmentCards
+    private IEnumerator LoadInvestmentCards(AssetBundle bundle)
+    {
         AssetBundleRequest loadInvestmentCardsRequest = bundle.LoadAllAssetsAsync<InvestmentCard>();
         yield return loadInvestmentCardsRequest;
-        investmentCards = loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>().ToList();
+        if (investmentCards != null)
+            investmentCards.AddRange(loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>());
+        else
+            investmentCards = loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>().ToList();
+    }
 
-        // Cargar todas las IncomeCards
+    private IEnumerator LoadIncomeCards(AssetBundle bundle)
+    {
         AssetBundleRequest loadIncomeCardsRequest = bundle.LoadAllAssetsAsync<IncomeCard>();
         yield return loadIncomeCardsRequest;
-        incomeCards = loadIncomeCardsRequest.allAssets.OfType<IncomeCard>().ToList();
+        if (incomeCards != null)
+            incomeCards.AddRange(loadIncomeCardsRequest.allAssets.OfType<IncomeCard>());
+        else
+            incomeCards = loadIncomeCardsRequest.allAssets.OfType<IncomeCard>().ToList();
+    }
 
-        // Cargar todas las EventCards
+    private IEnumerator LoadEventCards(AssetBundle bundle)
+    {
         AssetBundleRequest loadEventCardsRequest = bundle.LoadAllAssetsAsync<EventCard>();
         yield return loadEventCardsRequest;
-        eventCards = loadEventCardsRequest.allAssets.OfType<EventCard>().ToList();
+        if (eventCards != null)
+            eventCards.AddRange(loadEventCardsRequest.allAssets.OfType<EventCard>());
+        else
+            eventCards = loadEventCardsRequest.allAssets.OfType<EventCard>().ToList();
+    }
 
-        // Cargar el archivo JSON de las preguntas
-        AssetBundleRequest loadJsonRequest = bundle.LoadAssetAsync<TextAsset>("Questions");
+    private IEnumerator LoadQuestionsFromBundle()
+    {
+        AssetBundleRequest loadJsonRequest = assetbundle.LoadAssetAsync<TextAsset>("Questions");
         yield return loadJsonRequest;
         jsonFile = loadJsonRequest.asset as TextAsset;
         if (jsonFile != null)
         {
-            LoadQuestionListFromJson(jsonFile);
+            QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(jsonFile.text);
+            questionList = new List<QuestionData>(questionJSON.questions);
         }
         else
         {
             Debug.LogError("No se encontró el archivo JSON en el Asset Bundle.");
         }
-
-        bundle.Unload(false); // Descargar el Asset Bundle de la memoria
     }
 
-    // Método para cargar las preguntas desde el archivo JSON
-    private void LoadQuestionListFromJson(TextAsset json)
-    {
-        QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(json.text);
-        questionList = new List<QuestionData>(questionJSON.questions);
-    }
-
-    // Selecciona una pregunta aleatoria de la lista de preguntas
+    // TODO: Funiones para obtener tarjetas y preguntas aleatorias
     public QuestionData GetRandomQuestion()
     {
         if (questionList != null && questionList.Count > 0)
@@ -154,16 +186,16 @@ public class GameData : MonoBehaviour
         }
         else
         {
-            return null;
+            LoadBundle();
+            LoadQuestionsFromBundle();
+            assetbundle.Unload(false);
+            return GetRandomQuestion();
         }
     }
 
-    // Selecciona tarjetas aleatorias de la lista y las retorna sin eliminarlas
     public List<ExpenseCard> GetRandomExpenseCards(int count)
     {
         List<ExpenseCard> selectedCards = new List<ExpenseCard>();
-
-        // Obtiene 2 cartas aleatorias de la lista de cartas de gasto diferentes
         if (expenseCards != null && expenseCards.Count > 0)
         {
             List<ExpenseCard> availableCards = new List<ExpenseCard>(expenseCards);
@@ -178,87 +210,61 @@ public class GameData : MonoBehaviour
         return selectedCards;
     }
 
-    // Selecciona tarjetas aleatorias de la lista de tarjetas de inversión y las retorna sin eliminarlas
     public List<InvestmentCard> GetRandomInvestmentCards(int count)
     {
+        PlayerData currentPlayer = Players[TurnPlayer];
         List<InvestmentCard> selectedCards = new List<InvestmentCard>();
+        List<InvestmentCard> availableCards = investmentCards
+            .Where(card => !currentPlayer.Investments.Any(inv => inv.NameInvestment == card.title))
+            .ToList();
+        
+        if (availableCards.Count == 0)
+            availableCards = new List<InvestmentCard>(investmentCards);
 
-        // Obtiene cartas aleatorias de la lista de cartas de inversión, asegurándose de que sean diferentes
-        if (investmentCards != null && investmentCards.Count > 0)
+        for (int i = 0; i < count; i++)
         {
-            List<InvestmentCard> availableCards = new List<InvestmentCard>(investmentCards);
-            for (int i = 0; i < count; i++)
-            {
-                if (availableCards.Count == 0)
-                {
-                    Debug.LogWarning("No hay suficientes tarjetas de inversión disponibles para seleccionar la cantidad solicitada.");
-                    break;
-                }
-                int randomIndex = Random.Range(0, availableCards.Count);
-                selectedCards.Add(availableCards[randomIndex]);
-                availableCards.RemoveAt(randomIndex); // Asegúrate de que las tarjetas seleccionadas sean diferentes
-            }
-        }
-        else
-        {
-            Debug.LogError("La lista de tarjetas de inversión está vacía o no existe.");
+            if (availableCards.Count == 0)
+                break;
+            int randomIndex = Random.Range(0, availableCards.Count);
+            selectedCards.Add(availableCards[randomIndex]);
+            availableCards.RemoveAt(randomIndex);
         }
 
         return selectedCards;
     }
 
-    // Selecciona tarjetas aleatorias de la lista de tarjetas de ingreso y las retorna sin eliminarlas
+
     public List<IncomeCard> GetRandomIncomeCards(int count)
     {
         List<IncomeCard> selectedCards = new List<IncomeCard>();
+        List<IncomeCard> availableCards = new List<IncomeCard>(incomeCards);
 
-        if (incomeCards != null && incomeCards.Count > 0)
+        for (int i = 0; i < count; i++)
         {
-            List<IncomeCard> availableCards = new List<IncomeCard>(incomeCards);
-            for (int i = 0; i < count; i++)
-            {
-                if (availableCards.Count == 0)
-                {
-                    Debug.LogWarning("No hay suficientes tarjetas de ingreso disponibles para seleccionar la cantidad solicitada.");
-                    break;
-                }
-                int randomIndex = Random.Range(0, availableCards.Count);
-                selectedCards.Add(availableCards[randomIndex]);
-                availableCards.RemoveAt(randomIndex); // Asegúrate de que las tarjetas seleccionadas sean diferentes
-            }
-        }
-        else
-        {
-            Debug.LogError("La lista de tarjetas de ingreso está vacía o no existe.");
+            if (availableCards.Count == 0)
+                break;
+            int randomIndex = Random.Range(0, availableCards.Count);
+            selectedCards.Add(availableCards[randomIndex]);
+            availableCards.RemoveAt(randomIndex);
         }
 
         return selectedCards;
     }
 
-    // Selecciona tarjetas aleatorias de la lista de tarjetas de evento y las retorna sin eliminarlas
     public List<EventCard> GetRandomEventCards(int count)
     {
         List<EventCard> selectedCards = new List<EventCard>();
+        List<EventCard> availableCards = new List<EventCard>(eventCards);
 
-        if (eventCards != null && eventCards.Count > 0)
+        for (int i = 0; i < count; i++)
         {
-            List<EventCard> availableCards = new List<EventCard>(eventCards);
-            for (int i = 0; i < count; i++)
-            {
-                if (availableCards.Count == 0)
-                {
-                    Debug.LogWarning("No hay suficientes tarjetas de evento disponibles para seleccionar la cantidad solicitada.");
-                    break;
-                }
-                int randomIndex = Random.Range(0, availableCards.Count);
-                selectedCards.Add(availableCards[randomIndex]);
-                availableCards.RemoveAt(randomIndex); // Asegúrate de que las tarjetas seleccionadas sean diferentes
-            }
+            if (availableCards.Count == 0)
+                break;
+            int randomIndex = Random.Range(0, availableCards.Count);
+            selectedCards.Add(availableCards[randomIndex]);
+            availableCards.RemoveAt(randomIndex);
         }
-        else
-        {
-            Debug.LogError("La lista de tarjetas de evento está vacía o no existe.");
-        }
+
 
         return selectedCards;
     }
