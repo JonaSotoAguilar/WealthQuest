@@ -4,7 +4,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-public class LocalRoom : MonoBehaviour
+public class LocalMultiRoom : MonoBehaviour
 {
     [SerializeField] private MultiplayerLocal multiplayerLocal;
     [SerializeField] private Topics topics;
