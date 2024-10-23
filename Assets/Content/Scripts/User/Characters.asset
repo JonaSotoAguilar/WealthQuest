@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ce43441f0bd3b94d803fc2294b8c128, type: 3}
+  m_Name: Characters
+  m_EditorClassIdentifier: 
+  characters:
+  - characterName: Beefy Casual
+    characterIcon: {fileID: 2800000, guid: 8f9f91a1bccbc7242b4c42bb7ae4e3d2, type: 3}
+    characterPrefabs: {fileID: 857604319386126462, guid: 4f804ad0ed528fa4484d29fde7f9f22e, type: 3}
+  - characterName: Beefy Casual 2
+    characterIcon: {fileID: 2800000, guid: 484708ad00772824c8ff678c35cd3ded, type: 3}
+    characterPrefabs: {fileID: 857604319386126462, guid: 4f804ad0ed528fa4484d29fde7f9f22e, type: 3}

@@ -4,7 +4,7 @@ using System.IO;
 using System.Collections;
 using UnityEngine.Networking;
 
-[CreateAssetMenu(fileName = "Topics", menuName = "Scriptable Objects/Topics")]
+[CreateAssetMenu(fileName = "Topics", menuName = "Topics")]
 public class Topics : ScriptableObject
 {
     [SerializeField] private List<string> localTopicList;
@@ -116,4 +116,4 @@ public class Topics : ScriptableObject
 
         return false;
     }
-}   
+}

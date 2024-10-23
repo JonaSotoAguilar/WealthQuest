@@ -230,6 +230,7 @@ MonoBehaviour:
   cardGrid: {fileID: 1620650022236994069}
   cardPrefab: {fileID: 7861086620489467455, guid: a25307080ade85e41af15243f298ea87, type: 3}
   investPanel: {fileID: 3653828842012520626}
+  currentPlayer: {fileID: 0}
 --- !u!1 &1147038046068589756
 GameObject:
   m_ObjectHideFlags: 0
@@ -2491,6 +2492,7 @@ MonoBehaviour:
   expenseTurn: 0
   investments: []
   expenses: []
+  playerHUD: {fileID: 0}
 --- !u!114 &2663320001883389202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2822,39 +2824,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 857604319386126462, guid: 4f804ad0ed528fa4484d29fde7f9f22e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2002541767149426460}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4f804ad0ed528fa4484d29fde7f9f22e, type: 3}
---- !u!1 &5070002292367009735 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 857604319386126462, guid: 4f804ad0ed528fa4484d29fde7f9f22e, type: 3}
-  m_PrefabInstance: {fileID: 5600954754754310073}
-  m_PrefabAsset: {fileID: 0}
---- !u!136 &2002541767149426460
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5070002292367009735}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
 --- !u!4 &5555072035543317885 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 48697615686668996, guid: 4f804ad0ed528fa4484d29fde7f9f22e, type: 3}
