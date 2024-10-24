@@ -27,4 +27,9 @@ public class CharactersDatabase : ScriptableObject
     {
         return characters[index];
     }
+
+    public GameObject GetModel(int index)
+    {
+        return characters[index].characterPrefabs;
+    }
 }

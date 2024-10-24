@@ -42,8 +42,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        InitPositions();
-        InitTurn();
+        //InitPositions();
+        //InitTurn();
     }
 
     public void InitPositions()

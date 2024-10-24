@@ -14,6 +14,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Animator playerAnimator;
 
     public PlayerDice PlayerDice { get => playerDice; }
+    public PlayerData PlayerData { get => playerData; }
+    public PlayerInput PlayerInput { get => playerInput; set => playerInput = value; }
 
     public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input)
     {
@@ -35,7 +37,7 @@ public class PlayerController : MonoBehaviour
         playerMovement.InitPosition();
     }
 
-    public void EnableDice() 
+    public void EnableDice()
     {
         playerDice.ShowDice(true);
         playerInput.SwitchCurrentActionMap("Player");

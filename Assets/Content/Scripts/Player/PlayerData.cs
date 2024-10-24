@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Globalization;
 
+[System.Serializable]
 public class PlayerData : MonoBehaviour
 {
     [SerializeField] private int index;                             // Índice del jugador
@@ -23,6 +24,9 @@ public class PlayerData : MonoBehaviour
     [SerializeField] private PlayerHUD playerHUD;                   // HUD del jugador
     private CultureInfo chileanCulture = new CultureInfo("es-CL");  // Cultura chilena para formato de moneda
 
+    [Header("Player Model")]
+    [SerializeField] private string modelName;                        // Modelo del jugador
+
     public int Index { get => index; set => index = value; }
     public string PlayerName { get => playerName; set => playerName = value; }
     public int CurrentPosition { get => currentPosition; set => currentPosition = value; }
@@ -38,6 +42,24 @@ public class PlayerData : MonoBehaviour
     public List<PlayerExpense> Expenses { get => expenses; }
 
     public PlayerHUD PlayerHUD { get => playerHUD; set => playerHUD = value; }
+
+    public void NewPlayer(int playerIndex, string name, string model)
+    {
+        index = playerIndex;
+        playerName = name;
+        modelName = model;
+
+        currentPosition = 0;
+        scoreKFP = 0;
+        money = 10000;
+        invest = 0;
+        debt = 0;
+        salary = 0;
+        incomeTurn = 0;
+        expenseTurn = 0;
+        investments = new List<PlayerInvestment>();
+        expenses = new List<PlayerExpense>();
+    }
 
     // Inicializar datos del jugador
     public void InitializePlayer(int playerIndex, string name, int position,
@@ -198,7 +220,7 @@ public class PlayerData : MonoBehaviour
                 }
             }
             else
-            {   
+            {
                 int interestMount = (int)(expense.Amount * 0.05f);
                 expense.Amount += interestMount;
                 expense.Turns++;

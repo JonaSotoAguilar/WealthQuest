@@ -44,7 +44,6 @@ public class CardsPanel : MonoBehaviour
         {
             foreach (var card in selectedCards)
                 SetupCard(card);
-            playerEventSystem.SetSelectedGameObject(cardGrid.GetChild(0).gameObject);
             ShowPanel(true);
             if (selectedCards[0] is InvestmentCard)
             {
@@ -52,6 +51,7 @@ public class CardsPanel : MonoBehaviour
                 investPanel.MoneyPlayer = currentPlayer.Money;
                 investPanel.ShowPanel(true);
             }
+            playerEventSystem.SetSelectedGameObject(cardGrid.GetChild(0).gameObject);
         }
         else
             Debug.LogError("No hay suficientes tarjetas disponibles.");

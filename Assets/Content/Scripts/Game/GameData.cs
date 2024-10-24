@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.IO;
-using UnityEngine.InputSystem;
 
 public class GameData : MonoBehaviour
 {
@@ -18,7 +17,6 @@ public class GameData : MonoBehaviour
 
     [Header("Players")]
     [SerializeField] private PlayerData[] players;
-    private PlayerInput[] playerInputs;
     private int initialPlayerIndex = 0;
     private int turnPlayer;
 
@@ -64,13 +62,12 @@ public class GameData : MonoBehaviour
         }
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
         players = new PlayerData[4];
-        playerInputs = new PlayerInput[4];
     }
 
     // TODO: Establecer el estado del juego
     public IEnumerator NewGame(string bundleName)
     {
-        players = players.Where(p => p != null).ToArray();
+        //players = players.Where(p => p != null).ToArray();
 
         if (bundleName == "Default")
             currentBundlePath = defaultBundlePath;
