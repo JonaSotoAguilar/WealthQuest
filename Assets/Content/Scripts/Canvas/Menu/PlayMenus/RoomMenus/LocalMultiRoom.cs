@@ -11,12 +11,13 @@ using System.Collections;
 
 public class LocalMultiRoom : MonoBehaviour
 {
-    [SerializeField] private GameObject eventSystem;
+    [SerializeField] private GameData gameData;
     [Header("Topics")]
     [SerializeField] private Topics topics;
     [SerializeField] private TMP_Dropdown bundleDropdown;
 
     [Header("Players Panel")]
+    [SerializeField] private Button startButton;
     [SerializeField] private GameObject playerDisconnectedPrefab;
     [SerializeField] private GameObject parentPlayerPanel;
     [SerializeField] private List<GameObject> playerPanels;
@@ -39,6 +40,7 @@ public class LocalMultiRoom : MonoBehaviour
         PopulateBundleDropdown();
     }
 
+    // Método para llenar el dropdown con los temas disponibles
     private void PopulateBundleDropdown()
     {
         bundleDropdown.ClearOptions();
@@ -49,11 +51,13 @@ public class LocalMultiRoom : MonoBehaviour
         bundleDropdown.value = 0;
     }
 
+    // Método para seleccionar un tema
     public void OnBundleSelected(int index)
     {
         selectedBundle = bundleDropdown.options[index].text;
     }
 
+    //TODO: Conexion de jugadores
     public void OnEnable()
     {
         playerInputManager.EnableJoining();
@@ -70,6 +74,11 @@ public class LocalMultiRoom : MonoBehaviour
         int index = playerInput.playerIndex;
 
         if (index == 0) return;
+        if ((gameData.PlayersData.Count - 1) == index)
+        {
+            startButton.interactable = true;
+            playerInputManager.DisableJoining();
+        }
 
         playerInput.actions.FindActionMap("Player").Disable();
         playerInput.SwitchCurrentActionMap("UI");
@@ -88,11 +97,19 @@ public class LocalMultiRoom : MonoBehaviour
         CharacterSelector character = newPanel.GetComponent<CharacterSelector>();
         character.UpdateIndex(index);
         characters.Add(character);
+
+        // Revisa si el jugador ya tiene un personaje seleccionado
+        if (gameData.PlayersData.Count > index)
+        {
+            character.UpdateName(gameData.PlayersData[index].PlayerName);
+            character.UpdateCharacter(gameData.PlayersData[index].CharacterID);
+            character.DesactiveChanges();
+        }
     }
 
+    //FIXME: Limpiar GameData, reiniciar temas
     public void DisconnectPlayers()
     {
-        var panelsToRemove = playerPanels.Skip(1).ToList();
         for (int i = 1; i < playerPanels.Count; i++)
         {
             var playerPanel = playerPanels[i];
@@ -100,12 +117,22 @@ public class LocalMultiRoom : MonoBehaviour
             Destroy(playerPanel);
         }
         playerPanels.RemoveRange(1, playerPanels.Count - 1);
-        for (int i = 1; i < panelsToRemove.Count + 1; i++)
+        for (int i = 1; i < 4; i++)
         {
             var disconnectedPanel = Instantiate(playerDisconnectedPrefab, parentPlayerPanel.transform);
             disconnectedPanel.name = "PlayerDisconnected_" + i;
             playerPanels.Add(disconnectedPanel);
         }
+    }
+
+    public void ClearGameData()
+    {
+        Debug.Log("Clear Game Data: " + gameData.PlayersData.Count);
+        if (gameData.PlayersData.Count > 0) gameData.ResetGameData();
+        bundleDropdown.interactable = true;
+        bundleDropdown.value = 0;
+        selectedBundle = "Default";
+        startButton.interactable = true;
     }
 
     public void DeletePlayer(CharacterSelector character)
@@ -123,23 +150,54 @@ public class LocalMultiRoom : MonoBehaviour
         for (int i = 0; i < characters.Count; i++) characters[i].UpdateIndex(i);
     }
 
+    // TODO: Cargar el juego
+
+
     public void StartGame()
     {
-        if (string.IsNullOrEmpty(selectedBundle))
-        {
-            Debug.LogWarning("Debe seleccionarse un tema (Asset Bundle) para iniciar el juego.");
-            return;
-        }
-        SavePlayerInputs();
+        StartCoroutine(InitGame());
+    }
 
-        StartCoroutine(GameData.Instance.NewGame(selectedBundle));
+    private IEnumerator InitGame()
+    {
+        SavePlayerInputs();
+        if (gameData.PlayersData.Count == 0) yield return gameData.NewGame(selectedBundle);
+        gameData.StartGame();
+    }
+
+    public void LoadGame()
+    {
+        StartCoroutine(LoadData());
+    }
+
+    private IEnumerator LoadData()
+    {
+        yield return SaveSystem.LoadGame(gameData, 1);
+        // Bloquear seleccion de tema
+        selectedBundle = gameData.BundleName;
+        bundleDropdown.value = topics.LocalTopicList.IndexOf(gameData.BundleName);
+        bundleDropdown.interactable = false;
+        startButton.interactable = false;
+        // Limpiar jugadores exededentes
+        int maxPlayers = gameData.PlayersData.Count;
+        for (int i = playerPanels.Count - 1; i >= maxPlayers; i--)
+        {
+            Destroy(playerPanels[i]);
+            playerPanels.RemoveAt(i);
+        }
+        // Jugador principal
+        characters[0].UpdateName(gameData.PlayersData[0].PlayerName);
+        characters[0].UpdateCharacter(gameData.PlayersData[0].CharacterID);
+        characters[0].DesactiveChanges();
+        yield return null;
+        // StartCoroutine(gameData.StartGame());
     }
 
     public void SavePlayerInputs()
     {
         playerStorage.ClearData();
 
-        // Usuario principal
+        // Jugador principal
         var playerInput = userInput;
         var device = playerInput.devices.FirstOrDefault();
         var controlScheme = playerInput.currentControlScheme;
@@ -166,14 +224,9 @@ public class LocalMultiRoom : MonoBehaviour
         }
     }
 
-
+    //TODO: Mostrar y ocultar el panel
     public void ShowPanel(bool visible)
     {
         gameObject.SetActive(visible);
-    }
-
-    public void ActiveEventSystem(bool active)
-    {
-        eventSystem.SetActive(active);
     }
 }

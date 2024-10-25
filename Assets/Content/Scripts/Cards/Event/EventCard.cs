@@ -21,9 +21,9 @@ public class EventCard : CardBase
     }
 
 
-    public override void ApplyEffect(PlayerData player, int capital = 0)
+    public override void ApplyEffect(PlayerController player, int capital = 0)
     {
-        foreach (PlayerData p in GameData.Instance.Players)
+        foreach (PlayerController p in GameManager.Instance.Players)
         {
             if (amount > 0)
                 p.ChangeMoney(amount);
@@ -37,6 +37,6 @@ public class EventCard : CardBase
 
     public override void RemoveFromGameData()
     {
-        GameData.Instance.EventCards.Remove(this);
+        GameManager.Instance.GameData.EventCards.Remove(this);
     }
 }

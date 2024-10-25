@@ -18,11 +18,11 @@ public class IncomeCard : CardBase
             return $"{description}. Recibes <color=green>{income.ToString("C0", chileanCulture)}</color>.";
     }
 
-    public override void ApplyEffect(PlayerData player, int capital = 0)
+    public override void ApplyEffect(PlayerController player, int capital = 0)
     {
         if (affectSalary)
         {
-            int newSalary = (int)(player.Salary * (1 + salaryChange));
+            int newSalary = (int)(player.PlayerData.Salary * (1 + salaryChange));
             player.ChangeSalary(newSalary);
         }
         else
@@ -31,7 +31,8 @@ public class IncomeCard : CardBase
 
     public override void RemoveFromGameData()
     {
-        GameData.Instance.IncomeCards.Remove(this);
+
+        GameManager.Instance.GameData.IncomeCards.Remove(this);
     }
 
     private void OnValidate()

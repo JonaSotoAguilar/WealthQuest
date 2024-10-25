@@ -8,8 +8,7 @@ public class NewPlayer
 {
     public int index;
     public string name;
-    public Texture icon;
-    public GameObject model;
+    public Character model;
     public InputDevice device;
     public string controlScheme;
 }
@@ -37,8 +36,7 @@ public class PlayerStorage : ScriptableObject
         {
             index = index,
             name = playerName,
-            model = character.characterPrefabs,
-            icon = character.characterIcon,
+            model = character,
             device = device,
             controlScheme = controlScheme
         };
@@ -46,8 +44,6 @@ public class PlayerStorage : ScriptableObject
         players.Add(newPlayer);
         Debug.Log($"Jugador {newPlayer.name} agregado con el dispositivo: {device.displayName} y esquema de control: {controlScheme}");
     }
-
-
 
     // Método para limpiar los datos almacenados
     public void ClearData()

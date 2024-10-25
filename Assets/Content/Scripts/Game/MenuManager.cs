@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using UnityEngine.SceneManagement;
+using System.Collections;
+using System.IO;
 
 public class MenuManager : MonoBehaviour
 {
-    public void StartGame()
-    {
-        // Cargar escena de juego
-        //UnityEngine.SceneManagement.SceneManager.LoadScene("Game");
-    }
+   [SerializeField] private GameData gameData;
+
+
 }

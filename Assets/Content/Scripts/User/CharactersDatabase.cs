@@ -4,6 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class Character
 {
+    public int characterID;
     public string characterName;
     public Texture characterIcon;
     public GameObject characterPrefabs;

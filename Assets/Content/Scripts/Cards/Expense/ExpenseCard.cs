@@ -35,9 +35,9 @@ public class ExpenseCard : CardBase
         return "Sin costo."; // En caso de que no haya ni costo inmediato ni recurrente
     }
 
-    public override void ApplyEffect(PlayerData player, int capital = 0)
+    public override void ApplyEffect(PlayerController player, int capital = 0)
     {
-        bool hasDiscount = player.ScoreKFP >= KFPForDiscount;
+        bool hasDiscount = player.PlayerData.ScoreKFP >= KFPForDiscount;
         int finalCapital = hasDiscount ? Mathf.CeilToInt(cost * (1 - discounted)) : cost;
         PlayerExpense expense = new PlayerExpense(duration, finalCapital);
         player.CreateExpense(expense, expense.Turns > 1);
@@ -45,6 +45,6 @@ public class ExpenseCard : CardBase
 
     public override void RemoveFromGameData()
     {
-        GameData.Instance.ExpenseCards.Remove(this);
+        GameManager.Instance.GameData.ExpenseCards.Remove(this);
     }
 }

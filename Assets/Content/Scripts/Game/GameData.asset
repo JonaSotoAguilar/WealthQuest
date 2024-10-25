@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ce9ec684011ced4cb79a6af44cfb8e3, type: 3}
+  m_Name: GameData
+  m_EditorClassIdentifier: 
+  gameID: 0
+  gameState: 0
+  yearsToPlay: 10
+  currentYear: 1
+  players:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  initialPlayerIndex: 0
+  turnPlayer: 0
+  questionList: []
+  expenseCards: []
+  investmentCards: []
+  incomeCards: []
+  eventCards: []
+  jsonFile: {fileID: 0}
+  defaultBundlePath: Assets/Bundles/DefaultBundle/defaultbundle
+  assetBundleDirectory: C:/Users/jonas/AppData/LocalLow/InTeractiOn/WealthQuest\AssetBundles
+  currentBundlePath: 
+  assetbundle: {fileID: 0}

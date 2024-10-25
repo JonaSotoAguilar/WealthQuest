@@ -19,9 +19,9 @@ public class PlayerMovement : MonoBehaviour
 
     public IEnumerator MovePlayer(int steps, PlayerData player)
     {
-        if (GameManager.Instance.Squares.SquareCount > 0)
+        if (GameManager.Instance.SquareList.Length > 0)
         {
-            int remainingSquares = GameManager.Instance.Squares.SquareCount - player.CurrentPosition - 1;
+            int remainingSquares = GameManager.Instance.SquareList.Length - player.CurrentPosition - 1;
             steps = Mathf.Min(steps, remainingSquares);
             yield return StartCoroutine(Move(steps, player));
             direction = Vector2.zero;
@@ -40,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
         {
             player.CurrentPosition++;
             Vector3 initialPosition = transform.position;
-            Transform squareTransform = GameManager.Instance.Squares.Squares[player.CurrentPosition];
+            Transform squareTransform = GameManager.Instance.SquareList[player.CurrentPosition];
             Vector3 positionCenterBox = squareTransform.position;
             RaycastHit hit;
             Vector3 rayStart = positionCenterBox + Vector3.up * 10;
@@ -50,8 +50,8 @@ public class PlayerMovement : MonoBehaviour
                 Vector3 destinyPosition = hit.point + cornerOffset;
                 Vector3 movementDirection = (destinyPosition - initialPosition).normalized;
                 Quaternion targetRotation = Quaternion.LookRotation(movementDirection);
-                playerAnimator.SetFloat("X", 0); 
-                playerAnimator.SetFloat("Y", 1); 
+                playerAnimator.SetFloat("X", 0);
+                playerAnimator.SetFloat("Y", 1);
                 float time = 0f;
                 while (time < 1f)
                 {
@@ -70,15 +70,15 @@ public class PlayerMovement : MonoBehaviour
 
     public void InitPosition()
     {
-        Transform squareTransform = GameManager.Instance.Squares.Squares[0];
+        Transform squareTransform = GameManager.Instance.SquareList[0];
         Vector3 positionCenterBox = squareTransform.position;
         RaycastHit hit;
         Vector3 rayStart = positionCenterBox + Vector3.up * 10;
 
         if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity, groundLayerMask))
         {
-            Vector3 destinyPosition = hit.point + cornerOffset; 
-            transform.position = destinyPosition; 
+            Vector3 destinyPosition = hit.point + cornerOffset;
+            transform.position = destinyPosition;
             transform.forward = squareTransform.forward;
         }
         else

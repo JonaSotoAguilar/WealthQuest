@@ -5,33 +5,34 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.IO;
 
-public class GameData : MonoBehaviour
+[CreateAssetMenu(fileName = "GameData", menuName = "Game/GameData", order = 1)]
+public class GameData : ScriptableObject
 {
-    public static GameData Instance { get; private set; }
-
     [Header("Game State")]
-    //private int gameID;
-    private GameState gameState;
-    private int yearsToPlay = 10;
+    [SerializeField] private int gameID;
+    [SerializeField] private string dateGame;
+    [SerializeField] private GameState gameState;
+    [SerializeField] private int yearsToPlay = 10;
     [SerializeField] private int currentYear = 1;
 
     [Header("Players")]
-    [SerializeField] private PlayerData[] players;
-    private int initialPlayerIndex = 0;
-    private int turnPlayer;
+    [SerializeField] private List<PlayerData> playersData = new List<PlayerData>();
+    [SerializeField] private int initialPlayerIndex = 0;
+    [SerializeField] private int turnPlayer;
 
     [Header("Cards & Questions")]
-    private List<QuestionData> questionList;
-    private List<ExpenseCard> expenseCards;
-    private List<InvestmentCard> investmentCards;
-    private List<IncomeCard> incomeCards;
-    private List<EventCard> eventCards;
-    private TextAsset jsonFile;
+    [SerializeField] private List<QuestionData> questionList;
+    [SerializeField] private List<ExpenseCard> expenseCards;
+    [SerializeField] private List<InvestmentCard> investmentCards;
+    [SerializeField] private List<IncomeCard> incomeCards;
+    [SerializeField] private List<EventCard> eventCards;
+    [SerializeField] private TextAsset jsonFile;
 
     [Header("Asset Bundle Settings")]
-    private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
-    private string assetBundleDirectory;
-    private string currentBundlePath;
+    [SerializeField] private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
+    [SerializeField] private string assetBundleDirectory;
+    [SerializeField] private string currentBundlePath;
+    [SerializeField] private string bundleName;
     private AssetBundle assetbundle;
 
     // TODO: Getters y Setters
@@ -39,7 +40,7 @@ public class GameData : MonoBehaviour
     public int YearsToPlay { get => yearsToPlay; set => yearsToPlay = value; }
     public int CurrentYear { get => currentYear; set => currentYear = value; }
 
-    public PlayerData[] Players { get => players; set => players = value; }
+    public List<PlayerData> PlayersData { get => playersData; set => playersData = value; }
     public int InitialPlayerIndex { get => initialPlayerIndex; set => initialPlayerIndex = value; }
     public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
 
@@ -49,45 +50,29 @@ public class GameData : MonoBehaviour
     public List<IncomeCard> IncomeCards { get => incomeCards; set => incomeCards = value; }
     public List<EventCard> EventCards { get => eventCards; set => eventCards = value; }
 
-    private void Awake()
+    public string BundleName { get => bundleName; set => bundleName = value; }
+
+    private void OnEnable()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
-        players = new PlayerData[4];
+        playersData = new List<PlayerData>();
     }
 
-    // TODO: Establecer el estado del juego
-    public IEnumerator NewGame(string bundleName)
+    // TODO: Crear una nueva partida
+    public IEnumerator NewGame(string bundle)
     {
-        //players = players.Where(p => p != null).ToArray();
-
+        bundleName = bundle;
         if (bundleName == "Default")
             currentBundlePath = defaultBundlePath;
         else
             currentBundlePath = Path.Combine(assetBundleDirectory, bundleName);
 
-        yield return StartCoroutine(LoadDataFromBundle());
+        yield return LoadDataFromBundle();
+    }
+
+    public void StartGame()
+    {
         SceneManager.LoadScene("MultiplayerLocal");
-    }
-
-    // Guardar el juego
-    public void SaveGame()
-    {
-        // Implementación de guardado
-    }
-
-    // Cargar el juego
-    public void LoadGame()
-    {
-
     }
 
     // TODO: Obtener el directorio de los Asset Bundles
@@ -209,12 +194,12 @@ public class GameData : MonoBehaviour
 
     public List<InvestmentCard> GetRandomInvestmentCards(int count)
     {
-        PlayerData currentPlayer = Players[TurnPlayer];
+        PlayerData currentPlayer = playersData[TurnPlayer];
         List<InvestmentCard> selectedCards = new List<InvestmentCard>();
         List<InvestmentCard> availableCards = investmentCards
             .Where(card => !currentPlayer.Investments.Any(inv => inv.NameInvestment == card.title))
             .ToList();
-        
+
         if (availableCards.Count == 0)
             availableCards = new List<InvestmentCard>(investmentCards);
 
@@ -229,7 +214,6 @@ public class GameData : MonoBehaviour
 
         return selectedCards;
     }
-
 
     public List<IncomeCard> GetRandomIncomeCards(int count)
     {
@@ -266,5 +250,30 @@ public class GameData : MonoBehaviour
         return selectedCards;
     }
 
+    //TODO: Limpiar los datos de los jugadores
+    public void ResetGameData()
+    {
+        gameID = 0;
+        dateGame = "";
+        gameState = GameState.EnCurso;
+        yearsToPlay = 10;
+        currentYear = 1;
 
+        playersData = new List<PlayerData>();
+        initialPlayerIndex = 0;
+        turnPlayer = 0;
+
+        questionList = new List<QuestionData>();
+        expenseCards = new List<ExpenseCard>();
+        investmentCards = new List<InvestmentCard>();
+        incomeCards = new List<IncomeCard>();
+        eventCards = new List<EventCard>();
+        jsonFile = null;
+
+        defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
+        assetBundleDirectory = "";
+        currentBundlePath = "";
+        bundleName = "";
+        assetbundle = null;
+    }
 }

@@ -1,23 +1,24 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
-using System.Linq;
 using System.Collections;
-using UnityEditor;
-
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [Header("Game Components")]
-    [SerializeField] private SquareLoader squares;
+    [SerializeField] private GameData gameData;
     [SerializeField] private CameraManager cameras;
+    [SerializeField] private Transform[] squareList;
 
     [Header("Player")]
-    private PlayerController currentPlayer;
+    [SerializeField] private List<PlayerController> players;
+    [SerializeField] private PlayerController currentPlayer;
 
-    public SquareLoader Squares { get => squares; }
-    public CameraManager Cameras { get => cameras; }
+    public Transform[] SquareList { get => squareList; set => squareList = value; }
+    public GameData GameData { get => gameData; set => gameData = value; }
+    public List<PlayerController> Players { get => players; set => players = value; }
+    public PlayerController CurrentPlayer { get => currentPlayer; set => currentPlayer = value; }
 
     // Singleton
     private void Awake()
@@ -26,38 +27,28 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            InitComponents();
         }
         else
         {
             Destroy(gameObject);
         }
+        InitializeSquares();
+        Players = new List<PlayerController>();
     }
 
-    private void InitComponents()
+    private void InitializeSquares()
     {
-        squares = FindFirstObjectByType<SquareLoader>();
-        cameras = FindFirstObjectByType<CameraManager>();
-    }
-
-    private void Start()
-    {
-        //InitPositions();
-        //InitTurn();
-    }
-
-    public void InitPositions()
-    {
-        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        foreach (var player in players)
+        Transform containerSquares = GameObject.Find("Squares").transform;
+        squareList = new Transform[containerSquares.childCount];
+        for (int i = 0; i < squareList.Length; i++)
         {
-            player.InitPosition();
+            squareList[i] = containerSquares.GetChild(i);
         }
     }
 
     public void InitTurn()
     {
-        currentPlayer = GameData.Instance.Players.FirstOrDefault(p => p.Index == GameData.Instance.TurnPlayer).GetComponent<PlayerController>();
+        currentPlayer = players[gameData.InitialPlayerIndex];
         cameras.CurrentCamera(currentPlayer.transform);
         currentPlayer.EnableDice();
     }
@@ -65,7 +56,7 @@ public class GameManager : MonoBehaviour
     public IEnumerator UpdateTurn()
     {
         NextPlayer();
-        if (GameData.Instance.InitialPlayerIndex == GameData.Instance.TurnPlayer)
+        if (gameData.InitialPlayerIndex == gameData.TurnPlayer)
             yield return FinishYear();
         yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
         currentPlayer.EnableDice();
@@ -73,30 +64,27 @@ public class GameManager : MonoBehaviour
 
     public void NextPlayer()
     {
-        var players = GameData.Instance.Players;
-        int turnPlayer = (GameData.Instance.TurnPlayer + 1) % players.Length;
-        currentPlayer = players.FirstOrDefault(p => p.Index == turnPlayer).GetComponent<PlayerController>();
-        GameData.Instance.TurnPlayer = turnPlayer;
+        gameData.TurnPlayer = (gameData.TurnPlayer + 1) % players.Count;
+        currentPlayer = players[gameData.TurnPlayer];
     }
 
     public IEnumerator FinishYear()
     {
-        int newYear = GameData.Instance.CurrentYear + 1;
-        if (newYear > GameData.Instance.YearsToPlay)
+        int newYear = gameData.CurrentYear + 1;
+        if (newYear > gameData.YearsToPlay)
         {
-            GameData.Instance.GameState = GameState.Finalizado;
+            gameData.GameState = GameState.Finalizado;
             yield return null;
         }
         else
         {
-            var players = GameData.Instance.Players;
             foreach (var player in players)
             {
                 player.ProcessIncome();
                 player.ProcessInvestments();
                 player.ProcessRecurrentExpenses();
             }
-            GameData.Instance.CurrentYear = newYear;
+            gameData.CurrentYear = newYear;
         }
     }
 }

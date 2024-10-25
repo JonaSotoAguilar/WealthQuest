@@ -2289,7 +2289,6 @@ GameObject:
   - component: {fileID: 1984290710595590507}
   - component: {fileID: 2477964767844041963}
   - component: {fileID: 1042298151875055361}
-  - component: {fileID: 8430738857193635572}
   - component: {fileID: 2663320001883389202}
   m_Layer: 0
   m_Name: Player
@@ -2463,36 +2462,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfaed4e8a5dafc4994aefa77b5d3054, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerData: {fileID: 8430738857193635572}
+  playerData:
+    index: 0
+    playerName: 
+    currentPosition: 0
+    scoreKFP: 0
+    money: 0
+    invest: 0
+    debt: 0
+    salary: 0
+    incomeTurn: 0
+    expenseTurn: 0
+    investments: []
+    expenses: []
+    modelName: 
   playerInput: {fileID: 2477964767844041963}
   playerMovement: {fileID: 2663320001883389202}
   playerCanvas: {fileID: 4019174252073527022}
   playerDice: {fileID: 5477123212736769690}
   playerAnimator: {fileID: 0}
---- !u!114 &8430738857193635572
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8703643946310182916}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2230fc59f9752994f8f35748d18b8be0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  index: 0
-  scoreKFP: 0
-  money: 0
-  invest: 0
-  debt: 0
-  salary: 0
-  incomeTurn: 0
-  expenseTurn: 0
-  investments: []
-  expenses: []
   playerHUD: {fileID: 0}
-  playerModel: {fileID: 0}
 --- !u!114 &2663320001883389202
 MonoBehaviour:
   m_ObjectHideFlags: 0

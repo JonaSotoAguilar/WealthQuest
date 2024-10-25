@@ -1386,8 +1386,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   index: 0
   profile: {fileID: 11400000, guid: 6061f3217b5fe734faaeb457771b9ed6, type: 2}
+  DeletePlayer: {fileID: 3680978387385258926}
   characterDB: {fileID: 11400000, guid: 5cab4728488ff544c9e750bc6ef6b5c7, type: 2}
   imageCharacter: {fileID: 5012075241257633005}
+  nextCharacter: {fileID: 6959257170683190382}
+  previousCharacter: {fileID: 8056043722481448976}
   nameInput: {fileID: 9205816505825222929}
   changeName: {fileID: 4456774597073186164}
   playerName: Jugador

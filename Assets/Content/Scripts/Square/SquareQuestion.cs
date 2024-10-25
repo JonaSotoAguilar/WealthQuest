@@ -6,10 +6,10 @@ public class SquareQuestion : Square
     private PlayerCanvas canvasPlayer;
 
     // Implementación de ActiveSquare como una corrutina
-    public override IEnumerator ActiveSquare(PlayerData player, PlayerCanvas canvas)
+    public override IEnumerator ActiveSquare(PlayerController player)
     {
-        canvasPlayer = canvas;
-        QuestionData selectedQuestion = GameData.Instance.GetRandomQuestion();
+        canvasPlayer = player.PlayerCanvas;
+        QuestionData selectedQuestion = GameManager.Instance.GameData.GetRandomQuestion();
 
         if (selectedQuestion != null)
         {

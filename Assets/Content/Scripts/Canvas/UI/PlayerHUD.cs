@@ -23,16 +23,16 @@ public class PlayerHUD : MonoBehaviour
     public TextMeshProUGUI Income { get => income; set => income = value; }
     public TextMeshProUGUI Expense { get => expense; set => expense = value; }
 
-    public void InitHUD(PlayerData player)
+    public void InitHUD(PlayerController player)
     {
         CultureInfo chileanCulture = new CultureInfo("es-CL");
 
-        playerName.text = player.PlayerName;
-        kpf.text = player.ScoreKFP.ToString(); 
-        money.text = player.Money.ToString("C0", chileanCulture);
-        invest.text = player.Invest.ToString("C0", chileanCulture);
-        debt.text = player.Debt.ToString("C0", chileanCulture);
-        income.text = player.IncomeTurn.ToString("C0", chileanCulture);
-        expense.text = player.ExpenseTurn.ToString("C0", chileanCulture);
+        playerName.text = player.PlayerData.PlayerName;
+        kpf.text = player.PlayerData.ScoreKFP.ToString();
+        money.text = player.PlayerData.Money.ToString("C0", chileanCulture);
+        invest.text = player.PlayerData.Invest.ToString("C0", chileanCulture);
+        debt.text = player.PlayerData.Debt.ToString("C0", chileanCulture);
+        income.text = player.PlayerData.IncomeTurn.ToString("C0", chileanCulture);
+        expense.text = player.PlayerData.ExpenseTurn.ToString("C0", chileanCulture);
     }
 }

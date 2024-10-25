@@ -1,9 +1,4 @@
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using UnityEngine.SceneManagement;
-using System.Collections;
-using System.IO;
 using UnityEngine.InputSystem;
 
 
@@ -12,6 +7,7 @@ public class PlayerSpawner : MonoBehaviour
     [SerializeField] private PlayerStorage playerStorage;
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private HUDManager hudManager;
+    [SerializeField] private GameData gameData;
 
     void Start()
     {
@@ -21,10 +17,10 @@ public class PlayerSpawner : MonoBehaviour
             {
                 SpawnPlayer(playerStorage.players[i]);
             }
-            GameData.Instance.Players = GameData.Instance.Players.Where(p => p != null).ToArray();
             hudManager.InitPlayersHUD();
             GameManager.Instance.InitTurn();
-            //Destroy(gameObject);
+            StartCoroutine(SaveSystem.SaveGame(gameData, 1));
+            Destroy(gameObject);
         }
     }
 
@@ -33,8 +29,7 @@ public class PlayerSpawner : MonoBehaviour
         // Instancia el playerPrefab
         GameObject playerInstance = Instantiate(playerPrefab);
         playerInstance.name = "Player_" + (player.index + 1);
-        //playerInstance.SetActive(false);
-        Instantiate(player.model, playerInstance.transform);
+        Instantiate(player.model.characterPrefabs, playerInstance.transform);
 
         // Asigna el dispositivo al PlayerInput
         var playerInput = playerInstance.GetComponent<PlayerInput>();
@@ -42,10 +37,10 @@ public class PlayerSpawner : MonoBehaviour
         playerInput.actions.FindActionMap("Player").Disable();
         playerInput.SwitchCurrentActionMap("UI");
 
-        // Inicializa playerData
-        var playerData = playerInput.GetComponent<PlayerData>();
-        playerData.NewPlayer(player.index, player.name, player.model.name);
-        GameData.Instance.Players[player.index] = playerData;
+        // Crea un nuevo PlayerData
+        var playerData = new PlayerData();
+        playerData.NewPlayer(player.index, player.name, player.model.characterID);
+        GameManager.Instance.GameData.PlayersData.Add(playerData);
 
         // Inicializa el PlayerController
         var playerController = playerInstance.GetComponent<PlayerController>();
@@ -53,6 +48,5 @@ public class PlayerSpawner : MonoBehaviour
 
         // Initializa la posición
         playerController.InitPosition();
-        //playerInstance.SetActive(true);
     }
 }

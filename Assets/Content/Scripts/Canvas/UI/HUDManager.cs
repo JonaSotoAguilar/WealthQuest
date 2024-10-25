@@ -8,11 +8,11 @@ public class HUDManager : MonoBehaviour
 
     public void InitPlayersHUD()
     {
-        for (int i = 0; i < GameData.Instance.Players.Length; i++)
+        for (int i = 0; i < GameManager.Instance.Players.Count; i++)
         {
-            PlayerData player = GameData.Instance.Players[i];
+            PlayerController player = GameManager.Instance.Players[i];
             GameObject hudInstance = Instantiate(hudPrefab, transform);
-            hudInstance.name = "HUD_" + player.Index;
+            hudInstance.name = "HUD_" + player.PlayerData.Index;
             PlayerHUD playerHUD = hudInstance.GetComponent<PlayerHUD>();
             playerHUD.InitHUD(player);
             player.PlayerHUD = playerHUD;

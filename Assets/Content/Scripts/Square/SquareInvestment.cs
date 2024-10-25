@@ -9,15 +9,15 @@ public class SquareInvestment : Square
     private PlayerCanvas canvasPlayer;
 
     // Implementación de ActiveSquare como una corrutina
-    public override IEnumerator ActiveSquare(PlayerData player, PlayerCanvas canvas)
+    public override IEnumerator ActiveSquare(PlayerController player)
     {
-        canvasPlayer = canvas;
+        canvasPlayer = player.PlayerCanvas;
         CardsPanel panel = canvasPlayer.CardsPanel;
 
         if (panel != null)
         {
             // Obtener las InvestmentCards desde GameData y convertirlas a CardBase
-            List<CardBase> selectedCards = GameData.Instance.GetRandomInvestmentCards(2).Cast<CardBase>().ToList();
+            List<CardBase> selectedCards = GameManager.Instance.GameData.GetRandomInvestmentCards(2).Cast<CardBase>().ToList();
 
             // Configurar el panel con las tarjetas para el jugador
             panel.SetupCards(player, selectedCards);

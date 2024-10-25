@@ -11,7 +11,7 @@ public class QuestionPanel : MonoBehaviour
     [SerializeField] private Button[] optionButtons;
     public event Action OnQuestionAnswered;
 
-    public void SetupQuestion(QuestionData questionData, PlayerData player)
+    public void SetupQuestion(QuestionData questionData, PlayerController player)
     {
         questionText.text = questionData.question;
 
@@ -29,12 +29,12 @@ public class QuestionPanel : MonoBehaviour
         ShowPanel(true);
     }
 
-    void Answer(int index, QuestionData questionData, PlayerData player)
+    void Answer(int index, QuestionData questionData, PlayerController player)
     {
         if (index == questionData.indexCorrectAnswer)
         {
             player.ChangeKFP(questionData.scoreForCorrectAnswer);
-            GameData.Instance.QuestionList.Remove(questionData);
+            GameManager.Instance.GameData.QuestionList.Remove(questionData);
         }
 
         ShowPanel(false);

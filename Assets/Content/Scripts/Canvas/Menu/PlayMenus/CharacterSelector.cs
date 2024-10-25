@@ -8,10 +8,13 @@ public class CharacterSelector : MonoBehaviour
 {
     [SerializeField] private int index;
     [SerializeField] private ProfileUser profile;
+    [SerializeField] private Button DeletePlayer;
 
     [Header("Character")]
     [SerializeField] private CharactersDatabase characterDB;
     [SerializeField] private RawImage imageCharacter;
+    [SerializeField] private Button nextCharacter;
+    [SerializeField] private Button previousCharacter;
     private int characterSelected;
 
     [Header("Name")]
@@ -55,7 +58,7 @@ public class CharacterSelector : MonoBehaviour
         UpdateCharacter(characterSelected);
     }
 
-    private void UpdateCharacter(int selectedOption)
+    public void UpdateCharacter(int selectedOption)
     {
         Character character = characterDB.GetCharacter(selectedOption);
         imageCharacter.texture = character.characterIcon;
@@ -74,7 +77,7 @@ public class CharacterSelector : MonoBehaviour
         StartCoroutine(ChangeName());
     }
 
-    public IEnumerator ChangeName()
+    private IEnumerator ChangeName()
     {
         yield return null;
         if (nameInput.text == "")
@@ -88,5 +91,20 @@ public class CharacterSelector : MonoBehaviour
         nameInput.interactable = false;
         changeName.interactable = true;
         changeName.Select();
+    }
+
+    public void UpdateName(string name)
+    {
+        playerName = name;
+        nameInput.text = playerName;
+    }
+
+    public void DesactiveChanges()
+    {
+        nameInput.interactable = false;
+        changeName.interactable = false;
+        nextCharacter.interactable = false;
+        previousCharacter.interactable = false;
+        if (DeletePlayer != null) Destroy(DeletePlayer.gameObject);
     }
 }

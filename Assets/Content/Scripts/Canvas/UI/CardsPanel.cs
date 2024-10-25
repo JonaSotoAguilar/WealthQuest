@@ -11,7 +11,7 @@ public class CardsPanel : MonoBehaviour
     [SerializeField] private Transform cardGrid;
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private InvestPanel investPanel;
-    [SerializeField] private PlayerData currentPlayer;
+    [SerializeField] private PlayerController currentPlayer;
 
     public event Action OnCardSelected;
     public Transform CardGrid { get => cardGrid; set => cardGrid = value; }
@@ -23,7 +23,7 @@ public class CardsPanel : MonoBehaviour
     {
         if (investPanel.gameObject.activeSelf)
         {
-            if (currentPlayer.Money < investPanel.GetInvestmentAmount())
+            if (currentPlayer.PlayerData.Money < investPanel.GetInvestmentAmount())
             {
                 foreach (Transform child in cardGrid)
                     child.GetComponent<Button>().interactable = false;
@@ -36,7 +36,7 @@ public class CardsPanel : MonoBehaviour
         }
     }
 
-    public void SetupCards(PlayerData player, List<CardBase> selectedCards)
+    public void SetupCards(PlayerController player, List<CardBase> selectedCards)
     {
         ClearCards();
         currentPlayer = player;
@@ -48,7 +48,7 @@ public class CardsPanel : MonoBehaviour
             if (selectedCards[0] is InvestmentCard)
             {
                 investPanel.ResetAmount();
-                investPanel.MoneyPlayer = currentPlayer.Money;
+                investPanel.MoneyPlayer = currentPlayer.PlayerData.Money;
                 investPanel.ShowPanel(true);
             }
             playerEventSystem.SetSelectedGameObject(cardGrid.GetChild(0).gameObject);
@@ -69,7 +69,7 @@ public class CardsPanel : MonoBehaviour
         descriptionText.text = card.title;
 
         TextMeshProUGUI costText = cardInstance.transform.Find("CostText").GetComponent<TextMeshProUGUI>();
-        costText.text = card.GetFormattedText(currentPlayer.ScoreKFP);
+        costText.text = card.GetFormattedText(currentPlayer.PlayerData.ScoreKFP);
 
         Button cardButton = cardInstance.GetComponent<Button>();
         cardButton.onClick.AddListener(() => HandleOptionSelected(card));
