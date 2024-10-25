@@ -4,22 +4,22 @@ using UnityEngine.InputSystem;
 
 public class PlayerSpawner : MonoBehaviour
 {
-    [SerializeField] private PlayerStorage playerStorage;
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private HUDManager hudManager;
     [SerializeField] private GameData gameData;
 
     void Start()
     {
-        if (playerStorage.players != null && playerStorage.players.Count > 0)
+        if (PlayerStorage.players.Count > 0)
         {
-            for (int i = 0; i < playerStorage.players.Count; i++)
+            Debug.Log("Players: " + PlayerStorage.players.Count);
+            for (int i = 0; i < PlayerStorage.players.Count; i++)
             {
-                SpawnPlayer(playerStorage.players[i]);
+                SpawnPlayer(PlayerStorage.players[i]);
             }
             hudManager.InitPlayersHUD();
             GameManager.Instance.InitTurn();
-            StartCoroutine(SaveSystem.SaveGame(gameData, 1));
+            StartCoroutine(SaveSystem.SaveGame(gameData));
             Destroy(gameObject);
         }
     }
@@ -38,9 +38,17 @@ public class PlayerSpawner : MonoBehaviour
         playerInput.SwitchCurrentActionMap("UI");
 
         // Crea un nuevo PlayerData
-        var playerData = new PlayerData();
-        playerData.NewPlayer(player.index, player.name, player.model.characterID);
-        GameManager.Instance.GameData.PlayersData.Add(playerData);
+        PlayerData playerData;
+        if (gameData.PlayersData.Count <= player.index)
+        {
+            playerData = new PlayerData();
+            playerData.NewPlayer(player.index, player.name, player.model.characterID);
+            gameData.PlayersData.Add(playerData);
+        }
+        else
+        {
+            playerData = gameData.PlayersData[player.index];
+        }
 
         // Inicializa el PlayerController
         var playerController = playerInstance.GetComponent<PlayerController>();

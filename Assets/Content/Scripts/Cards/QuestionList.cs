@@ -1,4 +1,10 @@
 [System.Serializable]
+public class QuestionList
+{
+    public QuestionData[] questions;
+}
+
+[System.Serializable]
 public class QuestionData
 {
     public string question;
@@ -6,3 +12,4 @@ public class QuestionData
     public int indexCorrectAnswer;
     public int scoreForCorrectAnswer;
 }
+

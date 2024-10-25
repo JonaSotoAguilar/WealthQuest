@@ -4,6 +4,13 @@ using System.IO;
 using System.Collections;
 using UnityEngine.Networking;
 
+
+[System.Serializable]
+public class AssetBundleList
+{
+    public List<string> bundles;
+}
+
 [CreateAssetMenu(fileName = "Topics", menuName = "Topics")]
 public class Topics : ScriptableObject
 {

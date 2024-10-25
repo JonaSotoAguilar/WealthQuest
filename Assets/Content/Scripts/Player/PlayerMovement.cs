@@ -68,9 +68,9 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public void InitPosition()
+    public void InitPosition(int position)
     {
-        Transform squareTransform = GameManager.Instance.SquareList[0];
+        Transform squareTransform = GameManager.Instance.SquareList[position];
         Vector3 positionCenterBox = squareTransform.position;
         RaycastHit hit;
         Vector3 rayStart = positionCenterBox + Vector3.up * 10;

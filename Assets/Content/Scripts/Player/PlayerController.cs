@@ -42,7 +42,7 @@ public class PlayerController : MonoBehaviour
 
     public void InitPosition()
     {
-        playerMovement.InitPosition();
+        playerMovement.InitPosition(playerData.CurrentPosition);
     }
 
     public void EnableDice()

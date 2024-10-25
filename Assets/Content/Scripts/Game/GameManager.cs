@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
 
     public void InitTurn()
     {
-        currentPlayer = players[gameData.InitialPlayerIndex];
+        currentPlayer = players[gameData.TurnPlayer];
         cameras.CurrentCamera(currentPlayer.transform);
         currentPlayer.EnableDice();
     }
@@ -60,6 +60,7 @@ public class GameManager : MonoBehaviour
             yield return FinishYear();
         yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
         currentPlayer.EnableDice();
+        yield return SaveSystem.SaveGame(gameData);
     }
 
     public void NextPlayer()

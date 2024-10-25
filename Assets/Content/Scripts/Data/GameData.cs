@@ -55,11 +55,10 @@ public class GameData : ScriptableObject
     private void OnEnable()
     {
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
-        playersData = new List<PlayerData>();
     }
 
     // TODO: Crear una nueva partida
-    public IEnumerator NewGame(string bundle)
+    public IEnumerator InitGameData(string bundle)
     {
         bundleName = bundle;
         if (bundleName == "Default")
@@ -251,7 +250,7 @@ public class GameData : ScriptableObject
     }
 
     //TODO: Limpiar los datos de los jugadores
-    public void ResetGameData()
+    public void ClearGameData()
     {
         gameID = 0;
         dateGame = "";
@@ -271,9 +270,14 @@ public class GameData : ScriptableObject
         jsonFile = null;
 
         defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
-        assetBundleDirectory = "";
+        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
         currentBundlePath = "";
         bundleName = "";
         assetbundle = null;
+    }
+
+    public bool DataExists()
+    {
+        return PlayersData.Count > 0;
     }
 }

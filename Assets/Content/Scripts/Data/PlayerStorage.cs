@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Linq;
+using System.Collections;
 
 [System.Serializable]
 public class NewPlayer
@@ -13,12 +15,11 @@ public class NewPlayer
     public string controlScheme;
 }
 
-[CreateAssetMenu(fileName = "PlayerStorage", menuName = "Player/PlayerStorage")]
-public class PlayerStorage : ScriptableObject
+public static class PlayerStorage
 {
-    [SerializeField] public List<NewPlayer> players = new List<NewPlayer>();
+    public static List<NewPlayer> players = new List<NewPlayer>();
 
-    public void SavePlayerStorage(int index, InputDevice device, string controlScheme, string playerName, Character character)
+    public static void SavePlayerStorage(int index, InputDevice device, string controlScheme, string playerName, Character character)
     {
         if (device == null)
         {
@@ -45,8 +46,7 @@ public class PlayerStorage : ScriptableObject
         Debug.Log($"Jugador {newPlayer.name} agregado con el dispositivo: {device.displayName} y esquema de control: {controlScheme}");
     }
 
-    // Método para limpiar los datos almacenados
-    public void ClearData()
+    public static void ClearData()
     {
         players.Clear();
         players = new List<NewPlayer>();

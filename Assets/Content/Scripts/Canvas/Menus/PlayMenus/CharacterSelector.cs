@@ -28,15 +28,15 @@ public class CharacterSelector : MonoBehaviour
 
     void Start()
     {
-        if (index == 0) UserPlayer();
         UpdateCharacter(characterSelected);
     }
 
-    private void UserPlayer()
+    public void UserPlayer()
     {
         playerName = profile.NameUser;
         characterSelected = profile.IndexCharacter;
         nameInput.text = playerName;
+        UpdateCharacter(characterSelected);
     }
 
     public void UpdateIndex(int i)
@@ -99,12 +99,12 @@ public class CharacterSelector : MonoBehaviour
         nameInput.text = playerName;
     }
 
-    public void DesactiveChanges()
+    public void ActiveChanges(bool active)
     {
-        nameInput.interactable = false;
-        changeName.interactable = false;
-        nextCharacter.interactable = false;
-        previousCharacter.interactable = false;
+        nameInput.interactable = active;
+        changeName.interactable = active;
+        nextCharacter.interactable = active;
+        previousCharacter.interactable = active;
         if (DeletePlayer != null) Destroy(DeletePlayer.gameObject);
     }
 }

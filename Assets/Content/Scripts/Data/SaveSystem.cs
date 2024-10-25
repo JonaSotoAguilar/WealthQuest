@@ -3,37 +3,48 @@ using System.IO;
 using System.Collections;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
+using System.Collections.Generic;
+using UnityEngine.InputSystem;
 
 public static class SaveSystem
 {
     // Rutas de guardado
-    public static readonly string savePathSlotLocalMulti = Application.persistentDataPath + "/game_01.json";
-    public static readonly string savePathSlot2 = Application.persistentDataPath + "/game_02.json";
-    public static readonly string savePathSlot3 = Application.persistentDataPath + "/game_03.json";
+    public static readonly string saveDirectory = Path.Combine(Application.persistentDataPath, "Saves");
+    public static readonly string savePathSlotSingle = Path.Combine(saveDirectory, "game_Single.save");
+    public static readonly string savePathSlotLocalMulti = Path.Combine(saveDirectory, "game_Local.save");
+    public static readonly string savePathSlotOnline = Path.Combine(saveDirectory, "game_Online.save");
 
     // Clave de Encriptación AES
-    // Cambia tu clave y IV a 16 bytes (128 bits)
     private static readonly byte[] aesKey = Encoding.UTF8.GetBytes("1234567890123456");  // 16 bytes exactos
     private static readonly byte[] aesIV = Encoding.UTF8.GetBytes("abcdefghijklmnop");   // 16 bytes exactos
 
+    private static int slotData;
+
+    public static int SlotData { set => slotData = value; }
+
     // Guardar el juego
-    public static IEnumerator SaveGame(GameData data, int slot)
+    public static IEnumerator SaveGame(GameData data)
     {
         string json = JsonUtility.ToJson(data);
         byte[] encryptedData = EncryptStringToBytes_Aes(json);
 
-        switch (slot)
+        if (!Directory.Exists(saveDirectory)) Directory.CreateDirectory(saveDirectory);
+
+        Debug.Log("Guardando en la ranura: " + slotData);
+
+        switch (slotData)
         {
             case 1:
-                File.WriteAllBytes(savePathSlotLocalMulti, encryptedData);
+                File.WriteAllBytes(savePathSlotSingle, encryptedData);
                 PlayerPrefs.SetString("slotDate1", System.DateTime.Now.ToString());
                 break;
             case 2:
-                File.WriteAllBytes(savePathSlot2, encryptedData);
+                File.WriteAllBytes(savePathSlotLocalMulti, encryptedData);
                 PlayerPrefs.SetString("slotDate2", System.DateTime.Now.ToString());
                 break;
             case 3:
-                File.WriteAllBytes(savePathSlot3, encryptedData);
+                File.WriteAllBytes(savePathSlotOnline, encryptedData);
                 PlayerPrefs.SetString("slotDate3", System.DateTime.Now.ToString());
                 break;
             default:
@@ -44,20 +55,20 @@ public static class SaveSystem
     }
 
     // Cargar el juego
-    public static IEnumerator LoadGame(GameData data, int slot)
+    public static IEnumerator LoadGame(GameData data)
     {
         byte[] encryptedData = null;
 
-        switch (slot)
+        switch (slotData)
         {
             case 1:
-                encryptedData = File.ReadAllBytes(savePathSlotLocalMulti);
+                encryptedData = File.ReadAllBytes(savePathSlotSingle);
                 break;
             case 2:
-                encryptedData = File.ReadAllBytes(savePathSlot2);
+                encryptedData = File.ReadAllBytes(savePathSlotLocalMulti);
                 break;
             case 3:
-                encryptedData = File.ReadAllBytes(savePathSlot3);
+                encryptedData = File.ReadAllBytes(savePathSlotOnline);
                 break;
             default:
                 yield break;
@@ -124,5 +135,20 @@ public static class SaveSystem
             }
         }
         return plaintext;
+    }
+
+    public static bool CheckSaveFile(int slot)
+    {
+        switch (slot)
+        {
+            case 1:
+                return File.Exists(savePathSlotSingle);
+            case 2:
+                return File.Exists(savePathSlotLocalMulti);
+            case 3:
+                return File.Exists(savePathSlotOnline);
+            default:
+                return false;
+        }
     }
 }

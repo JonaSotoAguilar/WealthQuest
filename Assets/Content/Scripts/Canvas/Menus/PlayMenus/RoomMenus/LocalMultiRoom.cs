@@ -24,7 +24,6 @@ public class LocalMultiRoom : MonoBehaviour
 
     [Header("Players Data")]
     [SerializeField] private PlayerInputManager playerInputManager;
-    [SerializeField] private PlayerStorage playerStorage;
     [SerializeField] private PlayerInput userInput;
 
     [Header("Characters")]
@@ -37,10 +36,55 @@ public class LocalMultiRoom : MonoBehaviour
     private void Start()
     {
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
-        PopulateBundleDropdown();
     }
 
-    // Método para llenar el dropdown con los temas disponibles
+    public void OnEnable()
+    {
+        playerInputManager.EnableJoining();
+        playerInputManager.onPlayerJoined += OnPlayerJoined;
+
+        PopulateBundleDropdown();
+        if (!gameData.DataExists()) DefaultPanel();
+        else LoadPanel();
+    }
+
+    public void OnDisable()
+    {
+        playerInputManager.onPlayerJoined -= OnPlayerJoined;
+    }
+
+    public void ShowPanel(bool visible)
+    {
+        gameObject.SetActive(visible);
+    }
+
+    public void DefaultPanel()
+    {
+        startButton.interactable = true;
+        characters[0].ActiveChanges(true);
+        characters[0].UserPlayer();
+    }
+
+    public void LoadPanel()
+    {
+        // Bloquear seleccion de tema
+        selectedBundle = gameData.BundleName;
+        bundleDropdown.value = topics.LocalTopicList.IndexOf(gameData.BundleName);
+        bundleDropdown.interactable = false;
+        startButton.interactable = false;
+        // Limpiar jugadores exededentes
+        int maxPlayers = gameData.PlayersData.Count;
+        for (int i = playerPanels.Count - 1; i >= maxPlayers; i--)
+        {
+            Destroy(playerPanels[i]);
+            playerPanels.RemoveAt(i);
+        }
+        // Data jugador principal
+        characters[0].UpdateName(gameData.PlayersData[0].PlayerName);
+        characters[0].UpdateCharacter(gameData.PlayersData[0].CharacterID);
+        characters[0].ActiveChanges(false);
+    }
+
     private void PopulateBundleDropdown()
     {
         bundleDropdown.ClearOptions();
@@ -49,41 +93,31 @@ public class LocalMultiRoom : MonoBehaviour
         bundleDropdown.AddOptions(options);
         selectedBundle = "Default";
         bundleDropdown.value = 0;
+        bundleDropdown.interactable = true;
     }
 
-    // Método para seleccionar un tema
     public void OnBundleSelected(int index)
     {
         selectedBundle = bundleDropdown.options[index].text;
     }
 
-    //TODO: Conexion de jugadores
-    public void OnEnable()
-    {
-        playerInputManager.EnableJoining();
-        playerInputManager.onPlayerJoined += OnPlayerJoined;
-    }
-
-    public void OnDisable()
-    {
-        playerInputManager.onPlayerJoined -= OnPlayerJoined;
-    }
-
     private void OnPlayerJoined(PlayerInput playerInput)
     {
         int index = playerInput.playerIndex;
-
-        if (index == 0) return;
         if ((gameData.PlayersData.Count - 1) == index)
         {
             startButton.interactable = true;
             playerInputManager.DisableJoining();
         }
+        if (index == 0) return;
 
         playerInput.actions.FindActionMap("Player").Disable();
         playerInput.SwitchCurrentActionMap("UI");
-
-        // Se crea un nuevo panel para el jugador conectado
+        GameObject newPanel = CreatePlayerPanel(playerInput, index);
+        CreateCharacter(index, newPanel);
+    }
+    private GameObject CreatePlayerPanel(PlayerInput playerInput, int index)
+    {
         Transform parent = playerPanels[index].transform.parent;
         int siblingIndex = playerPanels[index].transform.GetSiblingIndex();
         Destroy(playerPanels[index]);
@@ -92,22 +126,24 @@ public class LocalMultiRoom : MonoBehaviour
         newPanel.transform.SetParent(parent);
         newPanel.transform.SetSiblingIndex(siblingIndex);
         playerPanels[index] = newPanel;
+        return newPanel;
+    }
 
-        // Obtiene characterSelector y lo añade a la lista de personajes
+    private void CreateCharacter(int index, GameObject newPanel)
+    {
         CharacterSelector character = newPanel.GetComponent<CharacterSelector>();
         character.UpdateIndex(index);
         characters.Add(character);
 
-        // Revisa si el jugador ya tiene un personaje seleccionado
+        // Revisa si el jugador ya tiene data cargada
         if (gameData.PlayersData.Count > index)
         {
             character.UpdateName(gameData.PlayersData[index].PlayerName);
             character.UpdateCharacter(gameData.PlayersData[index].CharacterID);
-            character.DesactiveChanges();
+            character.ActiveChanges(false);
         }
     }
 
-    //FIXME: Limpiar GameData, reiniciar temas
     public void DisconnectPlayers()
     {
         for (int i = 1; i < playerPanels.Count; i++)
@@ -121,20 +157,12 @@ public class LocalMultiRoom : MonoBehaviour
         {
             var disconnectedPanel = Instantiate(playerDisconnectedPrefab, parentPlayerPanel.transform);
             disconnectedPanel.name = "PlayerDisconnected_" + i;
+            disconnectedPanel.transform.Find("PlayerIndex").GetComponent<TextMeshProUGUI>().text = "Jugador " + (i + 1);
             playerPanels.Add(disconnectedPanel);
         }
     }
 
-    public void ClearGameData()
-    {
-        Debug.Log("Clear Game Data: " + gameData.PlayersData.Count);
-        if (gameData.PlayersData.Count > 0) gameData.ResetGameData();
-        bundleDropdown.interactable = true;
-        bundleDropdown.value = 0;
-        selectedBundle = "Default";
-        startButton.interactable = true;
-    }
-
+    // FIXME: Sin utilizar
     public void DeletePlayer(CharacterSelector character)
     {
         GameObject player = character.gameObject;
@@ -150,9 +178,6 @@ public class LocalMultiRoom : MonoBehaviour
         for (int i = 0; i < characters.Count; i++) characters[i].UpdateIndex(i);
     }
 
-    // TODO: Cargar el juego
-
-
     public void StartGame()
     {
         StartCoroutine(InitGame());
@@ -160,48 +185,20 @@ public class LocalMultiRoom : MonoBehaviour
 
     private IEnumerator InitGame()
     {
-        SavePlayerInputs();
-        if (gameData.PlayersData.Count == 0) yield return gameData.NewGame(selectedBundle);
+        yield return SavePlayerInputs();
+        if (!gameData.DataExists()) yield return gameData.InitGameData(selectedBundle);
         gameData.StartGame();
     }
 
-    public void LoadGame()
+    public IEnumerator SavePlayerInputs()
     {
-        StartCoroutine(LoadData());
-    }
-
-    private IEnumerator LoadData()
-    {
-        yield return SaveSystem.LoadGame(gameData, 1);
-        // Bloquear seleccion de tema
-        selectedBundle = gameData.BundleName;
-        bundleDropdown.value = topics.LocalTopicList.IndexOf(gameData.BundleName);
-        bundleDropdown.interactable = false;
-        startButton.interactable = false;
-        // Limpiar jugadores exededentes
-        int maxPlayers = gameData.PlayersData.Count;
-        for (int i = playerPanels.Count - 1; i >= maxPlayers; i--)
-        {
-            Destroy(playerPanels[i]);
-            playerPanels.RemoveAt(i);
-        }
-        // Jugador principal
-        characters[0].UpdateName(gameData.PlayersData[0].PlayerName);
-        characters[0].UpdateCharacter(gameData.PlayersData[0].CharacterID);
-        characters[0].DesactiveChanges();
-        yield return null;
-        // StartCoroutine(gameData.StartGame());
-    }
-
-    public void SavePlayerInputs()
-    {
-        playerStorage.ClearData();
+        PlayerStorage.ClearData();
 
         // Jugador principal
         var playerInput = userInput;
         var device = playerInput.devices.FirstOrDefault();
         var controlScheme = playerInput.currentControlScheme;
-        playerStorage.SavePlayerStorage(0, device, controlScheme, characters[0].PlayerName, characters[0].Model);
+        PlayerStorage.SavePlayerStorage(0, device, controlScheme, characters[0].PlayerName, characters[0].Model);
 
         // Jugadores secundarios
         for (int i = 1; i < characters.Count; i++)
@@ -214,7 +211,7 @@ public class LocalMultiRoom : MonoBehaviour
 
                 if (device != null)
                 {
-                    playerStorage.SavePlayerStorage(characters[i].Index, device, controlScheme, characters[i].PlayerName, characters[i].Model);
+                    PlayerStorage.SavePlayerStorage(characters[i].Index, device, controlScheme, characters[i].PlayerName, characters[i].Model);
                 }
                 else
                 {
@@ -222,11 +219,7 @@ public class LocalMultiRoom : MonoBehaviour
                 }
             }
         }
+        yield return null;
     }
 
-    //TODO: Mostrar y ocultar el panel
-    public void ShowPanel(bool visible)
-    {
-        gameObject.SetActive(visible);
-    }
 }
