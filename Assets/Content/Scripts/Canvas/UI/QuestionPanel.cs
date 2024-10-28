@@ -9,7 +9,8 @@ public class QuestionPanel : MonoBehaviour
     [SerializeField] private EventSystem playerEventSystem;
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private Button[] optionButtons;
-    public event Action OnQuestionAnswered;
+    public event Action<bool> OnQuestionAnswered;  // Cambia el evento para aceptar un parámetro bool
+
 
     public void SetupQuestion(QuestionData questionData, PlayerController player)
     {
@@ -31,15 +32,18 @@ public class QuestionPanel : MonoBehaviour
 
     void Answer(int index, QuestionData questionData, PlayerController player)
     {
-        if (index == questionData.indexCorrectAnswer)
+        bool isCorrect = index == questionData.indexCorrectAnswer;
+
+        if (isCorrect)
         {
             player.ChangeKFP(questionData.scoreForCorrectAnswer);
             GameManager.Instance.GameData.QuestionList.Remove(questionData);
         }
 
         ShowPanel(false);
-        OnQuestionAnswered?.Invoke();
+        OnQuestionAnswered?.Invoke(isCorrect);  // Llama al evento pasando el estado de la respuesta
     }
+
 
     public void ShowPanel(bool visible)
     {

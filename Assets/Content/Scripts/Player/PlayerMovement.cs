@@ -21,9 +21,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (GameManager.Instance.SquareList.Length > 0)
         {
-            int remainingSquares = GameManager.Instance.SquareList.Length - player.CurrentPosition - 1;
-            steps = Mathf.Min(steps, remainingSquares);
             yield return StartCoroutine(Move(steps, player));
+
             direction = Vector2.zero;
             playerAnimator.SetFloat("X", direction.x);
             playerAnimator.SetFloat("Y", direction.y);
@@ -34,11 +33,17 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
     private IEnumerator Move(int steps, PlayerData player)
     {
         for (int i = 0; i < steps; i++)
         {
             player.CurrentPosition++;
+            if (player.CurrentPosition >= GameManager.Instance.SquareList.Length)
+            {
+                player.CurrentPosition = 0;
+            }
+
             Vector3 initialPosition = transform.position;
             Transform squareTransform = GameManager.Instance.SquareList[player.CurrentPosition];
             Vector3 positionCenterBox = squareTransform.position;
@@ -50,8 +55,10 @@ public class PlayerMovement : MonoBehaviour
                 Vector3 destinyPosition = hit.point + cornerOffset;
                 Vector3 movementDirection = (destinyPosition - initialPosition).normalized;
                 Quaternion targetRotation = Quaternion.LookRotation(movementDirection);
+
                 playerAnimator.SetFloat("X", 0);
                 playerAnimator.SetFloat("Y", 1);
+
                 float time = 0f;
                 while (time < 1f)
                 {
@@ -68,6 +75,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
     public void InitPosition(int position)
     {
         Transform squareTransform = GameManager.Instance.SquareList[position];
@@ -79,13 +87,73 @@ public class PlayerMovement : MonoBehaviour
         {
             Vector3 destinyPosition = hit.point + cornerOffset;
             transform.position = destinyPosition;
-            transform.forward = squareTransform.forward;
+
+            // Calcula la siguiente casilla con un comportamiento circular
+            int nextPosition = (position + 1) % GameManager.Instance.SquareList.Length;
+
+            Vector3 nextSquarePosition = GameManager.Instance.SquareList[nextPosition].position;
+            Vector3 directionToNext = (nextSquarePosition - destinyPosition).normalized;
+
+            // Ajusta la rotación en base a la dirección hacia la siguiente casilla
+            if (Mathf.Abs(directionToNext.x) > Mathf.Abs(directionToNext.z))
+                transform.rotation = directionToNext.x > 0 ? Quaternion.Euler(0, 90, 0) : Quaternion.Euler(0, -90, 0);
+            else
+                transform.rotation = directionToNext.z > 0 ? Quaternion.Euler(0, 0, 0) : Quaternion.Euler(0, 180, 0);
         }
         else
         {
             Debug.LogError("No se encontró la superficie bajo la casilla.");
         }
     }
+
+    public IEnumerator CenterPosition(int position)
+    {
+        if (position >= 0 && position < GameManager.Instance.SquareList.Length)
+        {
+            Transform squareTransform = GameManager.Instance.SquareList[position];
+            Vector3 targetPosition = squareTransform.position;
+
+            // Inicializar el tiempo de interpolación
+            float time = 0f;
+            Vector3 initialPosition = transform.position;
+
+            while (time < 1f)
+            {
+                time += Time.deltaTime * speedMovement;
+                transform.position = Vector3.Lerp(initialPosition, targetPosition, time);
+                yield return null;
+            }
+        }
+        else
+        {
+            Debug.LogError("La posición proporcionada está fuera del rango de casillas.");
+        }
+    }
+
+    public IEnumerator CornerPosition(int position)
+    {
+        if (position >= 0 && position < GameManager.Instance.SquareList.Length)
+        {
+            Transform squareTransform = GameManager.Instance.SquareList[position];
+            Vector3 targetPosition = squareTransform.position + cornerOffset;  // Mueve a la esquina de la casilla
+
+            // Inicializar el tiempo de interpolación
+            float time = 0f;
+            Vector3 initialPosition = transform.position;
+
+            while (time < 1f)
+            {
+                time += Time.deltaTime * speedMovement;
+                transform.position = Vector3.Lerp(initialPosition, targetPosition, time);
+                yield return null;
+            }
+        }
+        else
+        {
+            Debug.LogError("La posición proporcionada está fuera del rango de casillas.");
+        }
+    }
+
 
 
 }

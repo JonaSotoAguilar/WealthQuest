@@ -41,26 +41,23 @@ public class GameManager : MonoBehaviour
         Transform containerSquares = GameObject.Find("Squares").transform;
         squareList = new Transform[containerSquares.childCount];
         for (int i = 0; i < squareList.Length; i++)
-        {
             squareList[i] = containerSquares.GetChild(i);
-        }
     }
 
     public void InitTurn()
     {
         currentPlayer = players[gameData.TurnPlayer];
         cameras.CurrentCamera(currentPlayer.transform);
-        currentPlayer.EnableDice();
+        StartCoroutine(currentPlayer.InitQuestion());
     }
 
     public IEnumerator UpdateTurn()
     {
         NextPlayer();
-        if (gameData.InitialPlayerIndex == gameData.TurnPlayer)
-            yield return FinishYear();
+        if (gameData.InitialPlayerIndex == gameData.TurnPlayer) yield return FinishYear();
         yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
-        currentPlayer.EnableDice();
         yield return SaveSystem.SaveGame(gameData);
+        StartCoroutine(currentPlayer.InitQuestion());
     }
 
     public void NextPlayer()

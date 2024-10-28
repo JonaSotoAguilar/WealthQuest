@@ -4,6 +4,7 @@ using static UnityEngine.InputSystem.InputAction;
 using System.Collections;
 using System.Globalization;
 using System.Collections.Generic;
+using System;
 
 public class PlayerController : MonoBehaviour
 {
@@ -36,25 +37,46 @@ public class PlayerController : MonoBehaviour
         playerMovement.PlayerAnimator = playerAnimator;
         playerDice.ShowDice(false);
         playerMovement.CornerOffset = PlayerCorner.GetCorner(playerData.Index);
+        playerMovement.InitPosition(playerData.CurrentPosition);
 
         GameManager.Instance.Players.Add(this);
     }
 
-    public void InitPosition()
+    private void EnableDice()
     {
-        playerMovement.InitPosition(playerData.CurrentPosition);
-    }
-
-    public void EnableDice()
-    {
+        // Posicion en el centro de la casilla
         playerDice.ShowDice(true);
         playerInput.SwitchCurrentActionMap("Player");
     }
 
-    public IEnumerator Jump()
+    private IEnumerator Jump()
     {
         playerAnimator.SetTrigger("Jump");
         yield return new WaitForSeconds(2.3f);
+    }
+
+    public IEnumerator InitQuestion()
+    {
+        QuestionData selectedQuestion = GameManager.Instance.GameData.GetRandomQuestion();
+
+        // Configurar el panel de preguntas
+        QuestionPanel panel = playerCanvas.QuestionPanel;
+        panel.SetupQuestion(selectedQuestion, this);
+        bool questionAnswered = false;
+        bool wasAnswerCorrect = false;
+
+        // Subscribirse al evento de respuesta
+        Action<bool> onQuestionAnswered = (isCorrect) =>
+        {
+            questionAnswered = true;
+            wasAnswerCorrect = isCorrect;
+        };
+        panel.OnQuestionAnswered += onQuestionAnswered;
+        yield return new WaitUntil(() => questionAnswered);
+        panel.OnQuestionAnswered -= onQuestionAnswered;
+
+        if (wasAnswerCorrect) EnableDice();
+        else yield return GameManager.Instance.UpdateTurn();
     }
 
     // Jugar turno
@@ -68,7 +90,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // Lanzar el dado y esperar a que termine
-    public IEnumerator ThrowDice()
+    private IEnumerator ThrowDice()
     {
         StartCoroutine(Jump());
         yield return playerDice.StopDice();
@@ -87,6 +109,7 @@ public class PlayerController : MonoBehaviour
     {
         Square square = GameManager.Instance.SquareList[playerData.CurrentPosition].GetComponent<Square>();
         yield return square.ActiveSquare(this);
+        // Posiciona en su corner
         yield return GameManager.Instance.UpdateTurn();
     }
 

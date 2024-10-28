@@ -53,8 +53,5 @@ public class PlayerSpawner : MonoBehaviour
         // Inicializa el PlayerController
         var playerController = playerInstance.GetComponent<PlayerController>();
         playerController.InitializePlayer(playerData, playerInput);
-
-        // Initializa la posición
-        playerController.InitPosition();
     }
 }
