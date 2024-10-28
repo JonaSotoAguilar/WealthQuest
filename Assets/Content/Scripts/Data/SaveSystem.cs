@@ -11,6 +11,7 @@ public static class SaveSystem
 {
     // Rutas de guardado
     public static readonly string saveDirectory = Path.Combine(Application.persistentDataPath, "Saves");
+    public static readonly string historyDirectory = Path.Combine(Application.persistentDataPath, "History");
     public static readonly string savePathSlotSingle = Path.Combine(saveDirectory, "game_Single.save");
     public static readonly string savePathSlotLocalMulti = Path.Combine(saveDirectory, "game_Local.save");
     public static readonly string savePathSlotOnline = Path.Combine(saveDirectory, "game_Online.save");
@@ -19,7 +20,7 @@ public static class SaveSystem
     private static readonly byte[] aesKey = Encoding.UTF8.GetBytes("1234567890123456");  // 16 bytes exactos
     private static readonly byte[] aesIV = Encoding.UTF8.GetBytes("abcdefghijklmnop");   // 16 bytes exactos
 
-    private static int slotData;
+    private static int slotData = 0;
 
     public static int SlotData { set => slotData = value; }
 
@@ -28,22 +29,18 @@ public static class SaveSystem
     {
         string json = JsonUtility.ToJson(data);
         byte[] encryptedData = EncryptStringToBytes_Aes(json);
-
         if (!Directory.Exists(saveDirectory)) Directory.CreateDirectory(saveDirectory);
 
         switch (slotData)
         {
             case 1:
                 File.WriteAllBytes(savePathSlotSingle, encryptedData);
-                PlayerPrefs.SetString("slotDate1", System.DateTime.Now.ToString());
                 break;
             case 2:
                 File.WriteAllBytes(savePathSlotLocalMulti, encryptedData);
-                PlayerPrefs.SetString("slotDate2", System.DateTime.Now.ToString());
                 break;
             case 3:
                 File.WriteAllBytes(savePathSlotOnline, encryptedData);
-                PlayerPrefs.SetString("slotDate3", System.DateTime.Now.ToString());
                 break;
             default:
                 yield break;
@@ -81,6 +78,68 @@ public static class SaveSystem
         yield return null;
     }
 
+    public static IEnumerator SaveHistory(GameData data)
+    {
+        FinishGameData finishGameData = new FinishGameData(data);
+        string json = JsonUtility.ToJson(finishGameData);
+        byte[] encryptedData = EncryptStringToBytes_Aes(json);
+        if (!Directory.Exists(historyDirectory)) Directory.CreateDirectory(historyDirectory);
+
+        string historyPath = Path.Combine(historyDirectory, "game_" + PlayerPrefs.GetInt("gameId") + ".save");
+        File.WriteAllBytes(historyPath, encryptedData);
+        DeleteSave();
+
+        yield return null;
+    }
+
+    public static IEnumerator LoadHistory(GameHistory data)
+    {
+        data.ClearHistory();
+        string[] files = Directory.GetFiles(historyDirectory, "*.save");
+        foreach (string file in files)
+        {
+            byte[] encryptedData = File.ReadAllBytes(file);
+            string descryptedData = DecryptStringFromBytes_Aes(encryptedData);
+            FinishGameData finishGameData = JsonUtility.FromJson<FinishGameData>(descryptedData);
+            data.finishGameData.Add(finishGameData);
+        }
+
+        yield return null;
+    }
+
+    private static void DeleteSave()
+    {
+        switch (slotData)
+        {
+            case 1:
+                File.Delete(savePathSlotSingle);
+                break;
+            case 2:
+                File.Delete(savePathSlotLocalMulti);
+                break;
+            case 3:
+                File.Delete(savePathSlotOnline);
+                break;
+            default:
+                break;
+        }
+        slotData = 0;
+    }
+
+    public static bool CheckSaveFile(int slot)
+    {
+        switch (slot)
+        {
+            case 1:
+                return File.Exists(savePathSlotSingle);
+            case 2:
+                return File.Exists(savePathSlotLocalMulti);
+            case 3:
+                return File.Exists(savePathSlotOnline);
+            default:
+                return false;
+        }
+    }
 
     // Encritar los datos
     private static byte[] EncryptStringToBytes_Aes(string plainText)
@@ -135,18 +194,4 @@ public static class SaveSystem
         return plaintext;
     }
 
-    public static bool CheckSaveFile(int slot)
-    {
-        switch (slot)
-        {
-            case 1:
-                return File.Exists(savePathSlotSingle);
-            case 2:
-                return File.Exists(savePathSlotLocalMulti);
-            case 3:
-                return File.Exists(savePathSlotOnline);
-            default:
-                return false;
-        }
-    }
 }

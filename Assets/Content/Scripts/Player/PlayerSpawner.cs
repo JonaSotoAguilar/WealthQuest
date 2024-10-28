@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 public class PlayerSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject playerPrefab;
-    [SerializeField] private HUDManager hudManager;
+    [SerializeField] private UIManager uiManager;
     [SerializeField] private GameData gameData;
 
     void Start()
@@ -16,7 +16,8 @@ public class PlayerSpawner : MonoBehaviour
             {
                 SpawnPlayer(PlayerStorage.players[i]);
             }
-            hudManager.InitPlayersHUD();
+            uiManager.InitPlayersHUD();
+            uiManager.UpdateYear(gameData.CurrentYear);
             GameManager.Instance.InitTurn();
             StartCoroutine(SaveSystem.SaveGame(gameData));
             Destroy(gameObject);

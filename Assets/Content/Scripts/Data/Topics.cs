@@ -11,11 +11,11 @@ public class AssetBundleList
     public List<string> bundles;
 }
 
-[CreateAssetMenu(fileName = "Topics", menuName = "Topics")]
+[CreateAssetMenu(fileName = "Topics", menuName = "Game/Topics")]
 public class Topics : ScriptableObject
 {
-    [SerializeField] private List<string> localTopicList;
-    [SerializeField] private List<string> remoteTopicList;
+    [SerializeField] private List<string> localTopicList = new List<string>();
+    [SerializeField] private List<string> remoteTopicList = new List<string>();
     private string assetBundleDirectory;
     private const string GitHubBaseUrl = "https://github.com/JonaSotoAguilar/WealthQuest/raw/Assets";
 
@@ -24,16 +24,13 @@ public class Topics : ScriptableObject
 
     private void OnEnable()
     {
-        localTopicList = new List<string>();
-        remoteTopicList = new List<string>();
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
-
         if (!Directory.Exists(assetBundleDirectory))
         {
             Directory.CreateDirectory(assetBundleDirectory);
         }
 
-        InicializateLocalTopics();
+        if (localTopicList.Count == 0) InicializateLocalTopics();
     }
 
     // Método para inicializar los temas locales
@@ -55,6 +52,7 @@ public class Topics : ScriptableObject
     // Método para obtener la lista de temas remotos desde un JSON alojado en GitHub
     public IEnumerator InicializateRemoteTopics(System.Action<string> onTopicLoaded)
     {
+        remoteTopicList.Clear();
         using (UnityWebRequest request = UnityWebRequest.Get(GitHubBaseUrl + "/assetBundles.json"))
         {
             yield return request.SendWebRequest();

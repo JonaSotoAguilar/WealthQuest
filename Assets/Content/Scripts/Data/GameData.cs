@@ -4,20 +4,19 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.IO;
+using System;
 
 [CreateAssetMenu(fileName = "GameData", menuName = "Game/GameData", order = 1)]
 public class GameData : ScriptableObject
 {
     [Header("Game State")]
-    [SerializeField] private int gameID;
-    [SerializeField] private string dateGame;
-    [SerializeField] private GameState gameState;
-    [SerializeField] private int yearsToPlay = 10;
-    [SerializeField] private int currentYear = 1;
+    [SerializeField] private TimeSpan timePlayed;
+    [SerializeField] private int yearsToPlay;
+    [SerializeField] private int currentYear;
 
     [Header("Players")]
-    [SerializeField] private List<PlayerData> playersData = new List<PlayerData>();
-    [SerializeField] private int initialPlayerIndex = 0;
+    [SerializeField] private List<PlayerData> playersData;
+    [SerializeField] private int initialPlayerIndex;
     [SerializeField] private int turnPlayer;
 
     [Header("Cards & Questions")]
@@ -29,14 +28,14 @@ public class GameData : ScriptableObject
     [SerializeField] private TextAsset jsonFile;
 
     [Header("Asset Bundle Settings")]
-    [SerializeField] private string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
+    [SerializeField] private string defaultBundlePath;
     [SerializeField] private string assetBundleDirectory;
     [SerializeField] private string currentBundlePath;
     [SerializeField] private string bundleName;
     private AssetBundle assetbundle;
 
     // TODO: Getters y Setters
-    public GameState GameState { get => gameState; set => gameState = value; }
+    public TimeSpan TimePlayed { get => timePlayed; set => timePlayed = value; }
     public int YearsToPlay { get => yearsToPlay; set => yearsToPlay = value; }
     public int CurrentYear { get => currentYear; set => currentYear = value; }
 
@@ -161,7 +160,7 @@ public class GameData : ScriptableObject
     {
         if (questionList != null && questionList.Count > 0)
         {
-            int randomIndex = Random.Range(0, questionList.Count);
+            int randomIndex = UnityEngine.Random.Range(0, questionList.Count);
             QuestionData selectedQuestion = questionList[randomIndex];
             return selectedQuestion;
         }
@@ -187,7 +186,7 @@ public class GameData : ScriptableObject
             List<ExpenseCard> availableCards = new List<ExpenseCard>(expenseCards);
             for (int i = 0; i < count; i++)
             {
-                int randomIndex = Random.Range(0, availableCards.Count);
+                int randomIndex = UnityEngine.Random.Range(0, availableCards.Count);
                 selectedCards.Add(availableCards[randomIndex]);
                 availableCards.RemoveAt(randomIndex);
             }
@@ -211,7 +210,7 @@ public class GameData : ScriptableObject
         {
             if (availableCards.Count == 0)
                 break;
-            int randomIndex = Random.Range(0, availableCards.Count);
+            int randomIndex = UnityEngine.Random.Range(0, availableCards.Count);
             selectedCards.Add(availableCards[randomIndex]);
             availableCards.RemoveAt(randomIndex);
         }
@@ -228,7 +227,7 @@ public class GameData : ScriptableObject
         {
             if (availableCards.Count == 0)
                 break;
-            int randomIndex = Random.Range(0, availableCards.Count);
+            int randomIndex = UnityEngine.Random.Range(0, availableCards.Count);
             selectedCards.Add(availableCards[randomIndex]);
             availableCards.RemoveAt(randomIndex);
         }
@@ -245,7 +244,7 @@ public class GameData : ScriptableObject
         {
             if (availableCards.Count == 0)
                 break;
-            int randomIndex = Random.Range(0, availableCards.Count);
+            int randomIndex = UnityEngine.Random.Range(0, availableCards.Count);
             selectedCards.Add(availableCards[randomIndex]);
             availableCards.RemoveAt(randomIndex);
         }
@@ -257,10 +256,8 @@ public class GameData : ScriptableObject
     //TODO: Limpiar los datos de los jugadores
     public void ClearGameData()
     {
-        gameID = 0;
-        dateGame = "";
-        gameState = GameState.EnCurso;
-        yearsToPlay = 10;
+        timePlayed = new TimeSpan();
+        yearsToPlay = 2;
         currentYear = 1;
 
         playersData = new List<PlayerData>();

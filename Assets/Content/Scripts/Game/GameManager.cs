@@ -1,14 +1,18 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using System;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    DateTime starTime;
 
     [Header("Game Components")]
     [SerializeField] private GameData gameData;
     [SerializeField] private CameraManager cameras;
+    [SerializeField] private UIManager uiManager;
     [SerializeField] private Transform[] squareList;
 
     [Header("Player")]
@@ -34,6 +38,7 @@ public class GameManager : MonoBehaviour
         }
         InitializeSquares();
         Players = new List<PlayerController>();
+        DateTime starTime = DateTime.Now;
     }
 
     private void InitializeSquares()
@@ -55,31 +60,38 @@ public class GameManager : MonoBehaviour
     public IEnumerator UpdateTurn()
     {
         NextPlayer();
+        UpdateTime();
         if (gameData.InitialPlayerIndex == gameData.TurnPlayer) yield return FinishYear();
         yield return SaveSystem.SaveGame(gameData);
         yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
         NextTurn();
     }
 
-    public void NextTurn()
+    private void NextTurn()
     {
         StartCoroutine(currentPlayer.InitQuestion());
     }
 
-    public void NextPlayer()
+    private void NextPlayer()
     {
         gameData.TurnPlayer = (gameData.TurnPlayer + 1) % players.Count;
         currentPlayer = players[gameData.TurnPlayer];
         UpdatePositions();
     }
 
-    public IEnumerator FinishYear()
+    private void UpdateTime(){
+        DateTime timeNow = DateTime.Now;
+        gameData.TimePlayed = timeNow - starTime;
+        starTime = timeNow;
+    }
+
+    private IEnumerator FinishYear()
     {
         int newYear = gameData.CurrentYear + 1;
         if (newYear > gameData.YearsToPlay)
         {
-            gameData.GameState = GameState.Finalizado;
-            yield return null;
+            yield return SaveSystem.SaveHistory(gameData);
+            SceneManager.LoadScene("MainMenu");
         }
         else
         {
@@ -90,10 +102,11 @@ public class GameManager : MonoBehaviour
                 player.ProcessRecurrentExpenses();
             }
             gameData.CurrentYear = newYear;
+            uiManager.UpdateYear(newYear);
         }
     }
 
-    public void UpdatePositions()
+    private void UpdatePositions()
     {
         Square square = squareList[currentPlayer.PlayerData.CurrentPosition].GetComponent<Square>();
         square.UpdateSquare(currentPlayer);

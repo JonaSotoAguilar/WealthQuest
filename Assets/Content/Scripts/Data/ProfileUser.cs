@@ -1,73 +1,77 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ProfileUser", menuName = "User/Profile")]
-public class ProfileUser : ScriptableObject
+
+[System.Serializable]
+public static class ProfileUser
 {
-    [SerializeField] private string nameUser;
-    [SerializeField] private int scoreUser;
-    [SerializeField] private int bestScoreUser;
-    [SerializeField] private int playedGames;
-    [SerializeField] private int indexIcon;
-    [SerializeField] private int indexCharacter;
+    private static string nameUser;
+    private static int xpUser;
+    private static int scoreAverageUser;
+    private static int bestScoreUser;
+    private static int playedGames;
+    private static int indexCharacter;
 
     [Header("bGames")]
     //[SerializeField] private string user;
     //[SerializeField] private string password;
     //[SerializeField] private string pointsBGames;
 
-    public string NameUser { get => nameUser; set => nameUser = value; }
-    public int ScoreUser { get => scoreUser; set => scoreUser = value; }
-    public int BestScoreUser { get => bestScoreUser; set => bestScoreUser = value; }
-    public int PlayedGames { get => playedGames; set => playedGames = value; }
-    public int IndexIcon { get => indexIcon; set => indexIcon = value; }
-    public int IndexCharacter { get => indexCharacter; set => indexCharacter = value; }
+    public static string NameUser { get => nameUser; }
+    public static int XPUser { get => xpUser; }
+    public static int ScoreAverageUser { get => scoreAverageUser; }
+    public static int BestScoreUser { get => bestScoreUser; }
+    public static int PlayedGames { get => playedGames; }
+    public static int IndexCharacter { get => indexCharacter; }
 
-    private void OnEnable()
+    public static void AddGameData(FinishGameData data)
     {
-        LoadSettings();
+        PlayerData user = data.playersData[0];
+        SaveXPUser(xpUser + data.score);
+        SaveAverageScoreUser((scoreAverageUser * playedGames + data.score) / playedGames + 1);
+        SavePlayedGames(playedGames + 1);
+        if (bestScoreUser < data.score) SaveBestScoreUser(data.score);
     }
 
-    private void LoadSettings()
+    public static void LoadSettings()
     {
-        nameUser = PlayerPrefs.GetString("nameUser");
-        scoreUser = PlayerPrefs.GetInt("scoreUser");
-        bestScoreUser = PlayerPrefs.GetInt("bestScoreUser");
-        playedGames = PlayerPrefs.GetInt("playedGames");
-        indexIcon = PlayerPrefs.GetInt("indexIcon");
+        nameUser = PlayerPrefs.GetString("nameUser", "Jugador");
+        xpUser = PlayerPrefs.GetInt("xpUser", 0);
+        bestScoreUser = PlayerPrefs.GetInt("bestScoreUser", 0);
+        playedGames = PlayerPrefs.GetInt("playedGames", 0);
     }
 
-    public void SaveNameUser(String name)
+    public static void SaveNameUser(String name)
     {
         nameUser = name;
         PlayerPrefs.SetString("nameUser", nameUser);
     }
 
-    public void SavePointsUser(int score)
+    public static void SaveXPUser(int score)
     {
-        scoreUser = score;
-        PlayerPrefs.SetInt("scoreUser", scoreUser);
+        xpUser = score;
+        PlayerPrefs.SetInt("scoreUser", xpUser);
     }
 
-    public void SaveBestScoreUser(int bestScore)
+    public static void SaveAverageScoreUser(int average)
+    {
+        scoreAverageUser = average;
+        PlayerPrefs.SetInt("scoreAverageUser", scoreAverageUser);
+    }
+
+    public static void SaveBestScoreUser(int bestScore)
     {
         bestScoreUser = bestScore;
         PlayerPrefs.SetInt("bestScoreUser", bestScoreUser);
     }
 
-    public void SavePlayedGames(int played)
+    public static void SavePlayedGames(int played)
     {
         playedGames = played;
         PlayerPrefs.SetInt("playedGames", playedGames);
     }
 
-    public void SaveIconUser(int index)
-    {
-        indexIcon = index;
-        PlayerPrefs.SetInt("indexIcon", indexIcon);
-    }
-
-    public void SaveCharacterUser(int index)
+    public static void SaveCharacterUser(int index)
     {
         indexCharacter = index;
         PlayerPrefs.SetInt("indexCharacter", indexCharacter);

@@ -7,7 +7,6 @@ using System.Collections;
 public class CharacterSelector : MonoBehaviour
 {
     [SerializeField] private int index;
-    [SerializeField] private ProfileUser profile;
     [SerializeField] private Button DeletePlayer;
 
     [Header("Character")]
@@ -26,15 +25,16 @@ public class CharacterSelector : MonoBehaviour
     public string PlayerName { get => playerName; set => playerName = value; }
     public Character Model { get => characterDB.GetCharacter(characterSelected); }
 
-    void Start()
+    private void OnEnable()
     {
         UpdateCharacter(characterSelected);
     }
 
     public void UserPlayer()
     {
-        playerName = profile.NameUser;
-        characterSelected = profile.IndexCharacter;
+        ProfileUser.LoadSettings();
+        playerName = ProfileUser.NameUser;
+        characterSelected = ProfileUser.IndexCharacter;
         nameInput.text = playerName;
         UpdateCharacter(characterSelected);
     }

@@ -9,7 +9,7 @@ public class TopicsMenu : MonoBehaviour
     [SerializeField] private Topics topics;
     [SerializeField] private GameObject topicPrefab;
     [SerializeField] private Transform container;
-    [SerializeField] private TMP_InputField searchInput; // Usar TMP_InputField en lugar de InputField para TextMeshPro
+    [SerializeField] private TMP_InputField searchInput;
 
     private enum FilterMode { All, NotDownloaded, Downloaded }
     private FilterMode currentFilterMode = FilterMode.All;
@@ -17,8 +17,6 @@ public class TopicsMenu : MonoBehaviour
     private void Start()
     {
         InitScrollView();
-
-        // Escuchar cambios en el campo de búsqueda
         searchInput.onValueChanged.AddListener(delegate { FilterBySearch(); });
     }
 
@@ -107,7 +105,6 @@ public class TopicsMenu : MonoBehaviour
         RefreshPanels();
         FilterBySearch();
     }
-
 
     // Refresca los paneles según el filtro actual
     private void RefreshPanels()
