@@ -94,19 +94,27 @@ public class PlayerDice : MonoBehaviour
     // Verificar el resultado del lanzamiento del dado
     void CheckResult()
     {
-        float maxX = -50000; // Asumimos que la cara que buscamos está inicialmente fuera de vista
-        for (int index = 0; index < (int)diceType; index++)
-        {
-            var getChild = gameObject.transform.GetChild(index);
+        Vector3 characterRightDirection = transform.parent.right;
 
-            // Determinar la cara visible desde el lado positivo del eje X
-            if (getChild.position.x > maxX)
+        float maxDot = -1f;
+        diceRoll = 0;
+
+        // Iterar a través de cada cara del dado
+        for (int index = 0; index < transform.childCount; index++)
+        {
+            Transform child = transform.GetChild(index);
+            Vector3 faceDirection = (child.position - transform.position).normalized;
+
+            float dotProduct = Vector3.Dot(characterRightDirection, faceDirection);
+
+            if (dotProduct > maxDot)
             {
-                maxX = getChild.position.x;
+                maxDot = dotProduct;
                 diceRoll = index + 1;
             }
         }
     }
+
 
     private IEnumerator HideDiceAfterDelay(float delay)
     {

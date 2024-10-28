@@ -47,6 +47,7 @@ public class GameManager : MonoBehaviour
     public void InitTurn()
     {
         currentPlayer = players[gameData.TurnPlayer];
+        UpdatePositions();
         cameras.CurrentCamera(currentPlayer.transform);
         StartCoroutine(currentPlayer.InitQuestion());
     }
@@ -55,8 +56,13 @@ public class GameManager : MonoBehaviour
     {
         NextPlayer();
         if (gameData.InitialPlayerIndex == gameData.TurnPlayer) yield return FinishYear();
-        yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
         yield return SaveSystem.SaveGame(gameData);
+        yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
+        NextTurn();
+    }
+
+    public void NextTurn()
+    {
         StartCoroutine(currentPlayer.InitQuestion());
     }
 
@@ -64,6 +70,7 @@ public class GameManager : MonoBehaviour
     {
         gameData.TurnPlayer = (gameData.TurnPlayer + 1) % players.Count;
         currentPlayer = players[gameData.TurnPlayer];
+        UpdatePositions();
     }
 
     public IEnumerator FinishYear()
@@ -84,6 +91,12 @@ public class GameManager : MonoBehaviour
             }
             gameData.CurrentYear = newYear;
         }
+    }
+
+    public void UpdatePositions()
+    {
+        Square square = squareList[currentPlayer.PlayerData.CurrentPosition].GetComponent<Square>();
+        square.UpdateSquare(currentPlayer);
     }
 }
 

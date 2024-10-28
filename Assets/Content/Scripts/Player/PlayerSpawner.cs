@@ -12,7 +12,6 @@ public class PlayerSpawner : MonoBehaviour
     {
         if (PlayerStorage.players.Count > 0)
         {
-            Debug.Log("Players: " + PlayerStorage.players.Count);
             for (int i = 0; i < PlayerStorage.players.Count; i++)
             {
                 SpawnPlayer(PlayerStorage.players[i]);

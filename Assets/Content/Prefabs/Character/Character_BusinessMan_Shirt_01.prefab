@@ -1075,7 +1075,7 @@ GameObject:
   m_Component:
   - component: {fileID: 435868}
   - component: {fileID: 9509074}
-  - component: {fileID: 3027802462886419855}
+  - component: {fileID: 3846862649971417325}
   m_Layer: 0
   m_Name: Character_BusinessMan_Shirt_01
   m_TagString: Untagged
@@ -1122,7 +1122,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!136 &3027802462886419855
+--- !u!136 &3846862649971417325
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

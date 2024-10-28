@@ -31,8 +31,6 @@ public static class SaveSystem
 
         if (!Directory.Exists(saveDirectory)) Directory.CreateDirectory(saveDirectory);
 
-        Debug.Log("Guardando en la ranura: " + slotData);
-
         switch (slotData)
         {
             case 1:

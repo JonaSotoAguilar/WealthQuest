@@ -43,7 +43,6 @@ public static class PlayerStorage
         };
 
         players.Add(newPlayer);
-        Debug.Log($"Jugador {newPlayer.name} agregado con el dispositivo: {device.displayName} y esquema de control: {controlScheme}");
     }
 
     public static void ClearData()

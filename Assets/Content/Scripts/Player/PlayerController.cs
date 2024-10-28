@@ -22,7 +22,8 @@ public class PlayerController : MonoBehaviour
 
     public PlayerData PlayerData { get => playerData; }
     public PlayerHUD PlayerHUD { get => playerHUD; set => playerHUD = value; }
-    public PlayerCanvas PlayerCanvas { get => playerCanvas; set => playerCanvas = value; }
+    public PlayerCanvas PlayerCanvas { get => playerCanvas; }
+    public PlayerMovement PlayerMovement { get => playerMovement;}
 
     public void InitializePlayer(PlayerData assignedPlayer, PlayerInput input)
     {
@@ -34,29 +35,17 @@ public class PlayerController : MonoBehaviour
         playerDice = GetComponentInChildren<PlayerDice>();
         playerAnimator = GetComponentInChildren<Animator>();
 
-        playerMovement.PlayerAnimator = playerAnimator;
         playerDice.ShowDice(false);
-        playerMovement.CornerOffset = PlayerCorner.GetCorner(playerData.Index);
+        playerMovement.PlayerAnimator = playerAnimator;
         playerMovement.InitPosition(playerData.CurrentPosition);
 
         GameManager.Instance.Players.Add(this);
     }
 
-    private void EnableDice()
-    {
-        // Posicion en el centro de la casilla
-        playerDice.ShowDice(true);
-        playerInput.SwitchCurrentActionMap("Player");
-    }
-
-    private IEnumerator Jump()
-    {
-        playerAnimator.SetTrigger("Jump");
-        yield return new WaitForSeconds(2.3f);
-    }
-
     public IEnumerator InitQuestion()
     {
+        if (GameManager.Instance.GameData.QuestionList.Count == 0)
+            yield return GameManager.Instance.GameData.ResetQuestionList();
         QuestionData selectedQuestion = GameManager.Instance.GameData.GetRandomQuestion();
 
         // Configurar el panel de preguntas
@@ -76,7 +65,19 @@ public class PlayerController : MonoBehaviour
         panel.OnQuestionAnswered -= onQuestionAnswered;
 
         if (wasAnswerCorrect) EnableDice();
-        else yield return GameManager.Instance.UpdateTurn();
+        else FinishTurn();
+    }
+
+    private void EnableDice()
+    {
+        playerDice.ShowDice(true);
+        playerInput.SwitchCurrentActionMap("Player");
+    }
+
+    private IEnumerator Jump()
+    {
+        playerAnimator.SetTrigger("Jump");
+        yield return new WaitForSeconds(2.3f);
     }
 
     // Jugar turno
@@ -109,10 +110,14 @@ public class PlayerController : MonoBehaviour
     {
         Square square = GameManager.Instance.SquareList[playerData.CurrentPosition].GetComponent<Square>();
         yield return square.ActiveSquare(this);
-        // Posiciona en su corner
-        yield return GameManager.Instance.UpdateTurn();
+        FinishTurn();
     }
 
+    private void FinishTurn()
+    {
+        playerMovement.CornerPosition(playerData.CurrentPosition);
+        StartCoroutine(GameManager.Instance.UpdateTurn());
+    }
 
     // TODO: Uupdate HUD and PlayerData
 

@@ -167,11 +167,16 @@ public class GameData : ScriptableObject
         }
         else
         {
-            LoadBundle();
-            LoadQuestionsFromBundle();
-            assetbundle.Unload(false);
-            return GetRandomQuestion();
+            Debug.LogError("No hay preguntas disponibles.");
+            return null;
         }
+    }
+
+    public IEnumerator ResetQuestionList()
+    {
+        yield return LoadBundle();
+        yield return LoadQuestionsFromBundle();
+        assetbundle.Unload(false);
     }
 
     public List<ExpenseCard> GetRandomExpenseCards(int count)
