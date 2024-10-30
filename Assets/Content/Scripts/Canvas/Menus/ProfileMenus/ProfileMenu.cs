@@ -9,7 +9,6 @@ public class ProfileMenu : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject profilePanel;
     [SerializeField] private GameObject historyPanel;
-    [SerializeField] private GameObject bGamesPanel;
     private GameObject activePanel;
     
     public void ShowPanel(bool visible)
@@ -39,16 +38,6 @@ public class ProfileMenu : MonoBehaviour
             activePanel.SetActive(false);
             historyPanel.SetActive(visible);
             activePanel = historyPanel;
-        }
-    }
-
-    public void ShowBGames(bool visible)
-    {
-        if (activePanel != bGamesPanel)
-        {
-            activePanel.SetActive(false);
-            bGamesPanel.SetActive(visible);
-            activePanel = bGamesPanel;
         }
     }
 }

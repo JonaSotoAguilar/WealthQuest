@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-
 
 [System.Serializable]
 public static class ProfileUser
@@ -13,9 +13,8 @@ public static class ProfileUser
     private static int indexCharacter;
 
     [Header("bGames")]
-    //[SerializeField] private string user;
-    //[SerializeField] private string password;
-    //[SerializeField] private string pointsBGames;
+    private static BGamesPlayer bGamesPlayer;
+    public static List<BGamesAttributes> bGamesAttributes;
 
     public static string NameUser { get => nameUser; }
     public static int XPUser { get => xpUser; }
@@ -37,8 +36,13 @@ public static class ProfileUser
     {
         nameUser = PlayerPrefs.GetString("nameUser", "Jugador");
         xpUser = PlayerPrefs.GetInt("xpUser", 0);
+        scoreAverageUser = PlayerPrefs.GetInt("scoreAverageUser", 0);
         bestScoreUser = PlayerPrefs.GetInt("bestScoreUser", 0);
         playedGames = PlayerPrefs.GetInt("playedGames", 0);
+        indexCharacter = PlayerPrefs.GetInt("indexCharacter", 0);
+
+        int id = PlayerPrefs.GetInt("bGamesId", -1);
+        if (id != -1) HttpService.LoginBGamesPlayer($"/players/{id}");
     }
 
     public static void SaveNameUser(String name)
@@ -75,5 +79,11 @@ public static class ProfileUser
     {
         indexCharacter = index;
         PlayerPrefs.SetInt("indexCharacter", indexCharacter);
+    }
+
+    public static void SaveBGamesPlayer(BGamesPlayer player)
+    {
+        bGamesPlayer = player;
+        PlayerPrefs.SetInt("bGamesId", player.id_players);
     }
 }
