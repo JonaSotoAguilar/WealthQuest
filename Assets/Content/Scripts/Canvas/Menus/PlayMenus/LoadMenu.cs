@@ -19,7 +19,7 @@ public class LoadMenu : MonoBehaviour
     [SerializeField] private LocalMultiRoom localMultiRoom;     // index = 1
     [SerializeField] private LocalPassMenu localPassRoom;       // index = 2
     [SerializeField] private OnlineCreateMenu onlineCreateRoom; // index = 3
-    [SerializeField] private OnlineJoinMenu onlineJoinRoom;     // index = 4
+    //[SerializeField] private OnlineJoinMenu onlineJoinRoom;     // index = 4
     // FIXME: Eliminar onlineJoinRoom
 
     [Header("Create Room")]
@@ -48,7 +48,7 @@ public class LoadMenu : MonoBehaviour
                 slotData = 2;
                 break;
             case 3:
-            case 4:
+            //case 4:
                 slotData = 3;
                 break;
             default:
@@ -104,11 +104,11 @@ public class LoadMenu : MonoBehaviour
                 onlineCreateRoom.ShowPanel(true);
                 createOnlineRoom.ShowPanel(false);
                 break;
-            case 4:
-                onlineJoinRoom.gameObject.SetActive(true);
-                onlineJoinRoom.ShowPanel(true);
-                createOnlineRoom.ShowPanel(false);
-                break;
+            // case 4:
+            //     onlineJoinRoom.gameObject.SetActive(true);
+            //     onlineJoinRoom.ShowPanel(true);
+            //     createOnlineRoom.ShowPanel(false);
+            //     break;
             default:
                 break;
         }

@@ -21,8 +21,7 @@ public class InvestmentCard : CardBase
         if (capital <= 0)
             return;
 
-        int dividend = (int)(capital * pctDividend[0]);
-        PlayerInvestment investment = new PlayerInvestment(title, duration, capital, dividend, new List<float>(pctChange), new List<float>(pctDividend));
+        PlayerInvestment investment = new PlayerInvestment(title, duration, capital, new List<float>(pctChange), new List<float>(pctDividend));
         player.CreateInvestment(investment);
     }
 

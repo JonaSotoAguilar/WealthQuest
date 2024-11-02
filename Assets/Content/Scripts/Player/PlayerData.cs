@@ -1,24 +1,23 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 [System.Serializable]
 public class PlayerData
 {
-    [SerializeField] private int index;                             // Índice del jugador
-    [SerializeField] private string playerName;                     // Nombre del jugador
-    [SerializeField] private int currentPosition;                   // Posición actual del jugador
-
-    [Header("Finances")]
-    [SerializeField] private int scoreKFP;                          // financial knowledge points: puntos de conocimiento financiero
-    [SerializeField] private int money;                             // Dinero del jugador
-    [SerializeField] private int invest;                            // Inversion del jugador
-    [SerializeField] private int debt;                              // Deuda del jugador
-    [SerializeField] private int salary;                            // Salario del jugador
-    [SerializeField] private int incomeTurn;                        // Ingresos por turno
-    [SerializeField] private int expenseTurn;                       // Gastos por turno
-    [SerializeField] private List<PlayerInvestment> investments;    // Lista de inversiones
-    [SerializeField] private List<PlayerExpense> expenses;          // Lista de gastos
-    [SerializeField] private int characterID;                       // Modelo del jugador
+    private int index;
+    private string playerName;
+    private int currentPosition;
+    private int scoreKFP;
+    private int money;
+    private int invest;
+    private int debt;
+    private int salary;
+    private int incomeTurn;
+    private int expenseTurn;
+    private List<PlayerInvestment> investments;
+    private List<PlayerExpense> expenses;
+    private int characterID;
 
     public int Index { get => index; set => index = value; }
     public string PlayerName { get => playerName; set => playerName = value; }
@@ -57,52 +56,146 @@ public class PlayerData
 [System.Serializable]
 public class PlayerInvestment
 {
-    [SerializeField] private string nameInvestment;
-    [SerializeField] private int turns;
-    [SerializeField] private int capital;
-    [SerializeField] private int dividend;
-    [SerializeField] private List<float> pctChanges;
-    [SerializeField] private List<float> pctDividend;
+    private string nameInvestment;
+    private int turns;
+    private int capital;
+    private int nextDividend;
+    private List<float> pctChanges;
+    private List<float> pctDividend;
 
     public string NameInvestment { get => nameInvestment; set => nameInvestment = value; }
     public int Turns { get => turns; set => turns = value; }
     public int Capital { get => capital; set => capital = value; }
-    public int Dividend { get => dividend; set => dividend = value; }
+    public int Dividend { get => nextDividend; set => nextDividend = value; }
     public List<float> PctChanges { get => pctChanges; set => pctChanges = value; }
     public List<float> PctDividend { get => pctDividend; set => pctDividend = value; }
 
-    public PlayerInvestment(string name, int turnsInvest, int capitalInvest, int dividendInvest,
+    public PlayerInvestment() { }
+
+    public PlayerInvestment(string name, int turnsInvest, int capitalInvest, int nextDividendInvest,
+                        List<float> pctChangesInvest, List<float> pctDividendInvest)
+    {
+        nameInvestment = name;
+        turns = turnsInvest;
+        capital = capitalInvest;
+        nextDividend = nextDividendInvest;
+        pctChanges = pctChangesInvest;
+        pctDividend = pctDividendInvest;
+    }
+
+    public PlayerInvestment(string name, int turnsInvest, int capitalInvest,
                             List<float> pctChangesInvest, List<float> pctDividendInvest)
     {
         nameInvestment = name;
         turns = turnsInvest;
         capital = capitalInvest;
-        dividend = dividendInvest;
         pctChanges = pctChangesInvest;
         pctDividend = pctDividendInvest;
+
+        nextDividend = (int)(capital * pctDividend[0]);
+        pctDividend.RemoveAt(0);
     }
+
+    // 5: 0.03, 4: 0.032, 3: 0.034, 2: 0.032, 1: 0.034, 0: 
 
     public void UpdateInvestment()
     {
+        // Actualizar capital
+        if (pctChanges.Count == 0) return;
         capital += (int)(capital * pctChanges[0]);
-        dividend = (int)(capital * pctDividend[0]);
         pctChanges.RemoveAt(0);
-        pctDividend.RemoveAt(0);
+
+        // Siguiente dividendo
+        if (pctDividend.Count == 0)
+            nextDividend = 0;
+        else
+        {
+            nextDividend = (int)(capital * pctDividend[0]);
+            pctDividend.RemoveAt(0);
+        }
     }
+
+    #region Methods Write and Read
+    public static void WritePlayerInvestment(NetworkWriter writer, PlayerInvestment investment)
+    {
+        writer.WriteString(investment.nameInvestment);
+        writer.WriteInt(investment.turns);
+        writer.WriteInt(investment.capital);
+        writer.WriteInt(investment.nextDividend);
+
+        // Serializar la lista pctChanges
+        writer.WriteInt(investment.pctChanges.Count);
+        foreach (var change in investment.pctChanges)
+        {
+            writer.WriteFloat(change);
+        }
+
+        // Serializar la lista pctDividend
+        writer.WriteInt(investment.pctDividend.Count);
+        foreach (var dividend in investment.pctDividend)
+        {
+            writer.WriteFloat(dividend);
+        }
+    }
+
+    public static PlayerInvestment ReadPlayerInvestment(NetworkReader reader)
+    {
+        string name = reader.ReadString();
+        int turns = reader.ReadInt();
+        int capital = reader.ReadInt();
+        int nextDividend = reader.ReadInt();
+
+        // Deserializar la lista pctChanges
+        int pctChangesCount = reader.ReadInt();
+        List<float> pctChanges = new List<float>();
+        for (int i = 0; i < pctChangesCount; i++)
+        {
+            pctChanges.Add(reader.ReadFloat());
+        }
+
+        // Deserializar la lista pctDividend
+        int pctDividendCount = reader.ReadInt();
+        List<float> pctDividend = new List<float>();
+        for (int i = 0; i < pctDividendCount; i++)
+        {
+            pctDividend.Add(reader.ReadFloat());
+        }
+
+        return new PlayerInvestment(name, turns, capital, nextDividend, pctChanges, pctDividend);
+    }
+    #endregion
 }
+
 
 [System.Serializable]
 public class PlayerExpense
 {
-    [SerializeField] private int turns;
-    [SerializeField] private int amount;
+    private int turns;
+    private int amount;
 
     public int Turns { get => turns; set => turns = value; }
     public int Amount { get => amount; set => amount = value; }
 
+    public PlayerExpense() { }
     public PlayerExpense(int playerTurns, int amountTurn)
     {
         turns = playerTurns;
         amount = amountTurn;
     }
+
+    #region Methods Write and Read
+    public static void WritePlayerExpense(NetworkWriter writer, PlayerExpense expense)
+    {
+        writer.WriteInt(expense.turns);
+        writer.WriteInt(expense.amount);
+    }
+
+    public static PlayerExpense ReadPlayerExpense(NetworkReader reader)
+    {
+        int turns = reader.ReadInt();
+        int amount = reader.ReadInt();
+        return new PlayerExpense(turns, amount);
+    }
+    #endregion
 }
+
