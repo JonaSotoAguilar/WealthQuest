@@ -7,7 +7,7 @@ public class Character
     public int characterID;
     public string characterName;
     public Texture characterIcon;
-    public GameObject characterPrefabs;
+    public GameObject characterPrefab;
 }
 
 
@@ -31,6 +31,6 @@ public class CharactersDatabase : ScriptableObject
 
     public GameObject GetModel(int index)
     {
-        return characters[index].characterPrefabs;
+        return characters[index].characterPrefab;
     }
 }

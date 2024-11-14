@@ -23,4 +23,10 @@ public class PlayerCanvas : MonoBehaviour
         cardsPanel.ShowPanel(false);
     }
 
+    public void ActiveCanvas(bool interactable)
+    {
+        Canvas canvas = GetComponent<Canvas>();
+        canvas.enabled = interactable;
+    }
+
 }

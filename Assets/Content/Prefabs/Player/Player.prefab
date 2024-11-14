@@ -230,7 +230,6 @@ MonoBehaviour:
   cardGrid: {fileID: 1620650022236994069}
   cardPrefab: {fileID: 7861086620489467455, guid: a25307080ade85e41af15243f298ea87, type: 3}
   investPanel: {fileID: 3653828842012520626}
-  currentPlayer: {fileID: 0}
 --- !u!1 &1147038046068589756
 GameObject:
   m_ObjectHideFlags: 0
@@ -2440,6 +2439,7 @@ MonoBehaviour:
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
+  m_ScrollDeltaPerTick: 6
 --- !u!114 &2477964767844041963
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2538,20 +2538,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfaed4e8a5dafc4994aefa77b5d3054, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerData:
-    index: 0
-    playerName: 
-    currentPosition: 0
-    scoreKFP: 0
-    money: 0
-    invest: 0
-    debt: 0
-    salary: 0
-    incomeTurn: 0
-    expenseTurn: 0
-    investments: []
-    expenses: []
-    characterID: 0
   playerInput: {fileID: 2477964767844041963}
   playerMovement: {fileID: 2663320001883389202}
   playerCanvas: {fileID: 4019174252073527022}
@@ -2571,7 +2557,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speedMovement: 1.5
-  cornerOffset: {x: 0, y: 0, z: 0}
   direction: {x: 0, y: 0}
 --- !u!1 &9018538677426032740
 GameObject:

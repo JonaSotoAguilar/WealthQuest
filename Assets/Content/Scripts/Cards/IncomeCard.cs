@@ -10,7 +10,7 @@ public class IncomeCard : CardBase
     [Tooltip("affectSalary = false: Agrega Income al dinero")] public int income;
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
-    public override string GetFormattedText(int playerKFP)
+    public override string GetFormattedText(int points)
     {
         if (affectSalary)
             return $"{description}. Tu salario aumenta un <color=green>{salaryChange * 100}%</color>.";
@@ -18,21 +18,21 @@ public class IncomeCard : CardBase
             return $"{description}. Recibes <color=green>{income.ToString("C0", chileanCulture)}</color>.";
     }
 
-    public override void ApplyEffect(PlayerController player, int capital = 0)
+    public override void ApplyEffect(IPlayer player, int capital = 0)
     {
         if (affectSalary)
         {
-            int newSalary = (int)(player.PlayerData.Salary * (1 + salaryChange));
-            player.ChangeSalary(newSalary);
+            int newSalary = (int)(player.Salary * (1 + salaryChange));
+            player.Salary = newSalary;
         }
         else
-            player.ChangeMoney(income);
+            player.AddMoney(income);
     }
 
     public override void RemoveFromGameData()
     {
 
-        GameManager.Instance.GameData.IncomeCards.Remove(this);
+        GameManager.Instance.GameData.incomeCards.Remove(this);
     }
 
     private void OnValidate()

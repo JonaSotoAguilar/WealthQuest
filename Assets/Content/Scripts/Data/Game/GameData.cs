@@ -10,46 +10,30 @@ using System;
 public class GameData : ScriptableObject
 {
     [Header("Game State")]
-    [SerializeField] private TimeSpan timePlayed;
-    [SerializeField] private int yearsToPlay;
-    [SerializeField] private int currentYear;
+    [SerializeField] public TimeSpan timePlayed;
+    [SerializeField] public int yearsToPlay;
+    [SerializeField] public int currentYear;
 
     [Header("Players")]
-    [SerializeField] private List<PlayerData> playersData;
-    [SerializeField] private int initialPlayerIndex;
-    [SerializeField] private int turnPlayer;
-
-    [Header("Cards & Questions")]
-    [SerializeField] private List<QuestionData> questionList;
-    [SerializeField] private List<ExpenseCard> expenseCards;
-    [SerializeField] private List<InvestmentCard> investmentCards;
-    [SerializeField] private List<IncomeCard> incomeCards;
-    [SerializeField] private List<EventCard> eventCards;
-    [SerializeField] private TextAsset jsonFile;
+    [SerializeField] public List<PlayerData> playersData;
+    [SerializeField] public int initialPlayerIndex;
+    [SerializeField] public int turnPlayer;
 
     [Header("Asset Bundle Settings")]
-    [SerializeField] private string defaultBundlePath;
-    [SerializeField] private string assetBundleDirectory;
-    [SerializeField] private string currentBundlePath;
-    [SerializeField] private string bundleName;
-    private AssetBundle assetbundle;
+    [SerializeField] public string defaultBundlePath;
+    [SerializeField] public string assetBundleDirectory;
+    [SerializeField] public string currentBundlePath;
+    [SerializeField] public string bundleName;
+    public AssetBundle assetbundle;
 
-    // TODO: Getters y Setters
-    public TimeSpan TimePlayed { get => timePlayed; set => timePlayed = value; }
-    public int YearsToPlay { get => yearsToPlay; set => yearsToPlay = value; }
-    public int CurrentYear { get => currentYear; set => currentYear = value; }
-
-    public List<PlayerData> PlayersData { get => playersData; set => playersData = value; }
-    public int InitialPlayerIndex { get => initialPlayerIndex; set => initialPlayerIndex = value; }
-    public int TurnPlayer { get => turnPlayer; set => turnPlayer = value; }
-
-    public List<QuestionData> QuestionList { get => questionList; set => questionList = value; }
-    public List<ExpenseCard> ExpenseCards { get => expenseCards; set => expenseCards = value; }
-    public List<InvestmentCard> InvestmentCards { get => investmentCards; set => investmentCards = value; }
-    public List<IncomeCard> IncomeCards { get => incomeCards; set => incomeCards = value; }
-    public List<EventCard> EventCards { get => eventCards; set => eventCards = value; }
-
-    public string BundleName { get => bundleName; set => bundleName = value; }
+    [Header("Cards & Questions")]
+    [SerializeField] public List<QuestionData> allQuestions;
+    [SerializeField] public List<QuestionData> questions;
+    [SerializeField] public List<ExpenseCard> expenseCards;
+    [SerializeField] public List<InvestmentCard> investmentCards;
+    [SerializeField] public List<IncomeCard> incomeCards;
+    [SerializeField] public List<EventCard> eventCards;
+    [SerializeField] public TextAsset jsonFile;
 
     private void OnEnable()
     {
@@ -57,7 +41,7 @@ public class GameData : ScriptableObject
     }
 
     // TODO: Crear una nueva partida
-    public IEnumerator InitGameData(string bundle)
+    public IEnumerator LoadCardsAndQuestions(string bundle)
     {
         bundleName = bundle;
         if (bundleName == "Default")
@@ -147,7 +131,8 @@ public class GameData : ScriptableObject
         if (jsonFile != null)
         {
             QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(jsonFile.text);
-            questionList = new List<QuestionData>(questionJSON.questions);
+            questions = new List<QuestionData>(questionJSON.questions);
+            allQuestions = new List<QuestionData>(questions);
         }
         else
         {
@@ -158,10 +143,12 @@ public class GameData : ScriptableObject
     // TODO: Funiones para obtener tarjetas y preguntas aleatorias
     public QuestionData GetRandomQuestion()
     {
-        if (questionList != null && questionList.Count > 0)
+        if (questions.Count == 0) ResetQuestions();
+
+        if (questions != null && questions.Count > 0)
         {
-            int randomIndex = UnityEngine.Random.Range(0, questionList.Count);
-            QuestionData selectedQuestion = questionList[randomIndex];
+            int randomIndex = UnityEngine.Random.Range(0, questions.Count);
+            QuestionData selectedQuestion = questions[randomIndex];
             return selectedQuestion;
         }
         else
@@ -171,12 +158,7 @@ public class GameData : ScriptableObject
         }
     }
 
-    public IEnumerator ResetQuestionList()
-    {
-        yield return LoadBundle();
-        yield return LoadQuestionsFromBundle();
-        assetbundle.Unload(false);
-    }
+    public void ResetQuestions() => questions = new List<QuestionData>(allQuestions);
 
     public List<ExpenseCard> GetRandomExpenseCards(int count)
     {
@@ -197,7 +179,7 @@ public class GameData : ScriptableObject
 
     public List<InvestmentCard> GetRandomInvestmentCards(int count)
     {
-        PlayerData currentPlayer = playersData[TurnPlayer];
+        PlayerData currentPlayer = playersData[turnPlayer];
         List<InvestmentCard> selectedCards = new List<InvestmentCard>();
         List<InvestmentCard> availableCards = investmentCards
             .Where(card => !currentPlayer.Investments.Any(inv => inv.NameInvestment == card.title))
@@ -264,7 +246,8 @@ public class GameData : ScriptableObject
         initialPlayerIndex = 0;
         turnPlayer = 0;
 
-        questionList = new List<QuestionData>();
+        allQuestions = new List<QuestionData>();
+        questions = new List<QuestionData>();
         expenseCards = new List<ExpenseCard>();
         investmentCards = new List<InvestmentCard>();
         incomeCards = new List<IncomeCard>();
@@ -280,6 +263,6 @@ public class GameData : ScriptableObject
 
     public bool DataExists()
     {
-        return PlayersData.Count > 0;
+        return playersData.Count > 0;
     }
 }

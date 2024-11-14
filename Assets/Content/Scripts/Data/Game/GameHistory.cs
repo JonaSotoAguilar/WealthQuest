@@ -18,12 +18,12 @@ public class FinishGameData
     public FinishGameData(GameData gameData)
     {
         gameID = PlayerPrefs.GetInt("gameId", 0) + 1;
-        years = gameData.CurrentYear;
-        timePlayed = gameData.TimePlayed;
+        years = gameData.currentYear;
+        timePlayed = gameData.timePlayed;
         date = DateTime.Now.ToString("dd/MM/yyyy");
-        bundleName = gameData.BundleName;
-        score = gameData.PlayersData[0].ScoreKFP / years;
-        playersData = gameData.PlayersData;
+        bundleName = gameData.bundleName;
+        score = gameData.playersData[0].Points / years;
+        playersData = gameData.playersData;
         PlayerPrefs.SetInt("gameId", gameID);
     }
 }

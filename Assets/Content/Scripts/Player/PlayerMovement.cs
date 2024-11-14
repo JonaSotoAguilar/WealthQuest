@@ -1,63 +1,77 @@
 using UnityEngine;
 using System.Collections;
+using Unity.VisualScripting;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Movement Settings")]
     [SerializeField] private float speedMovement;
-    [SerializeField] private Vector2 direction;
-    private Animator playerAnimator;
+
+    // Movement Components
+    private PlayerAnimator animator;
     private int groundLayerMask;
+    private int newPosition;
+    private Vector2 direction;
 
-    public Animator PlayerAnimator { get => playerAnimator; set => playerAnimator = value; }
+    // Game Manager Instance
+    [SerializeField] private IGameManager gameManager;
 
-    private void Awake()
+    public PlayerAnimator Animator { set => animator = value; }
+
+    void Awake()
     {
         groundLayerMask = LayerMask.GetMask("Ground");
+        if (gameManager != null) return;
+
+        gameManager = GameManagerNetwork.Instance != null ?
+                      GameManagerNetwork.Instance :
+                      GameManager.Instance;
     }
 
-    public IEnumerator MovePlayer(int steps, PlayerData player)
-    {
-        if (GameManager.Instance.SquareList.Length > 0)
-        {
-            yield return StartCoroutine(Move(steps, player));
+    #region Methods Getters & Setters
 
-            direction = Vector2.zero;
-            playerAnimator.SetFloat("X", direction.x);
-            playerAnimator.SetFloat("Y", direction.y);
-        }
-        else
+    public int NewPosition { get => newPosition; }
+
+    #endregion
+
+    #region Methods Movement
+
+    public IEnumerator MovePlayer(int steps, int currPosition)
+    {
+        if (gameManager.Squares.Length < 0)
         {
             Debug.LogError("No se encontraron casillas para mover al jugador.");
+            yield break;
         }
+
+        yield return StartCoroutine(Move(steps, currPosition));
+        direction = Vector2.zero;
+        animator.SetMoving(direction.x, direction.y);
     }
 
 
-    private IEnumerator Move(int steps, PlayerData player)
+    private IEnumerator Move(int steps, int currPosition)
     {
         for (int i = 0; i < steps; i++)
         {
             // Avanzar la posición del jugador en el tablero
-            player.CurrentPosition++;
-            if (player.CurrentPosition >= GameManager.Instance.SquareList.Length)
-            {
-                player.CurrentPosition = 0;
-            }
+            currPosition++;
+            if (currPosition >= gameManager.Squares.Length) currPosition = 0;
 
             // Configurar la casilla de destino y su posición central
-            Transform squareTransform = GameManager.Instance.SquareList[player.CurrentPosition];
+            Transform squareTransform = gameManager.Squares[currPosition].transform;
             Vector3 positionCenterBox = squareTransform.position;
             RaycastHit hit;
             Vector3 rayStart = positionCenterBox + Vector3.up * 10;
 
             if (Physics.Raycast(rayStart, Vector3.down, out hit, Mathf.Infinity, groundLayerMask))
             {
-                Vector3 destinyPosition = hit.point; // Ir directamente al centro de la casilla
+                Vector3 destinyPosition = hit.point;
                 Vector3 movementDirection = (destinyPosition - transform.position).normalized;
                 Quaternion targetRotation = Quaternion.LookRotation(movementDirection);
 
                 // Configurar animación de movimiento
-                playerAnimator.SetFloat("X", 0);
-                playerAnimator.SetFloat("Y", 1);
+                animator.SetMoving(0, 1);
 
                 // Interpolación de movimiento hacia la siguiente casilla
                 float time = 0f;
@@ -75,22 +89,21 @@ public class PlayerMovement : MonoBehaviour
                 Debug.LogError("No se encontró la superficie bajo la casilla.");
             }
         }
-
-        // Al finalizar el movimiento, reinicia la animación a estado idle
-        direction = Vector2.zero;
-        playerAnimator.SetFloat("X", direction.x);
-        playerAnimator.SetFloat("Y", direction.y);
+        newPosition = currPosition;
     }
 
+    #endregion
+
+    #region Methods Position
 
     public void InitPosition(int position)
     {
-        GameManager.Instance.SquareList[position].GetComponent<Square>().AddPlayer(this);
+        gameManager.Squares[position].AddPlayer(this);
     }
 
     public void CenterPosition(int position)
     {
-        Transform squareTransform = GameManager.Instance.SquareList[position];
+        Transform squareTransform = gameManager.Squares[position].transform;
 
         // Posicionarse en el centro de la casilla
         Vector3 targetPosition = squareTransform.position;
@@ -98,8 +111,8 @@ public class PlayerMovement : MonoBehaviour
         transform.localScale = Vector3.one;
 
         // Calcular la orientación hacia la siguiente casilla
-        int nextPosition = (position + 1) % GameManager.Instance.SquareList.Length;
-        Vector3 nextSquarePosition = GameManager.Instance.SquareList[nextPosition].position;
+        int nextPosition = (position + 1) % gameManager.Squares.Length;
+        Vector3 nextSquarePosition = gameManager.Squares[nextPosition].transform.position;
         Vector3 directionToNext = (nextSquarePosition - targetPosition).normalized;
 
         // Ajustar la rotación para mirar hacia la siguiente casilla
@@ -115,8 +128,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void CornerPosition(int position)
     {
-        Transform squareTransform = GameManager.Instance.SquareList[position];
-        Square currentSquare = GameManager.Instance.SquareList[position].GetComponent<Square>();
+        Transform squareTransform = gameManager.Squares[position].transform;
+        Square currentSquare = gameManager.Squares[position];
         currentSquare.AddPlayer(this);
 
         int playerIndex = currentSquare.GetPlayerIndex(this);
@@ -148,4 +161,7 @@ public class PlayerMovement : MonoBehaviour
         else if (totalPlayers == 2) return (playerIndex == 0) ? -0.5f : 0.5f;
         else return -0.75f + 1.5f * playerIndex / (totalPlayers - 1);
     }
+
+    #endregion
+
 }

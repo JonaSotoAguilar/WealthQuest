@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 
 public class CardsPanel : MonoBehaviour
 {
@@ -11,35 +12,15 @@ public class CardsPanel : MonoBehaviour
     [SerializeField] private Transform cardGrid;
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private InvestPanel investPanel;
-    [SerializeField] private PlayerController currentPlayer;
+    [SerializeField] private IPlayer currPlayer;
 
     public event Action OnCardSelected;
     public Transform CardGrid { get => cardGrid; set => cardGrid = value; }
     public InvestPanel InvestPanel { get => investPanel; set => investPanel = value; }
 
-    private void OnEnable() => playerEventSystem.SetSelectedGameObject(cardGrid.GetChild(0).gameObject);
-
-    void Update()
+    public void SetupCards(IPlayer player, List<CardBase> selectedCards)
     {
-        if (investPanel.gameObject.activeSelf)
-        {
-            if (currentPlayer.PlayerData.Money < investPanel.GetInvestmentAmount())
-            {
-                foreach (Transform child in cardGrid)
-                    child.GetComponent<Button>().interactable = false;
-            }
-            else
-            {
-                foreach (Transform child in cardGrid)
-                    child.GetComponent<Button>().interactable = true;
-            }
-        }
-    }
-
-    public void SetupCards(PlayerController player, List<CardBase> selectedCards)
-    {
-        ClearCards();
-        currentPlayer = player;
+        currPlayer = player;
         if (selectedCards.Count > 0)
         {
             foreach (var card in selectedCards)
@@ -47,9 +28,9 @@ public class CardsPanel : MonoBehaviour
             ShowPanel(true);
             if (selectedCards[0] is InvestmentCard)
             {
-                investPanel.ResetAmount();
-                investPanel.MoneyPlayer = currentPlayer.PlayerData.Money;
                 investPanel.ShowPanel(true);
+                investPanel.MoneyPlayer = currPlayer.Money;
+                StartCoroutine(InvestmentActive());
             }
             playerEventSystem.SetSelectedGameObject(cardGrid.GetChild(0).gameObject);
         }
@@ -57,7 +38,6 @@ public class CardsPanel : MonoBehaviour
             Debug.LogError("No hay suficientes tarjetas disponibles.");
     }
 
-    // Método para configurar cada tarjeta individualmente
     private void SetupCard(CardBase card)
     {
         GameObject cardInstance = Instantiate(cardPrefab, cardGrid);
@@ -69,24 +49,30 @@ public class CardsPanel : MonoBehaviour
         descriptionText.text = card.title;
 
         TextMeshProUGUI costText = cardInstance.transform.Find("CostText").GetComponent<TextMeshProUGUI>();
-        costText.text = card.GetFormattedText(currentPlayer.PlayerData.ScoreKFP);
+        costText.text = card.GetFormattedText(currPlayer.Points);
 
         Button cardButton = cardInstance.GetComponent<Button>();
         cardButton.onClick.AddListener(() => HandleOptionSelected(card));
     }
 
-    // Método que maneja la selección de la tarjeta
+    private IEnumerator InvestmentActive()
+    {
+        while (investPanel.gameObject.activeSelf)
+        {
+            if (investPanel.MoneyPlayer > investPanel.AmountInvest)
+                foreach (Transform child in cardGrid) child.GetComponent<Button>().interactable = true;
+            else
+                foreach (Transform child in cardGrid) child.GetComponent<Button>().interactable = false;
+        }
+        yield return null;
+    }
+
     public void HandleOptionSelected(CardBase selectedCard)
     {
         int amountInt = 0;
         if (selectedCard is InvestmentCard)
-        {
             amountInt = investPanel.GetInvestmentAmount();
-            investPanel.ShowPanel(false);
-        }
-        ShowPanel(false);
-        ClearCards();
-        selectedCard.ApplyEffect(currentPlayer, amountInt);
+        selectedCard.ApplyEffect(currPlayer, amountInt);
         OnCardSelected?.Invoke();
     }
 
@@ -99,16 +85,24 @@ public class CardsPanel : MonoBehaviour
         }
     }
 
-    public void ShowPanel(bool visible)
-    {
-        gameObject.SetActive(visible);
-    }
-
     public void CancelSelection()
     {
         investPanel.ShowPanel(false);
         ShowPanel(false);
         ClearCards();
         OnCardSelected?.Invoke();
+    }
+
+    public void ClosePanel()
+    {
+        // FIXME: Agregar animacioN respuesta escogida
+        if (investPanel.gameObject.activeSelf) investPanel.ShowPanel(false);
+        ShowPanel(false);
+        ClearCards();
+    }
+
+    public void ShowPanel(bool visible)
+    {
+        gameObject.SetActive(visible);
     }
 }

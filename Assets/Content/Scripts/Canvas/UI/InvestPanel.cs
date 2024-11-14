@@ -11,12 +11,14 @@ public class InvestPanel : MonoBehaviour
     [SerializeField] private Button increaseAmount;
     [SerializeField] private Button lowerAmount;
     [SerializeField] private Button cancelButton;
+    private int amountInvest;
     private int moneyPlayer;
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
     public int MoneyPlayer { get => moneyPlayer; set => moneyPlayer = value; }
+    public int AmountInvest { get => amountInvest; }
 
-    private void Awake()
+    void OnEnable()
     {
         ResetAmount();
     }
@@ -25,22 +27,22 @@ public class InvestPanel : MonoBehaviour
     {
         // Pasar de formato chileno a int
         string amount = amountText.text.Substring(1);
-        int amountInt = int.Parse(amount.Replace(".", ""));
-        if (amountInt + 100 <= moneyPlayer)
+        amountInvest = int.Parse(amount.Replace(".", ""));
+        if (amountInvest + 100 <= moneyPlayer)
         {
-            amountInt += 100;
-            amountText.text = amountInt.ToString("C0", chileanCulture);
+            amountInvest += 100;
+            amountText.text = amountInvest.ToString("C0", chileanCulture);
         }
     }
 
     public void LowerAmount()
     {
         string amount = amountText.text.Substring(1);
-        int amountInt = int.Parse(amount.Replace(".", ""));
-        if (amountInt - 100 >= 100)
+        amountInvest = int.Parse(amount.Replace(".", ""));
+        if (amountInvest - 100 >= 100)
         {
-            amountInt -= 100;
-            amountText.text = amountInt.ToString("C0", chileanCulture);
+            amountInvest -= 100;
+            amountText.text = amountInvest.ToString("C0", chileanCulture);
         }
     }
 
@@ -58,6 +60,7 @@ public class InvestPanel : MonoBehaviour
     public void ResetAmount()
     {
         amountText.text = "$100";
+        amountInvest = 100;
     }
 
 }

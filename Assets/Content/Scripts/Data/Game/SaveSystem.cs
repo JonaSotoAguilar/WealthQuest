@@ -20,12 +20,8 @@ public static class SaveSystem
     private static readonly byte[] aesKey = Encoding.UTF8.GetBytes("1234567890123456");  // 16 bytes exactos
     private static readonly byte[] aesIV = Encoding.UTF8.GetBytes("abcdefghijklmnop");   // 16 bytes exactos
 
-    private static int slotData = 0;
-
-    public static int SlotData { set => slotData = value; }
-
     // Guardar el juego
-    public static IEnumerator SaveGame(GameData data)
+    public static IEnumerator SaveGame(GameData data, int slotData)
     {
         string json = JsonUtility.ToJson(data);
         byte[] encryptedData = EncryptStringToBytes_Aes(json);
@@ -50,7 +46,7 @@ public static class SaveSystem
     }
 
     // Cargar el juego
-    public static IEnumerator LoadGame(GameData data)
+    public static IEnumerator LoadGame(GameData data, int slotData)
     {
         byte[] encryptedData = null;
 
@@ -78,7 +74,7 @@ public static class SaveSystem
         yield return null;
     }
 
-    public static IEnumerator SaveHistory(GameData data)
+    public static IEnumerator SaveHistory(GameData data, int slotData)
     {
         FinishGameData finishGameData = new FinishGameData(data);
         string json = JsonUtility.ToJson(finishGameData);
@@ -87,7 +83,7 @@ public static class SaveSystem
 
         string historyPath = Path.Combine(historyDirectory, "game_" + PlayerPrefs.GetInt("gameId") + ".save");
         File.WriteAllBytes(historyPath, encryptedData);
-        DeleteSave();
+        DeleteSave(slotData);
 
         yield return null;
     }
@@ -107,7 +103,7 @@ public static class SaveSystem
         yield return null;
     }
 
-    private static void DeleteSave()
+    private static void DeleteSave(int slotData)
     {
         switch (slotData)
         {

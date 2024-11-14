@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerDice : MonoBehaviour
@@ -6,7 +7,7 @@ public class PlayerDice : MonoBehaviour
     [SerializeField] private diceTypeList diceType;
     private Rigidbody myRigidbody;
     private int diceRoll;
-    private bool isSpinning = true;
+    private bool isSpinning = false;
     private Vector3 rotationDirection = new Vector3(300f, 300f, 300f); // Dirección inicial de la rotación
 
     public enum diceTypeList
@@ -22,37 +23,21 @@ public class PlayerDice : MonoBehaviour
 
     public int DiceRoll { get => diceRoll; }
 
-    void Start()
+    public IEnumerator RotateDiceRoutine()
     {
-        myRigidbody = GetComponent<Rigidbody>();
+        isSpinning = true;
+        ShowDice(true);
         StartCoroutine(ChangeRotationDirection());
-    }
-
-    void OnEnable()
-    {
-        StartCoroutine(ChangeRotationDirection());
-    }
-
-    void OnDisable()
-    {
-        StopCoroutine(ChangeRotationDirection());
-    }
-
-    void Update()
-    {
-        if (isSpinning)
+        while (isSpinning)
         {
             RotateDice();
+            yield return null;
         }
+        yield break;
     }
 
-    // Rotación constante del dado
-    // Rotación constante del dado con cambio de dirección
-    private void RotateDice()
-    {
-        // Aplica la rotación usando la dirección actual
-        transform.Rotate(rotationDirection * Time.deltaTime);
-    }
+    // Rotar el dado
+    private void RotateDice() => transform.Rotate(rotationDirection * Time.deltaTime);
 
     // Corrutina para cambiar la dirección de la rotación
     private IEnumerator ChangeRotationDirection()
@@ -70,11 +55,12 @@ public class PlayerDice : MonoBehaviour
             );
         }
     }
+
     // Detener el dado y calcular el resultado (ahora como IEnumerator)
     public IEnumerator StopDice()
     {
         yield return new WaitForSeconds(1.1f);
-        isSpinning = false; // Detener la rotación
+        isSpinning = false;
 
         // Asegurarse de redondear la rotación para que el dado se estabilice en una cara específica
         myRigidbody.angularVelocity = Vector3.zero;
@@ -87,7 +73,8 @@ public class PlayerDice : MonoBehaviour
         // Verificar el resultado según la orientación de la cámara y la posición del dado.
         CheckResult();
 
-        yield return HideDiceAfterDelay(1.3f);
+        yield return new WaitForSeconds(1.3f);
+        ShowDice(false);
     }
 
 
@@ -113,14 +100,6 @@ public class PlayerDice : MonoBehaviour
                 diceRoll = index + 1;
             }
         }
-    }
-
-
-    private IEnumerator HideDiceAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        gameObject.SetActive(false);
-        isSpinning = true;
     }
 
     public void ShowDice(bool show)

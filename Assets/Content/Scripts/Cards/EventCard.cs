@@ -7,8 +7,18 @@ public class EventCard : CardBase
     [TextArea(minLines: 2, maxLines: 4), Tooltip("Descripcion de carta.")] public string description;
     [Tooltip("Monto a ganar/perder")] public int amount;
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
+    private static IGameManager gameManager;
 
-    public override string GetFormattedText(int playerKFP)
+    private void OnEnable()
+    {
+        if (gameManager != null) return;
+
+        gameManager = GameManagerNetwork.Instance != null ?
+                      GameManagerNetwork.Instance :
+                      GameManager.Instance;
+    }
+
+    public override string GetFormattedText(int points)
     {
         if (amount > 0)
         {
@@ -20,23 +30,22 @@ public class EventCard : CardBase
         }
     }
 
-
-    public override void ApplyEffect(PlayerController player, int capital = 0)
+    public override void ApplyEffect(IPlayer player, int capital = 0)
     {
-        foreach (PlayerController p in GameManager.Instance.Players)
+        foreach (IPlayer p in gameManager.Players)
         {
             if (amount > 0)
-                p.ChangeMoney(amount);
+                p.AddMoney(amount);
             else
             {
-                PlayerExpense expense = new PlayerExpense(1, amount);
-                p.CreateExpense(expense, false);
+                Expense newExpense = new Expense(1, amount);
+                p.AddExpense(newExpense, false);
             }
         }
     }
 
     public override void RemoveFromGameData()
     {
-        GameManager.Instance.GameData.EventCards.Remove(this);
+        GameManager.Instance.GameData.eventCards.Remove(this);
     }
 }

@@ -5,8 +5,5 @@ using System.Linq;
 
 public class SquareExpense : Square
 {
-    public override void GetCards(PlayerController player)
-    {
-        selectedCards = GameManager.Instance.GameData.GetRandomExpenseCards(2).Cast<CardBase>().ToList();
-    }
+    public override void GetCards() => selectedCards = GameManager.Instance.GameData.GetRandomExpenseCards(2).Cast<CardBase>().ToList();
 }

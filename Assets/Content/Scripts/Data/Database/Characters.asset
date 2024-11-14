@@ -16,8 +16,8 @@ MonoBehaviour:
   - characterID: 0
     characterName: BusinessManShirt
     characterIcon: {fileID: 2800000, guid: 8f9f91a1bccbc7242b4c42bb7ae4e3d2, type: 3}
-    characterPrefabs: {fileID: 153506, guid: c5ab19286146c3649ae3e5771c23ee78, type: 3}
+    characterPrefab: {fileID: 153506, guid: c5ab19286146c3649ae3e5771c23ee78, type: 3}
   - characterID: 1
     characterName: BusinessManSuit
     characterIcon: {fileID: 2800000, guid: 484708ad00772824c8ff678c35cd3ded, type: 3}
-    characterPrefabs: {fileID: 1784647339104494, guid: e3e14acdbcbef8b438ca2502ae3a1b6a, type: 3}
+    characterPrefab: {fileID: 1784647339104494, guid: e3e14acdbcbef8b438ca2502ae3a1b6a, type: 3}

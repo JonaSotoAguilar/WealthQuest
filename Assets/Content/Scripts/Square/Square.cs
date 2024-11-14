@@ -1,75 +1,57 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public abstract class Square : MonoBehaviour
 {
     public List<PlayerMovement> playersInSquare = new List<PlayerMovement>();
     public List<CardBase> selectedCards;
 
-    public List<PlayerMovement> PlayersInSquare { get => playersInSquare; }
     public int PlayersCount => playersInSquare.Count;
 
-    public abstract void GetCards(PlayerController player);
+    #region Methods Square
 
-    public IEnumerator ActiveSquare(PlayerController player)
+    public abstract void GetCards();
+
+    public void SetupSquare(IPlayer player, PlayerCanvas canvas)
     {
-        var canvasPlayer = player.PlayerCanvas;
-
-        // Obtener una referencia al CardsPanel desde el Canvas
-        CardsPanel panel = canvasPlayer.CardsPanel;
-
-        if (panel != null)
-        {
-            GetCards(player);
-            panel.SetupCards(player, selectedCards);
-            bool cardSelected = false;
-
-            System.Action onCardSelected = () => cardSelected = true;
-            panel.OnCardSelected += onCardSelected;
-            yield return new WaitUntil(() => cardSelected);
-
-            panel.OnCardSelected -= onCardSelected;
-        }
-        else
-        {
-            Debug.LogError("No se encontró el CardsPanel en el canvas.");
-        }
+        CardsPanel panel = canvas.CardsPanel;
+        if (panel == null) return;
+        panel.SetupCards(player, selectedCards);
     }
+
+    #endregion
+
+    #region Methods Players
 
     public void AddPlayer(PlayerMovement player)
     {
-        if (!playersInSquare.Contains(player))
-        {
-            playersInSquare.Add(player);
-        }
+        if (playersInSquare.Contains(player)) return;
+
+        playersInSquare.Add(player);
     }
 
-    // Método para remover un jugador de la casilla
     public void RemovePlayer(PlayerMovement player)
     {
-        if (playersInSquare.Contains(player))
-        {
-            playersInSquare.Remove(player);
-        }
+        if (!playersInSquare.Contains(player)) return;
+        
+        playersInSquare.Remove(player);
     }
 
-    public int GetPlayerIndex(PlayerMovement player)
-    {
-        return playersInSquare.IndexOf(player);
-    }
+    public int GetPlayerIndex(PlayerMovement player) => playersInSquare.IndexOf(player);
 
-    public void UpdateSquare(PlayerController player)
+    public void UpdateSquarePositions(IPlayer player)
     {
-        int squarePosition = player.PlayerData.CurrentPosition;
-        RemovePlayer(player.PlayerMovement);
-        player.PlayerMovement.CenterPosition(squarePosition);
+        int squarePosition = player.Position;
+        RemovePlayer(player.Movement);
+        player.Movement.CenterPosition(squarePosition);
 
         int totalPlayers = playersInSquare.Count;
         for (int i = 0; i < totalPlayers; i++)
-        {
             playersInSquare[i].CornerPosition(squarePosition);
-        }
     }
+
+    #endregion
 
 }

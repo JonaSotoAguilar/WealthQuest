@@ -7,6 +7,9 @@ public class PlayerSpawner : MonoBehaviour
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private UIManager uiManager;
     [SerializeField] private GameData gameData;
+    [SerializeField] private CharactersDatabase charactersDB;
+
+    private int slotData = 2;
 
     void Start()
     {
@@ -17,9 +20,9 @@ public class PlayerSpawner : MonoBehaviour
                 SpawnPlayer(PlayerStorage.players[i]);
             }
             uiManager.InitPlayersHUD();
-            uiManager.UpdateYear(gameData.CurrentYear);
+            uiManager.UpdateYear(gameData.currentYear);
+            StartCoroutine(SaveSystem.SaveGame(gameData, slotData));
             GameManager.Instance.InitTurn();
-            StartCoroutine(SaveSystem.SaveGame(gameData));
             Destroy(gameObject);
         }
     }
@@ -29,7 +32,7 @@ public class PlayerSpawner : MonoBehaviour
         // Instancia el playerPrefab
         GameObject playerInstance = Instantiate(playerPrefab);
         playerInstance.name = "Player_" + (player.index + 1);
-        Instantiate(player.model.characterPrefabs, playerInstance.transform);
+        Instantiate(charactersDB.GetModel(player.character), playerInstance.transform);
 
         // Asigna el dispositivo al PlayerInput
         var playerInput = playerInstance.GetComponent<PlayerInput>();
@@ -39,15 +42,15 @@ public class PlayerSpawner : MonoBehaviour
 
         // Crea un nuevo PlayerData
         PlayerData playerData;
-        if (gameData.PlayersData.Count <= player.index)
+        if (gameData.playersData.Count <= player.index)
         {
             playerData = new PlayerData();
-            playerData.NewPlayer(player.index, player.name, player.model.characterID);
-            gameData.PlayersData.Add(playerData);
+            playerData.NewPlayer(player.index, player.name, player.character);
+            gameData.playersData.Add(playerData);
         }
         else
         {
-            playerData = gameData.PlayersData[player.index];
+            playerData = gameData.playersData[player.index];
         }
 
         // Inicializa el PlayerController

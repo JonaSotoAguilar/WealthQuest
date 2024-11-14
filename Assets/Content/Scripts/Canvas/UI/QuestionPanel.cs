@@ -9,10 +9,17 @@ public class QuestionPanel : MonoBehaviour
     [SerializeField] private EventSystem playerEventSystem;
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private Button[] optionButtons;
-    public event Action<bool> OnQuestionAnswered;  // Cambia el evento para aceptar un parámetro bool
+    private static GameManagerNetwork gameManager;
+    public event Action<bool> OnQuestionAnswered;
 
+    void Start()
+    {
+        if (gameManager != null) return;
 
-    public void SetupQuestion(QuestionData questionData, PlayerController player)
+        gameManager = GameManagerNetwork.Instance;
+    }
+
+    public void SetupQuestion(QuestionData questionData, IPlayer player)
     {
         questionText.text = questionData.question;
 
@@ -24,26 +31,29 @@ public class QuestionPanel : MonoBehaviour
             optionButtons[i].onClick.AddListener(() => Answer(index, questionData, player));
         }
 
-        // Seleccionar el primer botón multiplayer event system
         playerEventSystem.SetSelectedGameObject(optionButtons[0].gameObject);
 
         ShowPanel(true);
     }
 
-    void Answer(int index, QuestionData questionData, PlayerController player)
+    void Answer(int index, QuestionData questionData, IPlayer player)
     {
         bool isCorrect = index == questionData.indexCorrectAnswer;
 
         if (isCorrect)
         {
-            player.ChangeKFP(questionData.scoreForCorrectAnswer);
-            GameManager.Instance.GameData.QuestionList.Remove(questionData);
+            player.AddPoints(questionData.scoreForCorrectAnswer);
+            gameManager.CmdDeleteQuestion(questionData);
         }
 
-        ShowPanel(false);
-        OnQuestionAnswered?.Invoke(isCorrect);  // Llama al evento pasando el estado de la respuesta
+        OnQuestionAnswered?.Invoke(isCorrect);
     }
 
+    public void ClosePanel()
+    {
+        // FIXME: Agregar animacioN respuesta escogida
+        ShowPanel(false);
+    }
 
     public void ShowPanel(bool visible)
     {

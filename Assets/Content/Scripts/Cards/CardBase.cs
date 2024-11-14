@@ -6,9 +6,9 @@ public abstract class CardBase : ScriptableObject
     [Tooltip("Imagen de carta")] public Sprite image;        // Imagen de la carta
 
     // Método abstracto que deberá ser implementado por las subclases para formatear el texto
-    public abstract string GetFormattedText(int playerKFP);
+    public abstract string GetFormattedText(int points);
 
-    public abstract void ApplyEffect(PlayerController player, int capital = 0);
+    public abstract void ApplyEffect(IPlayer player, int capital = 0);
 
     public abstract void RemoveFromGameData();
 }
