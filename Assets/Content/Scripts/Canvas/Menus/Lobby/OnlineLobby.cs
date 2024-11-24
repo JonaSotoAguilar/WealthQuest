@@ -15,7 +15,8 @@ public class OnlineLobby : NetworkBehaviour
 
     [Header("Network Manager")]
     [SerializeField] private TextMeshProUGUI codeText;
-    [SerializeField] private GameObject playMenu;
+    //[SerializeField] private GameObject playMenu;
+    //[SerializeField] private GameObject onlineMenu;
 
     [Header("Game Actions")]
     [SerializeField] private TMP_Dropdown topicDropdown;
@@ -34,6 +35,7 @@ public class OnlineLobby : NetworkBehaviour
     private void Start()
     {
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
+        codeText.text = RelayManager.Instance.Code;
     }
 
     #region Methods Server
@@ -43,18 +45,17 @@ public class OnlineLobby : NetworkBehaviour
         base.OnStartClient();
         PopulateBundleDropdown();
         InitStartButton();
-        ShowPanel(true);
     }
 
     public override void OnStopClient()
     {
         base.OnStopClient();
 
-        if (this != null && gameObject.activeInHierarchy)
-        {
-            ShowPanel(false);
-            if (playMenu != null) playMenu.SetActive(true);
-        }
+        // if (this != null && gameObject.activeInHierarchy)
+        // {
+        //     ShowPanel(false);
+        //     if (onlineMenu != null) onlineMenu.SetActive(true);
+        // }
     }
 
     #endregion
@@ -70,7 +71,7 @@ public class OnlineLobby : NetworkBehaviour
         else if (IsClientInitialized)
         {
             ShowPanel(false);
-            playMenu.SetActive(true);
+            //onlineMenu.SetActive(true);
             NetworkManager.ClientManager.StopConnection();
         }
     }
@@ -146,7 +147,8 @@ public class OnlineLobby : NetworkBehaviour
 
     public void StartGameScene()
     {
-        if (IsHostInitialized) spawner.CmdSavePlayers(selectedTopic.Value);
+        string bundle = topicDropdown.options[selectedTopic.Value].text;
+        if (IsHostInitialized) spawner.CmdSavePlayers(bundle);
     }
 
     #endregion

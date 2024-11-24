@@ -700,7 +700,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 170
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.y
@@ -5674,7 +5674,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 510
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7304,7 +7304,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -170
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.y
@@ -14791,7 +14791,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -510
       objectReference: {fileID: 0}
     - target: {fileID: 8047140678409722385, guid: 69d1f477930eafa4886ea40bf31fd537, type: 3}
       propertyPath: m_LocalPosition.y
@@ -23740,7 +23740,7 @@ MonoBehaviour:
   _isSpawnable: 1
   _isGlobal: 0
   _initializeOrder: 0
-  _preventDespawnOnDisconnect: 1
+  _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 1
   _initializedValusSet: 0
   NetworkObserver: {fileID: 0}
@@ -23796,7 +23796,6 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 1611590939}
   _networkObjectCache: {fileID: 0}
   data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
-  topics: {fileID: 11400000, guid: 78aab1f83ea0ee64e9a1ee1b604d4a59, type: 2}
   playerLobbyPrefab: {fileID: 3423924691032824280, guid: a607b2888c2edaf428e2e7c229ac0670, type: 3}
   lobby: {fileID: 1611590938}
 --- !u!1 &1617269349
@@ -29015,8 +29014,6 @@ GameObject:
   - component: {fileID: 1991871902}
   - component: {fileID: 1991871906}
   - component: {fileID: 1991871905}
-  - component: {fileID: 1991871908}
-  - component: {fileID: 1991871909}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -29121,41 +29118,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkManager: {fileID: 1991871902}
-  onlineLobby: {fileID: 1611590938}
   maxNumberOfConnections: 4
+  lobby: {fileID: 1611590938}
   data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
   charactersDB: {fileID: 11400000, guid: 5cab4728488ff544c9e750bc6ef6b5c7, type: 2}
-  playerPrefab: {fileID: 8703643946310182916, guid: 6354629a171fc1046acd2063d910ed21, type: 3}
---- !u!114 &1991871908
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1991871901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d331f979d46e8e4a9fc90070c596d44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _updateHostVisibility: 1
-  _maximumTimedObserversDuration: 10
-  _defaultConditions: []
---- !u!114 &1991871909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1991871901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 211a9f6ec51ddc14f908f5acc0cd0423, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _playerPrefab: {fileID: 0}
-  _addToDefaultScene: 1
-  Spawns: []
+  playerPrefab: {fileID: 5595093139614003831, guid: 1972f4fad928a3644a1440672166b644, type: 3}
+  dicePrefab: {fileID: 153946259858020827, guid: 3b69837b137ac9844a651b4eb9fcedaf, type: 3}
 --- !u!1001 &2000475027
 PrefabInstance:
   m_ObjectHideFlags: 0

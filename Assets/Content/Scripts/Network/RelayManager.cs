@@ -9,25 +9,14 @@ using Unity.Services.Relay;
 using System.Threading.Tasks;
 using FishNet.Connection;
 using FishNet.Transporting;
-using FishNet.Managing.Scened;
-using FishNet.Object;
 
 public class RelayManager : MonoBehaviour
 {
     public static RelayManager Instance { get; private set; }
 
-
     [Header("Network Manager")]
     [SerializeField] private NetworkManager networkManager;
-    [SerializeField] private OnlineLobby onlineLobby;
     [SerializeField] private int maxNumberOfConnections = 4;
-
-    [Header("Game Scene")]
-    [SerializeField] private GameData data;
-    [SerializeField] private CharactersDatabase charactersDB;
-    [SerializeField] private GameObject playerPrefab;
-
-    private const string SCENE_GAME = "OnlineGame";
 
     // Variables Relay
     private string code;
@@ -49,7 +38,6 @@ public class RelayManager : MonoBehaviour
     void Start()
     {
         networkManager.ServerManager.OnRemoteConnectionState += OnRemoteConnectionState;
-        networkManager.SceneManager.OnLoadEnd += OnSceneLoadComplete;
     }
 
     #region Methods Relay
@@ -86,7 +74,7 @@ public class RelayManager : MonoBehaviour
             bool start = networkManager.ServerManager.StartConnection();
             if (!start) return false;
 
-            InitLobby(relayHostData.JoinCode);
+            code = relayHostData.JoinCode;
 
             start = networkManager.ClientManager.StartConnection();
             if (!start)
@@ -102,26 +90,6 @@ public class RelayManager : MonoBehaviour
             Debug.LogError("Failed to create Relay: " + ex.Message);
             return false;
         }
-    }
-
-    private void OnRemoteConnectionState(NetworkConnection conn, RemoteConnectionStateArgs args)
-    {
-        if (args.ConnectionState == RemoteConnectionState.Started)
-        {
-            connectedPlayers++;
-        }
-        else if (args.ConnectionState == RemoteConnectionState.Stopped)
-        {
-            connectedPlayers--;
-        }
-    }
-
-    private void InitLobby(string joinCode)
-    {
-        code = joinCode;
-        onlineLobby.CodeText.text = code;
-        onlineLobby.ShowPanel(true);
-        networkManager.ServerManager.Spawn(onlineLobby.gameObject);
     }
 
     public async Task<bool> JoinRelay(string joinCode)
@@ -154,9 +122,11 @@ public class RelayManager : MonoBehaviour
             transport.SetRelayServerData(relayJoinData.IPv4Address, relayJoinData.Port, relayJoinData.AllocationIDBytes,
                 relayJoinData.Key, relayJoinData.ConnectionData, relayJoinData.HostConnectionData);
 
+            code = relayJoinData.JoinCode;
+
             // Iniciar la conexión del cliente
             networkManager.ClientManager.StartConnection();
-            onlineLobby.CodeText.text = joinCode;
+
             return true;
         }
         catch (Exception ex)
@@ -166,49 +136,19 @@ public class RelayManager : MonoBehaviour
         }
     }
 
-    #endregion
-
-    #region Methods Game Scene
-    private void OnSceneLoadComplete(SceneLoadEndEventArgs args)
+    private void OnRemoteConnectionState(NetworkConnection conn, RemoteConnectionStateArgs args)
     {
-        if (PlayerStorage.playersNetwork.Count <= 0) return;
-        Debug.Log("OnSceneLoadComplete");
-
-        if (args.LoadedScenes == null || args.LoadedScenes.Length <= 0)
+        Debug.Log("Remote connection state: " + args.ConnectionState);
+        if (args.ConnectionState == RemoteConnectionState.Started)
         {
-            Debug.LogWarning("No se cargaron escenas en la lista `loadedScenes`.");
+            connectedPlayers++;
         }
-
-        Debug.Log("Escena cargada: " + args.LoadedScenes[0].name);
-
-        if (args.LoadedScenes[0].name == SCENE_GAME)
+        else if (args.ConnectionState == RemoteConnectionState.Stopped)
         {
-            int index = 0;
-            foreach (NetworkConnection conn in networkManager.ServerManager.Clients.Values)
-            {
-                SpawnCharacterForPlayer(conn, PlayerStorage.playersNetwork[index]);
-                index++;
-            }
-            GameManagerNetwork.Instance.RpcInitializeHUD(data.currentYear);
-            GameManagerNetwork.Instance.InitTurn();
+            connectedPlayers--;
         }
     }
 
-    private void SpawnCharacterForPlayer(NetworkConnection conn, DataPlayerNetwork player)
-    {
-        GameObject playerInstance = Instantiate(playerPrefab);
-        playerInstance.name = "Player_" + (player.index + 1); ;
-
-        GameObject character = Instantiate(charactersDB.GetModel(player.character), playerInstance.transform);
-
-        GameManagerNetwork.Instance.RpcSavePlayerData(player, data.playersData.Count <= player.index);
-        var controller = playerInstance.GetComponent<PlayerControllerNetwork>();
-        controller.InitializePlayer();
-
-        networkManager.ServerManager.Spawn(playerInstance, conn);
-        character.GetComponent<NetworkObject>().enabled = true;
-        networkManager.ServerManager.Spawn(character, conn);
-    }
     #endregion
 
 }

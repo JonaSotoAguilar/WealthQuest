@@ -17,10 +17,11 @@ public class GameData : ScriptableObject
     [Header("Players")]
     [SerializeField] public List<PlayerData> playersData;
     [SerializeField] public int initialPlayerIndex;
-    [SerializeField] public int turnPlayer;
+    [SerializeField] public int indexTurn;
+    [SerializeField] public string turnPlayer;
 
     [Header("Asset Bundle Settings")]
-    [SerializeField] public string defaultBundlePath;
+    [SerializeField] public string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
     [SerializeField] public string assetBundleDirectory;
     [SerializeField] public string currentBundlePath;
     [SerializeField] public string bundleName;
@@ -158,6 +159,22 @@ public class GameData : ScriptableObject
         }
     }
 
+    public QuestionData GetQuestionData(int index)
+    {
+        if (questions.Count == 0) ResetQuestions();
+
+        if (questions != null && questions.Count > 0)
+        {
+            QuestionData selectedQuestion = questions[index];
+            return selectedQuestion;
+        }
+        else
+        {
+            Debug.LogError("No hay preguntas disponibles.");
+            return null;
+        }
+    }
+
     public void ResetQuestions() => questions = new List<QuestionData>(allQuestions);
 
     public List<ExpenseCard> GetRandomExpenseCards(int count)
@@ -179,7 +196,7 @@ public class GameData : ScriptableObject
 
     public List<InvestmentCard> GetRandomInvestmentCards(int count)
     {
-        PlayerData currentPlayer = playersData[turnPlayer];
+        PlayerData currentPlayer = playersData[indexTurn];
         List<InvestmentCard> selectedCards = new List<InvestmentCard>();
         List<InvestmentCard> availableCards = investmentCards
             .Where(card => !currentPlayer.Investments.Any(inv => inv.NameInvestment == card.title))
@@ -244,7 +261,8 @@ public class GameData : ScriptableObject
 
         playersData = new List<PlayerData>();
         initialPlayerIndex = 0;
-        turnPlayer = 0;
+        indexTurn = 0;
+        turnPlayer = "";
 
         allQuestions = new List<QuestionData>();
         questions = new List<QuestionData>();

@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour, IGameManager
     {
         NextPlayer();
         UpdateTime();
-        if (gameData.initialPlayerIndex == gameData.turnPlayer) yield return FinishYear();
+        //if (gameData.initialPlayerIndex == gameData.turnPlayer) yield return FinishYear();
         yield return SaveSystem.SaveGame(gameData, 2);
         //yield return cameras.UpdateCurrentCamera(currentPlayer.transform);
         NextTurn();
@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour, IGameManager
 
     private void NextPlayer()
     {
-        gameData.turnPlayer = (gameData.turnPlayer + 1) % players.Count;
+        //gameData.turnPlayer = (gameData.turnPlayer + 1) % players.Count;
         //currentPlayer = players[gameData.TurnPlayer];
         UpdatePositions();
     }

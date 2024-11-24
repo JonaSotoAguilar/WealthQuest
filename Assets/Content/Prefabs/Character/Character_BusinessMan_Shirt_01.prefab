@@ -1077,9 +1077,9 @@ GameObject:
   - component: {fileID: 3846862649971417325}
   - component: {fileID: 6494349236952437634}
   - component: {fileID: 9509074}
-  - component: {fileID: 5939531881933060007}
-  - component: {fileID: -6895930238104718462}
-  - component: {fileID: 5527018327867602469}
+  - component: {fileID: 6877497328185546421}
+  - component: {fileID: 4327472949415427723}
+  - component: {fileID: 3360232301613465169}
   m_Layer: 0
   m_Name: Character_BusinessMan_Shirt_01
   m_TagString: Untagged
@@ -1140,8 +1140,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 9509074}
-  networkAnimator: {fileID: -6895930238104718462}
-  networkObject: {fileID: 0}
+  networkAnimator: {fileID: 4327472949415427723}
+  networkObject: {fileID: 6877497328185546421}
 --- !u!95 &9509074
 Animator:
   serializedVersion: 7
@@ -1164,14 +1164,14 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5939531881933060007
+--- !u!114 &6877497328185546421
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 153506}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
@@ -1181,12 +1181,13 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
   NetworkBehaviours:
-  - {fileID: -6895930238104718462}
+  - {fileID: 4327472949415427723}
+  - {fileID: 3360232301613465169}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
   RuntimeChildNetworkBehaviours: []
-  _isNetworked: 0
+  _isNetworked: 1
   _isSpawnable: 1
   _isGlobal: 0
   _initializeOrder: 0
@@ -1215,7 +1216,7 @@ MonoBehaviour:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}
     LocalScale: {x: 1, y: 1, z: 1}
---- !u!114 &-6895930238104718462
+--- !u!114 &4327472949415427723
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1228,8 +1229,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _componentIndexCache: 0
-  _addedNetworkObject: {fileID: 5939531881933060007}
-  _networkObjectCache: {fileID: 5939531881933060007}
+  _addedNetworkObject: {fileID: 6877497328185546421}
+  _networkObjectCache: {fileID: 6877497328185546421}
   IgnoredParameters: []
   _animator: {fileID: 9509074}
   _synchronizeWhenDisabled: 0
@@ -1237,7 +1238,7 @@ MonoBehaviour:
   _interpolation: 2
   _clientAuthoritative: 1
   _sendToOwner: 0
---- !u!114 &5527018327867602469
+--- !u!114 &3360232301613465169
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1249,9 +1250,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2836e36774ca1c4bbbee976e17b649c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 255
-  _addedNetworkObject: {fileID: 5939531881933060007}
-  _networkObjectCache: {fileID: 0}
+  _componentIndexCache: 1
+  _addedNetworkObject: {fileID: 6877497328185546421}
+  _networkObjectCache: {fileID: 6877497328185546421}
   _componentConfiguration: 0
   _synchronizeParent: 1
   _packing:

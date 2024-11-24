@@ -34,6 +34,8 @@ public static class PlayerStorage
             return;
         }
 
+        Debug.Log("Guardando jugador: " + playerName + " con índice: " + index + " y personaje: " + characterIndex);
+
         NewPlayer newPlayer = new NewPlayer
         {
             index = index,

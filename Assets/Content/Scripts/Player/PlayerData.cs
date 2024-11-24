@@ -1,23 +1,24 @@
 using System.Collections.Generic;
 using FishNet.Serializing;
+using UnityEngine;
 
 [System.Serializable]
 public class PlayerData
 {
-    private string uid;
-    private int index;
-    private string nickName;
-    private int position;
-    private int points;
-    private int money;
-    private int invest;
-    private int debt;
-    private int salary;
-    private int income;
-    private int expense;
-    private List<Investment> investments;
-    private List<Expense> expenses;
-    private int characterID;
+    [SerializeField] private string uid;
+    [SerializeField] private int index;
+    [SerializeField] private string nickName;
+    [SerializeField] private int position;
+    [SerializeField] private int points;
+    [SerializeField] private int money;
+    [SerializeField] private int invest;
+    [SerializeField] private int debt;
+    [SerializeField] private int salary;
+    [SerializeField] private int income;
+    [SerializeField] private int expense;
+    [SerializeField] private List<Investment> investments;
+    [SerializeField] private List<Expense> expenses;
+    [SerializeField] private int characterID;
 
     public int Index { get => index; set => index = value; }
     public string UID { get => uid; set => uid = value; }
@@ -115,57 +116,57 @@ public class Investment
         }
     }
 
-    #region Methods Write and Read
+    // #region Methods Write and Read
 
-    public static void WritePlayerInvestment(Writer writer, Investment investment)
-    {
-        writer.WriteString(investment.nameInvestment);
-        writer.WriteInt32(investment.turns);
-        writer.WriteInt32(investment.capital);
-        writer.WriteInt32(investment.nextDividend);
+    // public static void WritePlayerInvestment(Writer writer, Investment investment)
+    // {
+    //     writer.WriteString(investment.nameInvestment);
+    //     writer.WriteInt32(investment.turns);
+    //     writer.WriteInt32(investment.capital);
+    //     writer.WriteInt32(investment.nextDividend);
 
-        // Serializar la lista pctChanges
-        writer.WriteInt32(investment.pctChanges.Count);
-        foreach (var change in investment.pctChanges)
-        {
-            writer.WriteSingle(change);
-        }
+    //     // Serializar la lista pctChanges
+    //     writer.WriteInt32(investment.pctChanges.Count);
+    //     foreach (var change in investment.pctChanges)
+    //     {
+    //         writer.WriteSingle(change);
+    //     }
 
-        // Serializar la lista pctDividend
-        writer.WriteInt32(investment.pctDividend.Count);
-        foreach (var dividend in investment.pctDividend)
-        {
-            writer.WriteSingle(dividend);
-        }
-    }
+    //     // Serializar la lista pctDividend
+    //     writer.WriteInt32(investment.pctDividend.Count);
+    //     foreach (var dividend in investment.pctDividend)
+    //     {
+    //         writer.WriteSingle(dividend);
+    //     }
+    // }
 
-    public static Investment ReadPlayerInvestment(Reader reader)
-    {
-        string name = reader.ReadString();
-        int turns = reader.ReadInt32();
-        int capital = reader.ReadInt32();
-        int nextDividend = reader.ReadInt32();
+    // public static Investment ReadPlayerInvestment(Reader reader)
+    // {
+    //     string name = reader.ReadString();
+    //     int turns = reader.ReadInt32();
+    //     int capital = reader.ReadInt32();
+    //     int nextDividend = reader.ReadInt32();
 
-        // Deserializar la lista pctChanges
-        int pctChangesCount = reader.ReadInt32();
-        List<float> pctChanges = new List<float>();
-        for (int i = 0; i < pctChangesCount; i++)
-        {
-            pctChanges.Add(reader.ReadSingle());
-        }
+    //     // Deserializar la lista pctChanges
+    //     int pctChangesCount = reader.ReadInt32();
+    //     List<float> pctChanges = new List<float>();
+    //     for (int i = 0; i < pctChangesCount; i++)
+    //     {
+    //         pctChanges.Add(reader.ReadSingle());
+    //     }
 
-        // Deserializar la lista pctDividend
-        int pctDividendCount = reader.ReadInt32();
-        List<float> pctDividend = new List<float>();
-        for (int i = 0; i < pctDividendCount; i++)
-        {
-            pctDividend.Add(reader.ReadSingle());
-        }
+    //     // Deserializar la lista pctDividend
+    //     int pctDividendCount = reader.ReadInt32();
+    //     List<float> pctDividend = new List<float>();
+    //     for (int i = 0; i < pctDividendCount; i++)
+    //     {
+    //         pctDividend.Add(reader.ReadSingle());
+    //     }
 
-        return new Investment(name, turns, capital, nextDividend, pctChanges, pctDividend);
-    }
+    //     return new Investment(name, turns, capital, nextDividend, pctChanges, pctDividend);
+    // }
 
-    #endregion
+    // #endregion
 
 }
 
@@ -185,22 +186,23 @@ public class Expense
         amount = amountTurn;
     }
 
-    #region Methods Write and Read
+    //     #region Methods Write and Read
 
-    public static void WritePlayerExpense(Writer writer, Expense expense)
-    {
-        writer.WriteInt32(expense.turns);
-        writer.WriteInt32(expense.amount);
-    }
+    //     public static void WritePlayerExpense(PooledWriter writer, Expense expense)
+    //     {
+    //         writer.WriteInt32(expense.turns);
+    //         writer.WriteInt32(expense.amount);
+    //     }
 
-    public static Expense ReadPlayerExpense(Reader reader)
-    {
-        int turns = reader.ReadInt32();
-        int amount = reader.ReadInt32();
-        return new Expense(turns, amount);
-    }
+    //     public static Expense ReadPlayerExpense(PooledReader reader)
+    //     {
+    //         int turns = reader.ReadInt32();
+    //         int amount = reader.ReadInt32();
+    //         return new Expense(turns, amount);
+    //     }
 
-    #endregion
+    //     #endregion
 
+    // 
 }
 

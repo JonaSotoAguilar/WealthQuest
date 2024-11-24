@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour
 
         playerDice.ShowDice(false);
         playerMovement.Animator = playerAnimator;
-        playerMovement.InitPosition(playerData.Position);
+        //playerMovement.InitPosition(playerData.Position);
 
         //GameManager.Instance.Players.Add(this);
     }
@@ -118,7 +118,7 @@ public class PlayerController : MonoBehaviour
 
     private void FinishTurn()
     {
-        playerMovement.CornerPosition(playerData.Position);
+        //playerMovement.CornerPosition(playerData.Position);
         StartCoroutine(GameManager.Instance.UpdateTurn());
     }
 

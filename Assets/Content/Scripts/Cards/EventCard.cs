@@ -7,14 +7,14 @@ public class EventCard : CardBase
     [TextArea(minLines: 2, maxLines: 4), Tooltip("Descripcion de carta.")] public string description;
     [Tooltip("Monto a ganar/perder")] public int amount;
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
-    private static IGameManager gameManager;
+    private static IGameManager game;
 
-    private void OnEnable()
+    private void GameInstance()
     {
-        if (gameManager != null) return;
+        if (game != null) return;
 
-        gameManager = GameManagerNetwork.Instance != null ?
-                      GameManagerNetwork.Instance :
+        game = GameOnline.Instance != null ?
+                      GameOnline.Instance :
                       GameManager.Instance;
     }
 
@@ -32,7 +32,8 @@ public class EventCard : CardBase
 
     public override void ApplyEffect(IPlayer player, int capital = 0)
     {
-        foreach (IPlayer p in gameManager.Players)
+        GameInstance();
+        foreach (IPlayer p in game.Players)
         {
             if (amount > 0)
                 p.AddMoney(amount);

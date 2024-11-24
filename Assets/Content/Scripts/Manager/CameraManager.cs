@@ -11,7 +11,7 @@ public class CameraManager : MonoBehaviour
 
     private void Awake()
     {
-        cameraTarget = GameObject.Find("CameraTarget").transform;
+        //cameraTarget = GameObject.Find("CameraTarget").transform;
     }
 
     public void CurrentCamera(Transform currentPlayer)

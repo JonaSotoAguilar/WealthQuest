@@ -1,55 +1,53 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System;
 
 public abstract class Square : MonoBehaviour
 {
-    public List<PlayerMovement> playersInSquare = new List<PlayerMovement>();
+    [SerializeField] protected GameData data;
     public List<CardBase> selectedCards;
+    public List<PlayerNetMovement> players = new List<PlayerNetMovement>();
 
-    public int PlayersCount => playersInSquare.Count;
+    public int PlayersCount => players.Count;
 
     #region Methods Square
 
-    public abstract void GetCards();
+    public abstract List<CardBase> GetCards();
 
-    public void SetupSquare(IPlayer player, PlayerCanvas canvas)
+    public void SetupSquare(IPlayer player)
     {
-        CardsPanel panel = canvas.CardsPanel;
-        if (panel == null) return;
-        panel.SetupCards(player, selectedCards);
+        //Imprime cartas seleccionadas
+        foreach (var card in selectedCards)
+            Debug.Log(card.title);
+
+        //FIXME: Revisar
+        //UIOnline.Instance.SetupCards(player, selectedCards);
     }
 
     #endregion
 
     #region Methods Players
+    public int GetPlayerIndex(PlayerNetMovement player) => players.IndexOf(player);
 
-    public void AddPlayer(PlayerMovement player)
+    public void AddPlayer(PlayerNetMovement player, int position)
     {
-        if (playersInSquare.Contains(player)) return;
+        if (players.Contains(player)) return;
 
-        playersInSquare.Add(player);
+        players.Add(player);
+        UpdateCornerPositions(position);
     }
 
-    public void RemovePlayer(PlayerMovement player)
+    public void RemovePlayer(PlayerNetMovement player, int position)
     {
-        if (!playersInSquare.Contains(player)) return;
-        
-        playersInSquare.Remove(player);
+        if (!players.Contains(player)) return;
+
+        players.Remove(player);
+        UpdateCornerPositions(position);
     }
 
-    public int GetPlayerIndex(PlayerMovement player) => playersInSquare.IndexOf(player);
-
-    public void UpdateSquarePositions(IPlayer player)
+    public void UpdateCornerPositions(int position)
     {
-        int squarePosition = player.Position;
-        RemovePlayer(player.Movement);
-        player.Movement.CenterPosition(squarePosition);
-
-        int totalPlayers = playersInSquare.Count;
-        for (int i = 0; i < totalPlayers; i++)
-            playersInSquare[i].CornerPosition(squarePosition);
+        for (int i = 0; i < players.Count; i++)
+            players[i].CornerPlayer(position);
     }
 
     #endregion
