@@ -9,32 +9,31 @@ using System;
 [CreateAssetMenu(fileName = "GameData", menuName = "Game/GameData", order = 1)]
 public class GameData : ScriptableObject
 {
-    [Header("Game State")]
-    [SerializeField] public TimeSpan timePlayed;
-    [SerializeField] public int yearsToPlay;
-    [SerializeField] public int currentYear;
+    [Header("Status")]
+    public TimeSpan timePlayed;
+    public int yearsToPlay;
+    public int currentYear;
 
     [Header("Players")]
-    [SerializeField] public List<PlayerData> playersData;
-    [SerializeField] public int initialPlayerIndex;
-    [SerializeField] public int indexTurn;
-    [SerializeField] public string turnPlayer;
-
-    [Header("Asset Bundle Settings")]
-    [SerializeField] public string defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
-    [SerializeField] public string assetBundleDirectory;
-    [SerializeField] public string currentBundlePath;
-    [SerializeField] public string bundleName;
-    public AssetBundle assetbundle;
+    public List<PlayerData> playersData;
+    public int initialPlayerIndex;
+    public int turnPlayer;
 
     [Header("Cards & Questions")]
-    [SerializeField] public List<QuestionData> allQuestions;
-    [SerializeField] public List<QuestionData> questions;
-    [SerializeField] public List<ExpenseCard> expenseCards;
-    [SerializeField] public List<InvestmentCard> investmentCards;
-    [SerializeField] public List<IncomeCard> incomeCards;
-    [SerializeField] public List<EventCard> eventCards;
-    [SerializeField] public TextAsset jsonFile;
+    public List<QuestionData> allQuestionList;
+    public List<QuestionData> questionList;
+    public List<ExpenseCard> expenseCards;
+    public List<InvestmentCard> investmentCards;
+    public List<IncomeCard> incomeCards;
+    public List<EventCard> eventCards;
+    public TextAsset jsonFile;
+
+    [Header("Asset Bundle Settings")]
+    public string defaultBundlePath;
+    public string assetBundleDirectory;
+    public string currentBundlePath;
+    public string bundleName;
+    public AssetBundle assetbundle;
 
     private void OnEnable()
     {
@@ -42,6 +41,15 @@ public class GameData : ScriptableObject
     }
 
     // TODO: Crear una nueva partida
+
+
+    public void StartGame()
+    {
+        SceneManager.LoadScene("MultiplayerLocal");
+    }
+
+    #region Asset Bundle
+
     public IEnumerator LoadCardsAndQuestions(string bundle)
     {
         bundleName = bundle;
@@ -53,12 +61,6 @@ public class GameData : ScriptableObject
         yield return LoadDataFromBundle();
     }
 
-    public void StartGame()
-    {
-        SceneManager.LoadScene("MultiplayerLocal");
-    }
-
-    // TODO: Obtener el directorio de los Asset Bundles
     private IEnumerator LoadDataFromBundle()
     {
         yield return LoadBundle();
@@ -132,8 +134,8 @@ public class GameData : ScriptableObject
         if (jsonFile != null)
         {
             QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(jsonFile.text);
-            questions = new List<QuestionData>(questionJSON.questions);
-            allQuestions = new List<QuestionData>(questions);
+            questionList = new List<QuestionData>(questionJSON.questions);
+            allQuestionList = new List<QuestionData>(questionJSON.questions);
         }
         else
         {
@@ -141,41 +143,28 @@ public class GameData : ScriptableObject
         }
     }
 
-    // TODO: Funiones para obtener tarjetas y preguntas aleatorias
+    #endregion
+
+    #region Getters Random
+
     public QuestionData GetRandomQuestion()
     {
-        if (questions.Count == 0) ResetQuestions();
+        if (questionList == null || questionList.Count == 0) ResetQuestionList();
 
-        if (questions != null && questions.Count > 0)
-        {
-            int randomIndex = UnityEngine.Random.Range(0, questions.Count);
-            QuestionData selectedQuestion = questions[randomIndex];
-            return selectedQuestion;
-        }
-        else
-        {
-            Debug.LogError("No hay preguntas disponibles.");
-            return null;
-        }
+        int randomIndex = UnityEngine.Random.Range(0, questionList.Count);
+        QuestionData selectedQuestion = questionList[randomIndex];
+        return selectedQuestion;
     }
 
-    public QuestionData GetQuestionData(int index)
+    public void ResetQuestionList()
     {
-        if (questions.Count == 0) ResetQuestions();
-
-        if (questions != null && questions.Count > 0)
-        {
-            QuestionData selectedQuestion = questions[index];
-            return selectedQuestion;
-        }
-        else
-        {
-            Debug.LogError("No hay preguntas disponibles.");
-            return null;
-        }
+        questionList = new List<QuestionData>(allQuestionList);
     }
 
-    public void ResetQuestions() => questions = new List<QuestionData>(allQuestions);
+    public void DeleteQuestion(QuestionData question)
+    {
+        questionList.Remove(question);
+    }
 
     public List<ExpenseCard> GetRandomExpenseCards(int count)
     {
@@ -196,7 +185,7 @@ public class GameData : ScriptableObject
 
     public List<InvestmentCard> GetRandomInvestmentCards(int count)
     {
-        PlayerData currentPlayer = playersData[indexTurn];
+        PlayerData currentPlayer = playersData[turnPlayer];
         List<InvestmentCard> selectedCards = new List<InvestmentCard>();
         List<InvestmentCard> availableCards = investmentCards
             .Where(card => !currentPlayer.Investments.Any(inv => inv.NameInvestment == card.title))
@@ -252,7 +241,9 @@ public class GameData : ScriptableObject
         return selectedCards;
     }
 
-    //TODO: Limpiar los datos de los jugadores
+    #endregion
+
+    #region Initialization
     public void ClearGameData()
     {
         timePlayed = new TimeSpan();
@@ -261,11 +252,9 @@ public class GameData : ScriptableObject
 
         playersData = new List<PlayerData>();
         initialPlayerIndex = 0;
-        indexTurn = 0;
-        turnPlayer = "";
+        turnPlayer = 0;
 
-        allQuestions = new List<QuestionData>();
-        questions = new List<QuestionData>();
+        questionList = new List<QuestionData>();
         expenseCards = new List<ExpenseCard>();
         investmentCards = new List<InvestmentCard>();
         incomeCards = new List<IncomeCard>();
@@ -283,4 +272,7 @@ public class GameData : ScriptableObject
     {
         return playersData.Count > 0;
     }
+
+    #endregion
+
 }

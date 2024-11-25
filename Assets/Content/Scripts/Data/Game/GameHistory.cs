@@ -22,7 +22,7 @@ public class FinishGameData
         timePlayed = gameData.timePlayed;
         date = DateTime.Now.ToString("dd/MM/yyyy");
         bundleName = gameData.bundleName;
-        score = gameData.playersData[0].Points / years;
+        score = gameData.playersData[0].ScoreKFP / years;
         playersData = gameData.playersData;
         PlayerPrefs.SetInt("gameId", gameID);
     }

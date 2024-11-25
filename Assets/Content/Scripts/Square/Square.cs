@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public abstract class Square : MonoBehaviour
@@ -11,16 +12,31 @@ public abstract class Square : MonoBehaviour
 
     #region Methods Square
 
-    public abstract List<CardBase> GetCards();
+    public abstract void GetCards(PlayerController player);
 
-    public void SetupSquare(IPlayer player)
+    public IEnumerator ActiveSquare(PlayerController player)
     {
-        //Imprime cartas seleccionadas
-        foreach (var card in selectedCards)
-            Debug.Log(card.title);
+        var canvasPlayer = player.PlayerCanvas;
 
-        //FIXME: Revisar
-        //UIOnline.Instance.SetupCards(player, selectedCards);
+        // Obtener una referencia al CardsPanel desde el Canvas
+        CardsPanel panel = canvasPlayer.CardsPanel;
+
+        if (panel != null)
+        {
+            GetCards(player);
+            panel.SetupCards(player, selectedCards);
+            bool cardSelected = false;
+
+            System.Action onCardSelected = () => cardSelected = true;
+            panel.OnCardSelected += onCardSelected;
+            yield return new WaitUntil(() => cardSelected);
+
+            panel.OnCardSelected -= onCardSelected;
+        }
+        else
+        {
+            Debug.LogError("No se encontró el CardsPanel en el canvas.");
+        }
     }
 
     #endregion

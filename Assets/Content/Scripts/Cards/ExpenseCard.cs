@@ -10,9 +10,9 @@ public class ExpenseCard : CardBase
     [Range(0, 1)] public float discounted;  // Porcentaje de descuento 
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
-    public override string GetFormattedText(int points)
+    public override string GetFormattedText(int scoreKFP)
     {
-        if (points >= KFPForDiscount)
+        if (scoreKFP >= KFPForDiscount)
         {
 
             // Aplicar un descuento del 10% si el jugador tiene 5 o más puntos de score
@@ -35,12 +35,12 @@ public class ExpenseCard : CardBase
         return "Sin costo."; // En caso de que no haya ni costo inmediato ni recurrente
     }
 
-    public override void ApplyEffect(IPlayer player, int capital = 0)
+    public override void ApplyEffect(PlayerController player, int capital = 0)
     {
-        bool hasDiscount = player.Points >= KFPForDiscount;
+        bool hasDiscount = player.PlayerData.ScoreKFP >= KFPForDiscount;
         int finalCapital = hasDiscount ? Mathf.CeilToInt(cost * (1 - discounted)) : cost;
-        Expense newExpense = new Expense(duration, finalCapital);
-        player.AddExpense(newExpense, newExpense.Turns > 1);
+        PlayerExpense expense = new PlayerExpense(duration, finalCapital);
+        player.CreateExpense(expense, expense.Turns > 1);
     }
 
     public override void RemoveFromGameData()

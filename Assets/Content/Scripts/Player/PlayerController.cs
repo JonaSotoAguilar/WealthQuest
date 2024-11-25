@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Collections.Generic;
 using System;
 
-// FIXME: Adaptar a cambios
 public class PlayerController : MonoBehaviour
 {
     [Header("Player Components")]
@@ -15,7 +14,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private PlayerCanvas playerCanvas;
     [SerializeField] private PlayerDice playerDice;
-    [SerializeField] private PlayerAnimator playerAnimator;
+    [SerializeField] private Animator playerAnimator;
 
     [Header("Player HUD")]
     [SerializeField] private PlayerHUD playerHUD;
@@ -34,25 +33,22 @@ public class PlayerController : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
         playerCanvas = GetComponentInChildren<PlayerCanvas>();
         playerDice = GetComponentInChildren<PlayerDice>();
-        playerAnimator = GetComponentInChildren<PlayerAnimator>();
+        playerAnimator = GetComponentInChildren<Animator>();
 
         playerDice.ShowDice(false);
-        playerMovement.Animator = playerAnimator;
-        //playerMovement.InitPosition(playerData.Position);
+        playerMovement.PlayerAnimator = playerAnimator;
+        playerMovement.InitPosition(playerData.CurrentPosition);
 
-        //GameManager.Instance.Players.Add(this);
+        GameManager.Instance.Players.Add(this);
     }
 
     public IEnumerator InitQuestion()
     {
-        // if (GameManager.Instance.GameData.QuestionList.Count == 0)
-        //     yield return GameManager.Instance.GameData.ResetQuestionList();
-
         QuestionData selectedQuestion = GameManager.Instance.GameData.GetRandomQuestion();
 
         // Configurar el panel de preguntas
         QuestionPanel panel = playerCanvas.QuestionPanel;
-        //panel.SetupQuestion(selectedQuestion, this);
+        panel.SetupQuestion(selectedQuestion, this);
         bool questionAnswered = false;
         bool wasAnswerCorrect = false;
 
@@ -78,7 +74,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator Jump()
     {
-        playerAnimator.Jump();
+        playerAnimator.SetTrigger("Jump");
         yield return new WaitForSeconds(2.3f);
     }
 
@@ -103,22 +99,21 @@ public class PlayerController : MonoBehaviour
     // Mover al jugador actual
     private IEnumerator MovePlayer()
     {
-        yield return playerMovement.MovePlayer(playerDice.DiceRoll, playerData.Position);
-        playerData.Position = playerMovement.NewPosition;
-        //yield return PlaySquare();
+        yield return playerMovement.MovePlayer(playerDice.DiceRoll, playerData);
+        yield return PlaySquare();
     }
 
     // Jugar casilla
-    // private IEnumerator PlaySquare()
-    // {
-    //     Square square = GameManager.Instance.SquareList[playerData.CurrentPosition].GetComponent<Square>();
-    //     yield return square.ActiveSquare(this);
-    //     FinishTurn();
-    // }
+    private IEnumerator PlaySquare()
+    {
+        Square square = GameManager.Instance.SquareList[playerData.CurrentPosition].GetComponent<Square>();
+        yield return square.ActiveSquare(this);
+        FinishTurn();
+    }
 
     private void FinishTurn()
     {
-        //playerMovement.CornerPosition(playerData.Position);
+        playerMovement.CornerPosition(playerData.CurrentPosition);
         StartCoroutine(GameManager.Instance.UpdateTurn());
     }
 
@@ -130,10 +125,10 @@ public class PlayerController : MonoBehaviour
         playerHUD.Money.text = playerData.Money.ToString("C0", chileanCulture);
     }
 
-    public void ChangePoints(int score)
+    public void ChangeKFP(int score)
     {
-        playerData.Points += score;
-        playerHUD.Kpf.text = playerData.Points.ToString();
+        playerData.ScoreKFP += score;
+        playerHUD.Kpf.text = playerData.ScoreKFP.ToString();
     }
 
     public void ChangeDebt(int amount)
@@ -150,24 +145,24 @@ public class PlayerController : MonoBehaviour
 
     public void ChangeIncome(int amount)
     {
-        playerData.Income += amount;
-        playerHUD.Income.text = playerData.Income.ToString("C0", chileanCulture);
+        playerData.IncomeTurn += amount;
+        playerHUD.Income.text = playerData.IncomeTurn.ToString("C0", chileanCulture);
     }
 
     public void ChangeExpense(int amount)
     {
-        playerData.Expense += amount;
-        playerHUD.Expense.text = playerData.Expense.ToString("C0", chileanCulture);
+        playerData.ExpenseTurn += amount;
+        playerHUD.Expense.text = playerData.ExpenseTurn.ToString("C0", chileanCulture);
     }
 
     public void ChangeSalary(int newSalary)
     {
-        playerData.Income += newSalary - playerData.Salary;
+        playerData.IncomeTurn += newSalary - playerData.Salary;
         playerData.Salary = newSalary;
-        playerHUD.Income.text = playerData.Income.ToString("C0", chileanCulture);
+        playerHUD.Income.text = playerData.IncomeTurn.ToString("C0", chileanCulture);
     }
 
-    public void CreateInvestment(Investment investment)
+    public void CreateInvestment(PlayerInvestment investment)
     {
         if (playerData.Money < investment.Capital)
             return;
@@ -177,7 +172,7 @@ public class PlayerController : MonoBehaviour
         ChangeIncome(investment.Dividend);
     }
 
-    public void CreateExpense(Expense expense, bool isRecurrent)
+    public void CreateExpense(PlayerExpense expense, bool isRecurrent)
     {
         if (isRecurrent)
         {
@@ -205,14 +200,14 @@ public class PlayerController : MonoBehaviour
 
     public void ProcessIncome()
     {
-        ChangeMoney(playerData.Income);
+        ChangeMoney(playerData.IncomeTurn);
     }
 
     public void ProcessInvestments()
     {
         if (playerData.Investments.Count == 0)
             return;
-        List<Investment> toRemove = new List<Investment>();
+        List<PlayerInvestment> toRemove = new List<PlayerInvestment>();
         foreach (var investment in playerData.Investments)
         {
             if (investment.Turns == 0)
@@ -244,7 +239,7 @@ public class PlayerController : MonoBehaviour
         if (playerData.Expenses.Count == 0)
             return;
 
-        List<Expense> toRemove = new List<Expense>();
+        List<PlayerExpense> toRemove = new List<PlayerExpense>();
 
         foreach (var expense in playerData.Expenses)
         {

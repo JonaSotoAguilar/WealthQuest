@@ -11,18 +11,18 @@ public class InvestmentCard : CardBase
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
 
-    public override string GetFormattedText(int points)
+    public override string GetFormattedText(int scoreKFP)
     {
         return $"Invertir durante {duration} años";
     }
 
-    public override void ApplyEffect(IPlayer player, int capital)
+    public override void ApplyEffect(PlayerController player, int capital)
     {
         if (capital <= 0)
             return;
 
-        Investment newInvestment = new Investment(title, duration, capital, new List<float>(pctChange), new List<float>(pctDividend));
-        player.AddInvestment(newInvestment);
+        PlayerInvestment investment = new PlayerInvestment(title, duration, capital, new List<float>(pctChange), new List<float>(pctDividend));
+        player.CreateInvestment(investment);
     }
 
 
