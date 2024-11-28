@@ -11,7 +11,7 @@ public class FinishGameData
     public int years;
     public TimeSpan timePlayed;
     public string date;
-    public string bundleName;
+    public string topicName;
     public int score;
     public List<PlayerData> playersData = new List<PlayerData>();
 
@@ -21,8 +21,8 @@ public class FinishGameData
         years = gameData.currentYear;
         timePlayed = gameData.timePlayed;
         date = DateTime.Now.ToString("dd/MM/yyyy");
-        bundleName = gameData.bundleName;
-        score = gameData.playersData[0].ScoreKFP / years;
+        topicName = gameData.topicName;
+        score = gameData.playersData[0].FinalScore / years;
         playersData = gameData.playersData;
         PlayerPrefs.SetInt("gameId", gameID);
     }

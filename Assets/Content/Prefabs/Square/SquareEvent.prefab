@@ -100,6 +100,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be39abe403afc29499e203a527186f69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
+  players: []
 --- !u!65 &8491592528188919595
 BoxCollider:
   m_ObjectHideFlags: 0

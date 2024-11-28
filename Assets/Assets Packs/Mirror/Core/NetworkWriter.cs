@@ -237,6 +237,7 @@ namespace Mirror
         // showing "position / space" would be too confusing.
         public override string ToString() =>
             $"[{ToArraySegment().ToHexString()} @ {Position}/{Capacity}]";
+
     }
 
     /// <summary>Helper class that weaver populates with all writer types.</summary>

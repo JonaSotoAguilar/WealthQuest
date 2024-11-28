@@ -25,7 +25,6 @@ public static class ProfileUser
 
     public static void AddGameData(FinishGameData data)
     {
-        PlayerData user = data.playersData[0];
         SaveXPUser(xpUser + data.score);
         SaveAverageScoreUser((scoreAverageUser * playedGames + data.score) / playedGames + 1);
         SavePlayedGames(playedGames + 1);

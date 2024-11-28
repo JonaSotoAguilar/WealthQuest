@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using UnityEngine.SceneManagement;
 using System.Collections;
 using System.IO;
 using System;
@@ -9,76 +8,55 @@ using System;
 [CreateAssetMenu(fileName = "GameData", menuName = "Game/GameData", order = 1)]
 public class GameData : ScriptableObject
 {
+    [Header("Initial Info")]
+    public int initialPlayerIndex;
+    public int yearsToPlay;
+
     [Header("Status")]
     public TimeSpan timePlayed;
-    public int yearsToPlay;
     public int currentYear;
-
-    [Header("Players")]
-    public List<PlayerData> playersData;
-    public int initialPlayerIndex;
     public int turnPlayer;
+    public List<PlayerData> playersData;
 
     [Header("Cards & Questions")]
+    public string topicName;
     public List<QuestionData> allQuestionList;
     public List<QuestionData> questionList;
     public List<ExpenseCard> expenseCards;
     public List<InvestmentCard> investmentCards;
     public List<IncomeCard> incomeCards;
     public List<EventCard> eventCards;
-    public TextAsset jsonFile;
-
-    [Header("Asset Bundle Settings")]
-    public string defaultBundlePath;
-    public string assetBundleDirectory;
-    public string currentBundlePath;
-    public string bundleName;
-    public AssetBundle assetbundle;
-
-    private void OnEnable()
-    {
-        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
-    }
-
-    // TODO: Crear una nueva partida
-
-
-    public void StartGame()
-    {
-        SceneManager.LoadScene("MultiplayerLocal");
-    }
 
     #region Asset Bundle
 
     public IEnumerator LoadCardsAndQuestions(string bundle)
     {
-        bundleName = bundle;
-        if (bundleName == "Default")
-            currentBundlePath = defaultBundlePath;
+        topicName = bundle;
+        string currentBundlePath;
+        if (topicName == "Default")
+            currentBundlePath = Path.Combine(Application.streamingAssetsPath, "AssetBundles/defaultbundle");
         else
-            currentBundlePath = Path.Combine(assetBundleDirectory, bundleName);
+        {
+            string assetBundleDirectory = Path.Combine(Application.persistentDataPath, "Topics");
+            currentBundlePath = Path.Combine(assetBundleDirectory, topicName);
+        }
 
-        yield return LoadDataFromBundle();
+        yield return LoadDataFromBundle(currentBundlePath);
     }
 
-    private IEnumerator LoadDataFromBundle()
+    private IEnumerator LoadDataFromBundle(string currentBundlePath)
     {
-        yield return LoadBundle();
+        AssetBundleCreateRequest bundleRequest = AssetBundle.LoadFromFileAsync(currentBundlePath);
+        AssetBundle assetbundle = bundleRequest.assetBundle;
+
         if (assetbundle == null)
             yield break;
-        yield return LoadQuestionsFromBundle();
-        yield return LoadCardsFromBundle();
+        yield return LoadQuestionsFromBundle(assetbundle);
+        yield return LoadCardsFromBundle(assetbundle);
         assetbundle.Unload(false);
     }
 
-    private IEnumerator LoadBundle()
-    {
-        AssetBundleCreateRequest bundleRequest = AssetBundle.LoadFromFileAsync(currentBundlePath);
-        yield return bundleRequest;
-        assetbundle = bundleRequest.assetBundle;
-    }
-
-    private IEnumerator LoadCardsFromBundle()
+    private IEnumerator LoadCardsFromBundle(AssetBundle assetbundle)
     {
         yield return LoadExpenseCards(assetbundle);
         yield return LoadInvestmentCards(assetbundle);
@@ -90,7 +68,7 @@ public class GameData : ScriptableObject
     {
         AssetBundleRequest loadExpenseCardsRequest = bundle.LoadAllAssetsAsync<ExpenseCard>();
         yield return loadExpenseCardsRequest;
-        if (expenseCards != null)
+        if (loadExpenseCardsRequest.allAssets.Length > 0)
             expenseCards.AddRange(loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>());
         else
             expenseCards = loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>().ToList();
@@ -100,7 +78,7 @@ public class GameData : ScriptableObject
     {
         AssetBundleRequest loadInvestmentCardsRequest = bundle.LoadAllAssetsAsync<InvestmentCard>();
         yield return loadInvestmentCardsRequest;
-        if (investmentCards != null)
+        if (loadInvestmentCardsRequest.allAssets.Length > 0)
             investmentCards.AddRange(loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>());
         else
             investmentCards = loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>().ToList();
@@ -110,7 +88,7 @@ public class GameData : ScriptableObject
     {
         AssetBundleRequest loadIncomeCardsRequest = bundle.LoadAllAssetsAsync<IncomeCard>();
         yield return loadIncomeCardsRequest;
-        if (incomeCards != null)
+        if (loadIncomeCardsRequest.allAssets.Length > 0)
             incomeCards.AddRange(loadIncomeCardsRequest.allAssets.OfType<IncomeCard>());
         else
             incomeCards = loadIncomeCardsRequest.allAssets.OfType<IncomeCard>().ToList();
@@ -120,17 +98,17 @@ public class GameData : ScriptableObject
     {
         AssetBundleRequest loadEventCardsRequest = bundle.LoadAllAssetsAsync<EventCard>();
         yield return loadEventCardsRequest;
-        if (eventCards != null)
+        if (loadEventCardsRequest.allAssets.Length > 0)
             eventCards.AddRange(loadEventCardsRequest.allAssets.OfType<EventCard>());
         else
             eventCards = loadEventCardsRequest.allAssets.OfType<EventCard>().ToList();
     }
 
-    private IEnumerator LoadQuestionsFromBundle()
+    private IEnumerator LoadQuestionsFromBundle(AssetBundle assetbundle)
     {
         AssetBundleRequest loadJsonRequest = assetbundle.LoadAssetAsync<TextAsset>("Questions");
         yield return loadJsonRequest;
-        jsonFile = loadJsonRequest.asset as TextAsset;
+        TextAsset jsonFile = loadJsonRequest.asset as TextAsset;
         if (jsonFile != null)
         {
             QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(jsonFile.text);
@@ -246,26 +224,30 @@ public class GameData : ScriptableObject
     #region Initialization
     public void ClearGameData()
     {
-        timePlayed = new TimeSpan();
-        yearsToPlay = 2;
-        currentYear = 1;
-
-        playersData = new List<PlayerData>();
         initialPlayerIndex = 0;
-        turnPlayer = 0;
+        yearsToPlay = 5;
 
+        timePlayed = new TimeSpan();
+        currentYear = 1;
+        turnPlayer = 0;
+        playersData = new List<PlayerData>();
+
+        topicName = "Default";
         questionList = new List<QuestionData>();
         expenseCards = new List<ExpenseCard>();
         investmentCards = new List<InvestmentCard>();
         incomeCards = new List<IncomeCard>();
         eventCards = new List<EventCard>();
-        jsonFile = null;
+    }
 
-        defaultBundlePath = "Assets/Bundles/DefaultBundle/defaultbundle";
-        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
-        currentBundlePath = "";
-        bundleName = "";
-        assetbundle = null;
+    public Card GetCardByName(string name)
+    {
+        // Busca en todas las listas de cartas
+        Card card = expenseCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
+                        investmentCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
+                        incomeCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
+                        eventCards.OfType<Card>().FirstOrDefault(c => c.name == name);
+        return card;
     }
 
     public bool DataExists()

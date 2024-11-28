@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8170735229644836332}
   - component: {fileID: 736211629957729039}
   - component: {fileID: 8705459685435362542}
-  - component: {fileID: 7886039073015621664}
+  - component: {fileID: 246495730960206203}
   m_Layer: 0
   m_Name: Dice
   m_TagString: Untagged
@@ -143,7 +143,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.6, y: 0.6, z: 0.6}
   m_Center: {x: -0.0003990978, y: 0.0008048564, z: -0.0012868494}
---- !u!114 &7886039073015621664
+--- !u!114 &246495730960206203
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -152,10 +152,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 153946259858020827}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9ee0502a01ae1d0459d959ebc3d1bccd, type: 3}
+  m_Script: {fileID: 11500000, guid: f4192df331618de419aa4e4e236bf264, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  diceType: 6
 --- !u!1 &1975035336347528979
 GameObject:
   m_ObjectHideFlags: 0

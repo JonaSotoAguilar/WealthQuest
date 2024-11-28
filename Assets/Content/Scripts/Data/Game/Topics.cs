@@ -24,7 +24,7 @@ public class Topics : ScriptableObject
 
     private void OnEnable()
     {
-        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
+        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "Topics");
         if (!Directory.Exists(assetBundleDirectory))
         {
             Directory.CreateDirectory(assetBundleDirectory);
@@ -42,10 +42,7 @@ public class Topics : ScriptableObject
         foreach (string file in files)
         {
             string bundleName = Path.GetFileNameWithoutExtension(file);
-            if (Path.GetExtension(file) == string.Empty && bundleName != "AssetBundles" && bundleName != "defaultbundle")
-            {
-                localTopicList.Add(bundleName);
-            }
+            localTopicList.Add(bundleName);
         }
     }
 

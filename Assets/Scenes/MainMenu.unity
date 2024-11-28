@@ -5330,7 +5330,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 300a918ec01e4a042884b604d8e6233c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameData: {fileID: 0}
 --- !u!4 &323219006
 Transform:
   m_ObjectHideFlags: 0
@@ -23817,7 +23816,6 @@ MonoBehaviour:
   bestScoreUser: {fileID: 1820836632}
   playedGames: {fileID: 1151397883}
   characterDB: {fileID: 11400000, guid: 5cab4728488ff544c9e750bc6ef6b5c7, type: 2}
-  imageCharacter: {fileID: 1035171966}
 --- !u!1 &1596267728
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,8 +5,8 @@ using System.Linq;
 
 public class SquareEvent : Square
 {
-    public override void GetCards(PlayerController player)
+    public override List<Card> GetCards()
     {
-        selectedCards = GameManager.Instance.GameData.GetRandomEventCards(1).Cast<CardBase>().ToList();
+        return data.GetRandomEventCards(1).Cast<Card>().ToList();
     }
 }
