@@ -8,33 +8,31 @@ public class PlayerNetData : NetworkBehaviour
     private PlayerData playerData;
 
     // User Data
-    [SyncVar] private string uid;
-    [SyncVar] private string nickName;
-    [SyncVar] private int characterID;
-    [SyncVar(hook = nameof(OnChangeFinalScore))] private int finalScore;
+    [SyncVar] private string uid = "";
+    [SyncVar] private string nickName = "";
+    [SyncVar] private int characterID = 0;
+    [SyncVar] private int finalScore = 0;
 
     // Game Data
-    [SyncVar(hook = nameof(OnChangePosition))] private int position;
-    [SyncVar(hook = nameof(OnChangePoints))] private int points;
+    [SyncVar] private int position = 0;
+    [SyncVar(hook = nameof(OnChangePoints))] private int points = 0;
 
     // Finances
-    [SyncVar(hook = nameof(OnChangeMoney))] private int money;
-    [SyncVar(hook = nameof(OnChangeSalary))] private int salary;
-    [SyncVar(hook = nameof(OnChangeInvest))] private int invest;
-    [SyncVar(hook = nameof(OnChangeDebt))] private int debt;
+    [SyncVar(hook = nameof(OnChangeMoney))] private int money = 0;
+    [SyncVar] private int salary = 0;
+    [SyncVar(hook = nameof(OnChangeInvest))] private int invest = 0;
+    [SyncVar(hook = nameof(OnChangeDebt))] private int debt = 0;
     private readonly SyncList<Investment> investments = new SyncList<Investment>();
     private readonly SyncList<Expense> expenses = new SyncList<Expense>();
 
     // Finances Turn
-    [SyncVar(hook = nameof(OnChangeIncome))] private int income;
-    [SyncVar(hook = nameof(OnChangeExpense))] private int expense;
+    [SyncVar(hook = nameof(OnChangeIncome))] private int income = 0;
+    [SyncVar(hook = nameof(OnChangeExpense))] private int expense = 0;
 
     // Variables
     [SerializeField] private float interest = 0.1f;
 
     #region Getters
-
-    public PlayerData PlayerData { get => playerData; set => playerData = value; }
 
     public string UID { get => uid; set => uid = value; }
     public string Nickname { get => nickName; }
@@ -56,41 +54,43 @@ public class PlayerNetData : NetworkBehaviour
 
     #region Initialization
 
-    // FIXME: Igualar a PlayerData
-    public void Initialize(string uid, string nickName, int characterID)
+
+    public void Initialize()
     {
-        this.uid = uid;
-        this.nickName = nickName;
-        this.characterID = characterID;
+        uid = playerData.UID;
+        nickName = playerData.Nickname;
+        characterID = playerData.CharacterID;
 
-        position = 0;
-        points = 0;
+        position = playerData.Position;
+        points = playerData.Points;
 
+        // money = playerData.Money;
+        // salary = playerData.Salary;
         money = 10000;
         salary = 1000;
-        invest = 0;
-        debt = 0;
 
-        income = 0;
-        expense = 0;
-    }
+        invest = playerData.Invest;
+        debt = playerData.Debt;
 
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
+        income = playerData.Income;
+        expense = playerData.Expense;
 
-        investments.OnAdd += OnAddInvest;
-        investments.OnSet += OnChangeInvest;
-        investments.OnRemove += OnRemoveInvest;
+        for (int i = 0; i < playerData.Investments.Count; i++)
+            investments.Add(playerData.Investments[i]);
 
-        expenses.OnAdd += OnAddExpense;
-        expenses.OnSet += OnChangeExpense;
-        expenses.OnRemove += OnRemoveExpense;
+        for (int i = 0; i < playerData.Expenses.Count; i++)
+            expenses.Add(playerData.Expenses[i]);
     }
 
     #endregion
 
     #region Server Change Values 
+
+    [Server]
+    public void SetPlayerData(PlayerData playerData)
+    {
+        this.playerData = playerData;
+    }
 
     [Server]
     public void SetFinalScore()
@@ -101,25 +101,29 @@ public class PlayerNetData : NetworkBehaviour
         if (finalMoney <= 0) pointsMoney = -Math.Log10(-finalMoney + 1);
         else pointsMoney = Math.Log10(finalMoney + 1);
 
-        finalScore = (int) Math.Round(points + pointsMoney, 2);
+        finalScore = (int)Math.Round(points + pointsMoney, 2);
+        playerData.FinalScore = finalScore;
     }
 
     [Server]
     public void NewPosition(int newPosition)
     {
         position = newPosition;
+        playerData.Position = newPosition;
     }
 
     [Server]
     public void AddPoints(int addPoints)
     {
         points += addPoints;
+        playerData.Points = points;
     }
 
     [Server]
     public void AddMoney(int amount)
     {
         money += amount;
+        playerData.Money = money;
     }
 
     [Server]
@@ -128,6 +132,36 @@ public class PlayerNetData : NetworkBehaviour
         int oldSalary = salary;
         salary = newSalary;
         income += salary - oldSalary;
+        playerData.Salary = salary;
+        playerData.Income = income;
+    }
+
+    [Server]
+    public void AddInvest(int amount)
+    {
+        invest += amount;
+        playerData.Invest = amount;
+    }
+
+    [Server]
+    public void AddDebt(int amount)
+    {
+        debt += amount;
+        playerData.Debt = debt;
+    }
+
+    [Server]
+    public void AddIncome(int amount)
+    {
+        income += amount;
+        playerData.Income = income;
+    }
+
+    [Server]
+    public void AddExpense(int amount)
+    {
+        expense += amount;
+        playerData.Expense = expense;
     }
 
     [Server]
@@ -151,19 +185,21 @@ public class PlayerNetData : NetworkBehaviour
             newExpense.Amount += (int)(newExpense.Amount * interest);
             newExpense.Turns++;
         }
-        debt += newExpense.Amount * newExpense.Turns;
-        expense += newExpense.Amount;
+        AddDebt(newExpense.Amount * newExpense.Turns);
+        AddExpense(newExpense.Amount);
         expenses.Add(newExpense);
+        playerData.Expenses.Add(newExpense);
     }
 
     [Server]
     public void AddInvestment(Investment newInvestment)
     {
         if (newInvestment.Capital > money) return;
-        money -= newInvestment.Capital;
-        invest += newInvestment.Capital;
-        income += newInvestment.Dividend;
+        AddMoney(-newInvestment.Capital);
+        AddInvest(newInvestment.Capital);
+        AddIncome(newInvestment.Dividend);
         investments.Add(newInvestment);
+        playerData.Investments.Add(newInvestment);
     }
 
     [Server]
@@ -173,24 +209,26 @@ public class PlayerNetData : NetworkBehaviour
 
         // Obtiene dividendo anual
         Investment currInvestment = investments[index];
-        if (currInvestment.Dividend != 0) money += currInvestment.Dividend;
+        if (currInvestment.Dividend != 0) AddMoney(currInvestment.Dividend);
 
         // Actualiza Capital y Proximo Dividendo
         currInvestment.UpdateInvestment();
-        invest += currInvestment.Capital - oldCapital;
+        AddInvest(currInvestment.Capital - oldCapital);
         int nextDividend = currInvestment.Dividend - oldDividend;
-        if (nextDividend != 0) income += nextDividend;
+        if (nextDividend != 0) AddIncome(nextDividend);
         currInvestment.Turns--;
         if (currInvestment.Turns != 0)
         {
             investments[index] = currInvestment;
+            playerData.Investments[index] = currInvestment;
             return;
         }
 
         // Terminó la inversión
-        money += currInvestment.Capital;
-        invest -= currInvestment.Capital;
+        AddMoney(currInvestment.Capital);
+        AddInvest(-currInvestment.Capital);
         investments.RemoveAt(index);
+        playerData.Investments.RemoveAt(index);
     }
 
     [Server]
@@ -204,25 +242,28 @@ public class PlayerNetData : NetworkBehaviour
         {
             currExpense.Amount += interest;
             currExpense.Turns++;
-            debt += interest * currExpense.Turns;
-            expense += interest;
+            AddDebt(interest * currExpense.Turns);
+            AddExpense(interest);
             expenses[index] = currExpense;
+            playerData.Expenses[index] = currExpense;
             return;
         }
 
         // Tiene para pagar: Paga la cuota
-        money -= currExpense.Amount;
-        debt -= currExpense.Amount;
+        AddMoney(-currExpense.Amount);
+        AddDebt(-currExpense.Amount);
         currExpense.Turns--;
         if (currExpense.Turns != 0)
         {
             expenses[index] = currExpense;
+            playerData.Expenses[index] = currExpense;
             return;
         }
 
         // Terminó de pagar: Elimina la deuda
-        expense -= currExpense.Amount;
+        AddExpense(-currExpense.Amount);
         expenses.RemoveAt(index);
+        playerData.Expenses.RemoveAt(index);
     }
 
     #endregion
@@ -271,96 +312,40 @@ public class PlayerNetData : NetworkBehaviour
 
     #region OnChange Values
 
-    private void OnChangeFinalScore(int oldScore, int newScore)
-    {
-        if (playerData != null) playerData.FinalScore = newScore;
-    }
-
-    private void OnChangePosition(int oldPosition, int newPosition)
-    {
-        if (playerData != null) playerData.Position = newPosition;
-    }
-
     private void OnChangePoints(int oldPoints, int newPoints)
     {
-        if (playerData != null) playerData.Points = newPoints;
-
         HUD hud = GameUIManager.GetHUD(uid);
         if (hud != null) hud.UpdatePoints(newPoints);
     }
 
     private void OnChangeMoney(int oldMoney, int newMoney)
     {
-        if (playerData != null) playerData.Money = newMoney;
-
         HUD hud = GameUIManager.GetHUD(uid);
         if (hud != null) hud.UpdateMoney(newMoney);
     }
 
-    private void OnChangeSalary(int oldSalary, int newSalary)
-    {
-        if (playerData != null) playerData.Salary = newSalary;
-    }
-
     private void OnChangeInvest(int oldInvest, int newInvest)
     {
-        if (playerData != null) playerData.Invest = newInvest;
-
         HUD hud = GameUIManager.GetHUD(uid);
         if (hud != null) hud.UpdateInvest(newInvest);
     }
 
     private void OnChangeDebt(int oldDebt, int newDebt)
     {
-        if (playerData != null) playerData.Debt = newDebt;
-
         HUD hud = GameUIManager.GetHUD(uid);
         if (hud != null) hud.UpdateDebt(newDebt);
     }
+
     private void OnChangeIncome(int oldIncome, int newIncome)
     {
-        if (playerData != null) playerData.Income = newIncome;
-
         HUD hud = GameUIManager.GetHUD(uid);
         if (hud != null) hud.UpdateIncome(newIncome);
     }
 
     private void OnChangeExpense(int oldExpense, int newExpense)
     {
-        if (playerData != null) playerData.Expense = newExpense;
-
         HUD hud = GameUIManager.GetHUD(uid);
         if (hud != null) hud.UpdateExpense(newExpense);
-    }
-
-    private void OnAddInvest(int index)
-    {
-        if (playerData != null) playerData.Investments.Add(investments[index]);
-    }
-
-    private void OnChangeInvest(int index, Investment oldInvest)
-    {
-        if (playerData != null) playerData.Investments[index] = investments[index];
-    }
-
-    private void OnRemoveInvest(int index, Investment oldInvest)
-    {
-        if (playerData != null) playerData.Investments.Remove(oldInvest);
-    }
-
-    private void OnAddExpense(int index)
-    {
-        if (playerData != null) playerData.Expenses.Add(expenses[index]);
-    }
-
-    private void OnChangeExpense(int index, Expense oldExpense)
-    {
-        if (playerData != null) playerData.Expenses[index] = expenses[index];
-    }
-
-    private void OnRemoveExpense(int index, Expense oldExpense)
-    {
-        if (playerData != null) playerData.Expenses.Remove(oldExpense);
     }
 
     #endregion

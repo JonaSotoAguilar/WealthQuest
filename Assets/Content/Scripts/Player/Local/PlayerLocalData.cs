@@ -141,7 +141,7 @@ public class PlayerLocalData : MonoBehaviour
         currInvestment.UpdateInvestment();
         AddInvest(currInvestment.Capital - oldCapital);
         int nextDividend = currInvestment.Dividend - oldDividend;
-        if (nextDividend != 0) Income += nextDividend;
+        if (nextDividend != 0) AddIncome(nextDividend);
         currInvestment.Turns--;
         if (currInvestment.Turns != 0)
         {

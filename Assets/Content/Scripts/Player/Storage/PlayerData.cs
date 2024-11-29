@@ -54,7 +54,7 @@ public class PlayerData
         position = 0;
         points = 0;
 
-        money = 10000;
+        money = 0;
         salary = 0;
         invest = 0;
         debt = 0;
@@ -127,6 +127,7 @@ public class Investment
     }
 
     #region Write and Read
+
     public static void WritePlayerInvestment(NetworkWriter writer, Investment investment)
     {
         writer.WriteString(investment.nameInvestment);
@@ -174,6 +175,7 @@ public class Investment
 
         return new Investment(name, turns, capital, nextDividend, pctChanges, pctDividend);
     }
+
     #endregion
 }
 

@@ -27,6 +27,54 @@ public class GameData : ScriptableObject
     public List<IncomeCard> incomeCards;
     public List<EventCard> eventCards;
 
+    #region Getters
+
+    public PlayerData GetPlayerData(string uid)
+    {
+        return playersData.FirstOrDefault(p => p.UID == uid);
+    }
+
+    public Card GetCardByName(string name)
+    {
+        // Busca en todas las listas de cartas
+        Card card = expenseCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
+                        investmentCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
+                        incomeCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
+                        eventCards.OfType<Card>().FirstOrDefault(c => c.name == name);
+        return card;
+    }
+
+    public bool DataExists()
+    {
+        return playersData.Count > 0;
+    }
+
+    #endregion
+
+    #region Initialization
+
+    public void ClearGameData()
+    {
+        initialPlayerIndex = 0;
+        yearsToPlay = 5;
+
+        timePlayed = new TimeSpan();
+        currentYear = 1;
+        turnPlayer = 0;
+        playersData = new List<PlayerData>();
+
+        topicName = "Default";
+        allQuestionList = new List<QuestionData>();
+        questionList = new List<QuestionData>();
+        expenseCards = new List<ExpenseCard>();
+        investmentCards = new List<InvestmentCard>();
+        incomeCards = new List<IncomeCard>();
+        eventCards = new List<EventCard>();
+    }
+
+    #endregion
+
+
     #region Asset Bundle
 
     public IEnumerator LoadCardsAndQuestions(string bundle)
@@ -217,42 +265,6 @@ public class GameData : ScriptableObject
 
 
         return selectedCards;
-    }
-
-    #endregion
-
-    #region Initialization
-    public void ClearGameData()
-    {
-        initialPlayerIndex = 0;
-        yearsToPlay = 5;
-
-        timePlayed = new TimeSpan();
-        currentYear = 1;
-        turnPlayer = 0;
-        playersData = new List<PlayerData>();
-
-        topicName = "Default";
-        questionList = new List<QuestionData>();
-        expenseCards = new List<ExpenseCard>();
-        investmentCards = new List<InvestmentCard>();
-        incomeCards = new List<IncomeCard>();
-        eventCards = new List<EventCard>();
-    }
-
-    public Card GetCardByName(string name)
-    {
-        // Busca en todas las listas de cartas
-        Card card = expenseCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
-                        investmentCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
-                        incomeCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
-                        eventCards.OfType<Card>().FirstOrDefault(c => c.name == name);
-        return card;
-    }
-
-    public bool DataExists()
-    {
-        return playersData.Count > 0;
     }
 
     #endregion

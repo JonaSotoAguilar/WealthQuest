@@ -20,6 +20,13 @@ public class PlayerNetUI : NetworkBehaviour
         selectedCards.OnAdd += OnCardAdded;
     }
 
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+
+        selectedCards.OnAdd -= OnCardAdded;
+    }
+
     #region Question
 
     [Server]

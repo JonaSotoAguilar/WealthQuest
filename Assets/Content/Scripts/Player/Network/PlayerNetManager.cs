@@ -28,17 +28,26 @@ public class PlayerNetManager : NetworkBehaviour
 
     #region Initialization
 
-    public override void OnStartClient()
+    public void Start()
     {
-        base.OnStartClient();
-
-        //FIXME: Obtener animator
-        animator = GetComponentInChildren<Animator>();
-        movement.Animator = animator;
+        Debug.Log("PlayerNetManager Start: " + data.UID);
 
         GameNetManager.PlayerJoined(this);
         GameUIManager.InitializeHUD(data.UID, false);
     }
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        Debug.Log("PlayerNetManager OnStartServer: " + data.UID);
+    }
+
+    // public override void OnStartClient()
+    // {
+    //     base.OnStartClient();
+    //     GameNetManager.PlayerJoined(this);
+    //     GameUIManager.InitializeHUD(data.UID, false);
+    // }
 
     #endregion
 
@@ -109,6 +118,7 @@ public class PlayerNetManager : NetworkBehaviour
     [Server]
     public void ActiveSquare()
     {
+        Debug.Log("Active Square");
         Square square = SquareManager.Squares[data.Position];
         ui.SetupCards(square);
     }

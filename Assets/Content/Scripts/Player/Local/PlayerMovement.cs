@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float speedMovement = 1.5f;
-    private Animator animator;
+    [SerializeField] private Animator animator;
 
     private int groundLayerMask;
     private int newPosition;
@@ -20,7 +20,9 @@ public class PlayerMovement : MonoBehaviour
     // Move
     public IEnumerator Move(int steps, int currPosition)
     {
+        Debug.Log("Move: " + steps + " steps");
         Square[] squares = SquareManager.Squares;
+        Debug.Log("Squares: " + squares.Length);
 
         for (int i = 0; i < steps; i++)
         {

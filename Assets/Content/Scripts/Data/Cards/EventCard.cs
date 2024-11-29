@@ -23,6 +23,7 @@ public class EventCard : Card
 
     public override void ApplyEffect(int capital = 0, bool isLocalGame = true)
     {
+        Debug.Log("Amount: " + amount);
         if (isLocalGame)
         {
             foreach (PlayerLocalManager player in GameLocalManager.Players)
@@ -44,7 +45,7 @@ public class EventCard : Card
                     player.Data.AddMoney(amount);
                 else
                 {
-                    Expense expense = new Expense(1, amount);
+                    Expense expense = new Expense(1, -amount);
                     player.Data.NewExpense(expense, false);
                 }
             }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
@@ -36,9 +37,6 @@ public class GameNetManager : NetworkBehaviour
 
     #endregion
 
-    // FIXME: Eliminar
-    [SerializeField] private Button btnStartGame;
-
     #region Initialization
 
     private void Awake()
@@ -50,34 +48,16 @@ public class GameNetManager : NetworkBehaviour
         }
 
         instance = this;
-
-        // FIXME: Eliminar
-        btnStartGame.onClick.AddListener(() => CmdStartGame());
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-
-        // FIXME: Eliminar
-        gameData.ClearGameData();
-        StartCoroutine(gameData.LoadCardsAndQuestions("Default"));
     }
 
     public static void PlayerJoined(PlayerNetManager player)
     {
         instance.playersNet.Add(player);
-
-        //FIXME: Eliminar
-        Data.playersData.Add(new PlayerData(player.Data.UID, player.Data.Nickname, player.Data.CharacterID));
-        player.Data.PlayerData = Data.playersData[Data.playersData.Count - 1];
-    }
-
-    // FIXME: Eliminar
-    [Command(requiresAuthority = false)]
-    public void CmdStartGame()
-    {
-        InitializeGame();
     }
 
     [Server]
@@ -217,11 +197,11 @@ public class GameNetManager : NetworkBehaviour
     private void UpdateYear(int newYear)
     {
         currentYear = newYear;
+        gameData.currentYear = newYear;
     }
 
     private void OnChangeYear(int oldYear, int newYear)
     {
-        gameData.currentYear = newYear;
         GameUIManager.ChangeYear(gameData.currentYear);
     }
 
@@ -229,6 +209,7 @@ public class GameNetManager : NetworkBehaviour
     private void UpdateTurnPlayer(int newTurn)
     {
         turnPlayer = newTurn;
+        gameData.turnPlayer = newTurn;
     }
 
     private void OnChangeTurnPlayer(int oldTurn, int newTurn)
