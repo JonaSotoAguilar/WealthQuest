@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("A variety of tools which enhance the Unity Editor.")]
 [assembly: AssemblyCompany("Kybernetik")]
 [assembly: AssemblyProduct("Inspector Gadgets Lite")]
-[assembly: AssemblyCopyright("Copyright © Kybernetik 2017-2023")]
+[assembly: AssemblyCopyright("Copyright © Kybernetik 2017-2024")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion(InspectorGadgets.Strings.InspectorGadgetsVersion + ".0.0")]
+[assembly: AssemblyVersion(InspectorGadgets.Strings.InspectorGadgetsVersion + ".0")]
 
 #if UNITY_EDITOR
 

@@ -339,6 +339,9 @@
         <member name="M:InspectorGadgets.Editor.TransformEditor.OnInspectorGUI">
             <inheritdoc/>
         </member>
+        <member name="M:InspectorGadgets.Editor.TransformEditor.OnSceneGUI">
+            <summary>Draws custom Scene View controls.</summary>
+        </member>
         <member name="M:InspectorGadgets.Editor.TransformEditor.ShouldDisableSceneTools">
             <summary>
             Returns true in Play Mode if any of the selected objects are marked as static.
