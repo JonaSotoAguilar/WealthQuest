@@ -15,28 +15,37 @@ MonoBehaviour:
   characters:
   - characterID: 0
     characterName: BusinessMan_Shirt
-    characterPrefabs: {fileID: 3834359921733086543, guid: d78ea0fa290a9c547b59acbe592532d1, type: 3}
+    characterPrefab: {fileID: 3834359921733086543, guid: d78ea0fa290a9c547b59acbe592532d1, type: 3}
+    characterIcon: {fileID: 21300000, guid: e6db744f13c62a74eab41a017d859c2b, type: 3}
   - characterID: 1
     characterName: BusinessMan_Suit
-    characterPrefabs: {fileID: 1784647339104494, guid: e3e14acdbcbef8b438ca2502ae3a1b6a, type: 3}
+    characterPrefab: {fileID: 1784647339104494, guid: e3e14acdbcbef8b438ca2502ae3a1b6a, type: 3}
+    characterIcon: {fileID: 21300000, guid: a56c282421d8d0b49b80dc74e1414f35, type: 3}
   - characterID: 2
     characterName: BusinessWoman
-    characterPrefabs: {fileID: 183608, guid: 29140201e718d1b4d9a83b52b5f018c1, type: 3}
+    characterPrefab: {fileID: 183608, guid: 29140201e718d1b4d9a83b52b5f018c1, type: 3}
+    characterIcon: {fileID: 21300000, guid: 4e1db767b29a4984da437f5e09399dd9, type: 3}
   - characterID: 3
     characterName: Female_Coat
-    characterPrefabs: {fileID: 184310, guid: a5e813ae256c0454eae0ab208e66d51a, type: 3}
+    characterPrefab: {fileID: 184310, guid: a5e813ae256c0454eae0ab208e66d51a, type: 3}
+    characterIcon: {fileID: 21300000, guid: 9ef9b995ee212bd4a962d3e8a24d77b4, type: 3}
   - characterID: 4
     characterName: Female_Jacket
-    characterPrefabs: {fileID: 107314, guid: e92a8cfcff9351e40acbe38012d073b1, type: 3}
+    characterPrefab: {fileID: 107314, guid: e92a8cfcff9351e40acbe38012d073b1, type: 3}
+    characterIcon: {fileID: 21300000, guid: 915554296038b034d879783540aacf92, type: 3}
   - characterID: 5
     characterName: Female_Police
-    characterPrefabs: {fileID: 166044, guid: 900b509204c4652468b1d69719c96c9d, type: 3}
+    characterPrefab: {fileID: 166044, guid: 900b509204c4652468b1d69719c96c9d, type: 3}
+    characterIcon: {fileID: 21300000, guid: 28e963134e550ad4ea6dc23d678b74be, type: 3}
   - characterID: 6
     characterName: Male_Hoodie
-    characterPrefabs: {fileID: 153682, guid: 958356f130ee9094f9ed7c04e22b239b, type: 3}
+    characterPrefab: {fileID: 153682, guid: 958356f130ee9094f9ed7c04e22b239b, type: 3}
+    characterIcon: {fileID: 21300000, guid: 28e963134e550ad4ea6dc23d678b74be, type: 3}
   - characterID: 7
-    characterName: Male_Hoodie
-    characterPrefabs: {fileID: 153682, guid: 958356f130ee9094f9ed7c04e22b239b, type: 3}
+    characterName: Male_Jacket
+    characterPrefab: {fileID: 183828, guid: 638191c17aab7e94aa8fb76e2c19a950, type: 3}
+    characterIcon: {fileID: 21300000, guid: 0e8462f035197364682a7e856956140c, type: 3}
   - characterID: 8
     characterName: Male_Police
-    characterPrefabs: {fileID: 191860, guid: 69ffedeac55bad843912defe1388f779, type: 3}
+    characterPrefab: {fileID: 191860, guid: 69ffedeac55bad843912defe1388f779, type: 3}
+    characterIcon: {fileID: 21300000, guid: ef2c0275b57e08a4fb950f644a260b54, type: 3}

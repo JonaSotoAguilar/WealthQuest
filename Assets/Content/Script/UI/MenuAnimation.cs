@@ -29,7 +29,7 @@ public class MenuAnimation : MonoBehaviour
         system.SetSelectedGameObject(button);
     }
 
-    public void SubscribeButtonsToEvents(GameObject[] buttons, Color color = default)
+    public void SubscribeButtonsToEvents(GameObject[] buttons)
     {
         foreach (GameObject button in buttons)
         {
@@ -48,7 +48,7 @@ public class MenuAnimation : MonoBehaviour
             // Crear un Entry para PointerExit (que deselecciona)
             EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry();
             pointerExitEntry.eventID = EventTriggerType.PointerExit;
-            pointerExitEntry.callback.AddListener((eventData) => { OnPointerExit(button, color); });
+            pointerExitEntry.callback.AddListener((eventData) => { OnPointerExit(button); });
             eventTrigger.triggers.Add(pointerExitEntry);
 
             // Crear un Entry para Select
@@ -60,7 +60,7 @@ public class MenuAnimation : MonoBehaviour
             // Crear un Entry para Deselect
             EventTrigger.Entry deselectEntry = new EventTrigger.Entry();
             deselectEntry.eventID = EventTriggerType.Deselect;
-            deselectEntry.callback.AddListener((eventData) => { OnDeselect(button, color); });
+            deselectEntry.callback.AddListener((eventData) => { OnDeselect(button); });
             eventTrigger.triggers.Add(deselectEntry);
         }
     }
@@ -71,10 +71,10 @@ public class MenuAnimation : MonoBehaviour
         system.SetSelectedGameObject(button);
     }
 
-    private void OnPointerExit(GameObject button, Color color = default)
+    private void OnPointerExit(GameObject button)
     {
         system.SetSelectedGameObject(selectedButton);
-        OnDeselect(selectedButton, color);
+        OnDeselect(selectedButton);
     }
 
     private void OnSelect(GameObject button)
@@ -83,19 +83,11 @@ public class MenuAnimation : MonoBehaviour
         selectedButton = button;
 
         button.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-        Image image = button.GetComponent<Image>();
-        if (image == null) return;
-
-        image.color = new Color(1f, 168 / 255f, 65 / 255f, 1f);
     }
 
-    private void OnDeselect(GameObject button, Color color = default)
+    private void OnDeselect(GameObject button)
     {
         button.transform.localScale = Vector3.one;
-        Image image = button.GetComponent<Image>();
-        if (image == null) return;
-
-        image.color = color;
     }
 
     #endregion

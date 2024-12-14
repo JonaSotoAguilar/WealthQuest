@@ -130,4 +130,9 @@ public class SimpleTooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         // You can obviously still swap it manually in the editor but this should speed up development
         gameObject.AddComponent<BoxCollider>();
     }
+
+    private void OnDisable()
+    {
+        HideTooltip();
+    }
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 
 public class CharacterSelector : MonoBehaviour
@@ -13,7 +14,8 @@ public class CharacterSelector : MonoBehaviour
     [SerializeField] private CharactersDatabase characterDB;
     [SerializeField] private Button nextCharacter;
     [SerializeField] private Button previousCharacter;
-    private int characterSelected;
+    [SerializeField] private Image characterSprite;
+    private int characterSelected = 0;
 
     [Header("Name")]
     [SerializeField] private TMP_InputField nameInput;
@@ -24,18 +26,12 @@ public class CharacterSelector : MonoBehaviour
     public string PlayerName { get => playerName; set => playerName = value; }
     public int Model { get => characterSelected; }
 
-    private void OnEnable()
-    {
-        UpdateCharacter(characterSelected);
-    }
-
     public void UserPlayer()
     {
         ProfileUser.LoadProfile();
         playerName = ProfileUser.Username;
         characterSelected = 0;
         nameInput.text = playerName;
-        UpdateCharacter(characterSelected);
     }
 
     public void UpdateIndex(int i)
@@ -45,22 +41,39 @@ public class CharacterSelector : MonoBehaviour
         nameInput.text = playerName;
     }
 
+    public void ActiveChanges(bool active)
+    {
+        nameInput.interactable = active;
+        changeName.interactable = active;
+        nextCharacter.interactable = active;
+        previousCharacter.interactable = active;
+        if (DeletePlayer != null) Destroy(DeletePlayer.gameObject);
+    }
+
+    #region Character Selection
+
     public void NextCharacter()
     {
         characterSelected = (characterSelected + 1) % characterDB.Length;
-        UpdateCharacter(characterSelected);
+        characterSprite.sprite = characterDB.GetCharacter(characterSelected).characterIcon;
     }
 
     public void PreviousCharacter()
     {
         characterSelected = (characterSelected - 1 + characterDB.Length) % characterDB.Length;
-        UpdateCharacter(characterSelected);
+        characterSprite.sprite = characterDB.GetCharacter(characterSelected).characterIcon;
     }
 
-    public void UpdateCharacter(int selectedOption)
+    public void LoadCharacter(int selected)
     {
-        Character character = characterDB.GetCharacter(selectedOption);
+        characterSelected = selected;
+        characterSprite.sprite = characterDB.GetCharacter(selected).characterIcon;
+        // Bloquear botones de selección
     }
+
+    #endregion
+
+    #region Name Selection
 
     public void ActivateInputField()
     {
@@ -97,12 +110,5 @@ public class CharacterSelector : MonoBehaviour
         nameInput.text = playerName;
     }
 
-    public void ActiveChanges(bool active)
-    {
-        nameInput.interactable = active;
-        changeName.interactable = active;
-        nextCharacter.interactable = active;
-        previousCharacter.interactable = active;
-        if (DeletePlayer != null) Destroy(DeletePlayer.gameObject);
-    }
+    #endregion
 }

@@ -14,7 +14,7 @@ public class LobbyLocalMulti : MonoBehaviour
 {
     [SerializeField] private GameData gameData;
     [Header("Topics")]
-    [SerializeField] private Topics topics;
+    [SerializeField] private Content content;
     [SerializeField] private TMP_Dropdown bundleDropdown;
 
     [Header("Players Panel")]
@@ -22,6 +22,7 @@ public class LobbyLocalMulti : MonoBehaviour
     [SerializeField] private GameObject playerDisconnectedPrefab;
     [SerializeField] private GameObject parentPlayerPanel;
     [SerializeField] private List<GameObject> playerPanels;
+    [SerializeField] private GameObject returnButton;
 
     [Header("Players Data")]
     [SerializeField] private PlayerInputManager playerInputManager;
@@ -33,6 +34,12 @@ public class LobbyLocalMulti : MonoBehaviour
     [Header("Player Bundle")]
     private string assetBundleDirectory;
     private string selectedBundle;
+
+    private void Awake()
+    {
+        GameObject[] buttons = { startButton.gameObject, returnButton };
+        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
+    }
 
     private void Start()
     {
@@ -70,7 +77,7 @@ public class LobbyLocalMulti : MonoBehaviour
     {
         // Bloquear seleccion de tema
         selectedBundle = gameData.topicName;
-        bundleDropdown.value = topics.LocalTopicList.IndexOf(gameData.topicName);
+        bundleDropdown.value = content.LocalTopicList.IndexOf(gameData.topicName);
         bundleDropdown.interactable = false;
         startButton.interactable = false;
         // Limpiar jugadores exededentes
@@ -82,7 +89,7 @@ public class LobbyLocalMulti : MonoBehaviour
         }
         // Data jugador principal
         characters[0].UpdateName(gameData.playersData[0].Nickname);
-        characters[0].UpdateCharacter(gameData.playersData[0].CharacterID);
+        characters[0].LoadCharacter(gameData.playersData[0].CharacterID);
         characters[0].ActiveChanges(false);
     }
 
@@ -90,7 +97,7 @@ public class LobbyLocalMulti : MonoBehaviour
     {
         bundleDropdown.ClearOptions();
         List<string> options = new List<string> { "Default" };
-        options.AddRange(topics.LocalTopicList);
+        options.AddRange(content.LocalTopicList);
         bundleDropdown.AddOptions(options);
         selectedBundle = "Default";
         bundleDropdown.value = 0;
@@ -140,7 +147,7 @@ public class LobbyLocalMulti : MonoBehaviour
         if (gameData.playersData.Count > index)
         {
             character.UpdateName(gameData.playersData[index].Nickname);
-            character.UpdateCharacter(gameData.playersData[index].CharacterID);
+            character.LoadCharacter(gameData.playersData[index].CharacterID);
             character.ActiveChanges(false);
         }
     }

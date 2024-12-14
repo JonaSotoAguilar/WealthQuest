@@ -15,12 +15,16 @@ public class BannerNetwork : NetworkBehaviour
 
     [Header("Data Player")]
     [SerializeField] private TMP_InputField nameInput;
-    [SerializeField] private RawImage imageCharacter; //FIXME: Cambiar por prefab de personaje
     [SerializeField] private TextMeshProUGUI connectedText;
 
     [Header("Game Data")]
     [SerializeField] private GameData data;
     [SerializeField] private CharactersDatabase characterDB;
+
+    [Header("Character")]
+    [SerializeField] private Button nextCharacter;
+    [SerializeField] private Button previousCharacter;
+    [SerializeField] private Image characterSprite;
 
     # region Getters & Setters
 
@@ -29,12 +33,6 @@ public class BannerNetwork : NetworkBehaviour
     public int Character { get => character; }
 
     #endregion
-
-    void Awake()
-    {
-        //position.OnChange += OnChangePosition;
-        //FIXME: imageCharacter.texture = characterDB.GetCharacter(0).characterIcon;
-    }
 
     #region Methods Profile Player 
 
@@ -55,7 +53,7 @@ public class BannerNetwork : NetworkBehaviour
             {
                 if (player.UID == uid)
                 {
-                    CmdSetProfilePlayer(uid, name);
+                    CmdSetProfilePlayer(uid, name, data.GetPlayerData(uid).CharacterID);
                     return;
                 }
             }
@@ -65,15 +63,16 @@ public class BannerNetwork : NetworkBehaviour
         }
         else
         {
-            CmdSetProfilePlayer(uid, name);
+            CmdSetProfilePlayer(uid, name, 0);
         }
     }
 
     [Command]
-    private void CmdSetProfilePlayer(string uidProfile, string nameProfile)
+    private void CmdSetProfilePlayer(string uidProfile, string nameProfile, int charID)
     {
         uid = uidProfile;
         username = nameProfile;
+        character = charID;
     }
 
     #endregion
@@ -114,7 +113,7 @@ public class BannerNetwork : NetworkBehaviour
 
     private void OnChangeCharacter(int oldCharacter, int newCharacter)
     {
-        //FIXME: imageCharacter.texture = characterDB.GetCharacter(newCharacter).characterIcon;
+        characterSprite.sprite = characterDB.GetCharacter(newCharacter).characterIcon;
     }
 
     // FIXME: Eliminar

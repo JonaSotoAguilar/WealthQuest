@@ -25,7 +25,16 @@ public class OptionMenu : MonoBehaviour
     [SerializeField] private TMP_Dropdown qualityDropdown;
     private int qualityIndex;
 
+    [Header("Return")]
+    [SerializeField] private GameObject returnButton;
+
     #region Initialization
+
+    private void Awake()
+    {
+        GameObject[] buttons = new GameObject[] { activeFullscreen, inactiveFullscreen, returnButton, NextResolutionButton.gameObject, PreviousResolutionButton.gameObject };
+        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
+    }
 
     public void ShowPanel(bool active)
     {

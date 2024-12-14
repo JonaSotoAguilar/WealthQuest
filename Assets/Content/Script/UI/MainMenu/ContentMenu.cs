@@ -1,12 +1,15 @@
 using UnityEngine;
 using TMPro;
-using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.UI;
+using SFB;
+using System.IO;
 
 public class ContentMenu : MonoBehaviour
 {
-    [SerializeField] private Topics topics;
+    [Header("Content")]
+    [SerializeField] private Content content;
+    [SerializeField] private CreateContent createContent;
     [SerializeField] private GameObject topicPrefab;
     [SerializeField] private Transform container;
     [SerializeField] private TMP_InputField searchInput;
@@ -15,29 +18,33 @@ public class ContentMenu : MonoBehaviour
     [SerializeField] private GameObject filterButton;
     [SerializeField] private GameObject rechargeButton;
     [SerializeField] private GameObject returnButton;
+    [SerializeField] private GameObject createContentButton;
+    [SerializeField] private GameObject importContentButton;
+    [SerializeField] private GameObject fileContentButton;
 
-    private enum FilterMode { All, NotDownloaded, Downloaded }
+    [Header("Filter")]
+    [SerializeField] private Texture[] filterIcons;
+    [SerializeField] private RawImage filterIcon;
+    private enum FilterMode { All, Local, Remote, Update }
     private FilterMode currentFilterMode = FilterMode.All;
 
     #region Initialization
 
     private void Awake()
     {
-        Color color = new Color(1f, 168 / 255f, 65 / 255f, 1f);
-        GameObject[] buttons = new GameObject[] { filterButton, rechargeButton, returnButton };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons, color);
+        GameObject[] buttons = new GameObject[] { filterButton, rechargeButton, returnButton, createContentButton, importContentButton, fileContentButton };
+        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
     }
 
     private void Start()
     {
-        ClearScrollView();
-        StartCoroutine(InitializeAndPopulateScrollView());
         searchInput.onValueChanged.AddListener(delegate { FilterBySearch(); });
     }
 
     private void OnEnable()
     {
         MenuAnimation.Instance.SelectObject(rechargeButton);
+        InitScrollView();
     }
 
     #endregion
@@ -45,31 +52,64 @@ public class ContentMenu : MonoBehaviour
     public void InitScrollView()
     {
         ClearScrollView();
-        StartCoroutine(InitializeAndPopulateScrollView());
+        StartCoroutine(InitializeContent());
     }
 
-    private IEnumerator InitializeAndPopulateScrollView()
+    private IEnumerator InitializeContent()
     {
-        yield return StartCoroutine(topics.InicializateRemoteTopics((bundleName) =>
+        yield return content.InitializeContent();
+
+        foreach (string bundleName in content.RemoteTopicUpdateList)
         {
-            CreateTopicPanel(bundleName);
-        }));
+            CreateContentPanel(bundleName, true, true);
+        }
+
+        foreach (string bundleName in content.RemoteTopicList)
+        {
+            CreateContentPanel(bundleName, false);
+        }
+
+        foreach (string bundleName in content.LocalTopicList)
+        {
+            CreateContentPanel(bundleName);
+        }
     }
 
-    private void CreateTopicPanel(string bundleName)
+    private void CreateContentPanel(string bundleName, bool isLocal = true, bool isUpdate = false)
     {
         GameObject newPanel = Instantiate(topicPrefab, container);
 
-        newPanel.transform.Find("Name").GetComponent<TextMeshProUGUI>().text = bundleName;
-        bool isDownloaded = topics.LocalTopicList.Contains(bundleName);
+        string name = content.ExtractName(bundleName);
+        int version = content.ExtractVersion(bundleName);
+        newPanel.transform.Find("Name").GetComponent<TextMeshProUGUI>().text = name;
+        newPanel.transform.Find("Version").GetComponent<TextMeshProUGUI>().text = version + ".0";
 
         GameObject downloadButton = newPanel.transform.Find("Download").gameObject;
         GameObject downloadedButton = newPanel.transform.Find("Downloaded").gameObject;
         GameObject deleteButton = newPanel.transform.Find("Delete").gameObject;
+        GameObject updateButton = newPanel.transform.Find("Update").gameObject;
 
-        downloadButton.SetActive(!isDownloaded);
-        downloadedButton.SetActive(isDownloaded);
-        deleteButton.SetActive(isDownloaded);
+        GameObject changeButton = newPanel.transform.Find("Change").gameObject;
+        GameObject exportButton = newPanel.transform.Find("Export").gameObject;
+
+        if (isUpdate)
+        {
+            downloadButton.SetActive(false);
+            downloadedButton.SetActive(false);
+            deleteButton.SetActive(true);
+            updateButton.SetActive(true);
+            changeButton.SetActive(false);
+            exportButton.SetActive(false);
+        }
+        else
+        {
+            downloadButton.SetActive(!isLocal);
+            downloadedButton.SetActive(isLocal);
+            deleteButton.SetActive(isLocal);
+            updateButton.SetActive(false);
+            changeButton.SetActive(isLocal);
+            exportButton.SetActive(isLocal);
+        }
 
         downloadButton.GetComponent<Button>().onClick.AddListener(() =>
              StartCoroutine(DownloadBundle(bundleName, newPanel)));
@@ -77,52 +117,95 @@ public class ContentMenu : MonoBehaviour
         {
             DeleteLocalTopic(bundleName, newPanel);
         });
+        updateButton.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            StartCoroutine(UpdateContent(bundleName, newPanel));
+        });
+        changeButton.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            AudioManager.Instance?.PlaySoundButtonPress();
+            gameObject.SetActive(false);
+            createContent.ChangeContent(name, version);
+        });
+        exportButton.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            AudioManager.Instance?.PlaySoundButtonPress();
+            SaveSystem.ExportContentFile(name);
+            Popup.Instance.StartCoroutine(Popup.Instance.SuccessExportContent());
+        });
 
-        string searchText = searchInput.text.ToLower();
-        string panelName = bundleName.ToLower();
-        bool isVisible = panelName.Contains(searchText) && IsPanelVisible(isDownloaded);
+        ShowContent(isLocal, isUpdate, newPanel, searchInput.text.ToLower(), name.ToLower());
+    }
+
+    private void ShowContent(bool isLocal, bool isUpdate, GameObject newPanel, string searchText, string panelName)
+    {
+        bool isVisible = panelName.Contains(searchText) && IsPanelVisible(isLocal, isUpdate);
         newPanel.SetActive(isVisible);
     }
 
-    private IEnumerator DownloadBundle(string bundleName, GameObject topicPanel)
+    private IEnumerator DownloadBundle(string contentName, GameObject contentPanel)
     {
         AudioManager.Instance?.PlaySoundButtonPress();
-        topicPanel.transform.Find("Download").GetComponent<Button>().interactable = false;
-        yield return StartCoroutine(topics.DownloadAssetBundle(bundleName));
+        contentPanel.transform.Find("Download").GetComponent<Button>().interactable = false;
+        yield return StartCoroutine(content.DownloadContent(contentName));
 
-        topicPanel.transform.Find("Download").gameObject.SetActive(false);
-        topicPanel.transform.Find("Downloaded").gameObject.SetActive(true);
-        topicPanel.transform.Find("Delete").gameObject.SetActive(true);
+        contentPanel.transform.Find("Download").gameObject.SetActive(false);
+        contentPanel.transform.Find("Downloaded").gameObject.SetActive(true);
+        contentPanel.transform.Find("Delete").gameObject.SetActive(true);
 
-        RefreshPanels();
-        FilterBySearch();
+        contentPanel.transform.Find("Change").gameObject.SetActive(true);
+        contentPanel.transform.Find("Export").gameObject.SetActive(true);
+
+        ShowContent(true, false, contentPanel, searchInput.text.ToLower(), contentPanel.name.ToLower());
     }
 
-    private void DeleteLocalTopic(string bundleName, GameObject topicPanel)
+    private IEnumerator UpdateContent(string contentName, GameObject contentPanel)
     {
         AudioManager.Instance?.PlaySoundButtonPress();
-        bool success = topics.DeleteLocalTopic(bundleName);
+        contentPanel.transform.Find("Update").GetComponent<Button>().interactable = false;
+        yield return StartCoroutine(content.UpdateContent(contentName));
+
+        contentPanel.transform.Find("Update").gameObject.SetActive(false);
+        contentPanel.transform.Find("Downloaded").gameObject.SetActive(true);
+        contentPanel.transform.Find("Delete").gameObject.SetActive(true);
+
+        contentPanel.transform.Find("Change").gameObject.SetActive(true);
+        contentPanel.transform.Find("Export").gameObject.SetActive(true);
+
+        ShowContent(true, false, contentPanel, searchInput.text.ToLower(), contentPanel.name.ToLower());
+    }
+
+    private void DeleteLocalTopic(string contentName, GameObject contentPanel)
+    {
+        AudioManager.Instance?.PlaySoundButtonPress();
+
+        bool success = content.DeleteLocalContent(contentName);
 
         if (success)
         {
-            topicPanel.transform.Find("Download").gameObject.SetActive(true);
-            topicPanel.transform.Find("Download").GetComponent<UnityEngine.UI.Button>().interactable = true;
-            topicPanel.transform.Find("Downloaded").gameObject.SetActive(false);
-            topicPanel.transform.Find("Delete").gameObject.SetActive(false);
+            contentPanel.transform.Find("Download").gameObject.SetActive(true);
+            contentPanel.transform.Find("Download").GetComponent<Button>().interactable = true;
+            contentPanel.transform.Find("Downloaded").gameObject.SetActive(false);
+            contentPanel.transform.Find("Delete").gameObject.SetActive(false);
+            contentPanel.transform.Find("Update").gameObject.SetActive(false);
+
+            contentPanel.transform.Find("Change").gameObject.SetActive(false);
+            contentPanel.transform.Find("Export").gameObject.SetActive(false);
 
             RefreshPanels();
             FilterBySearch();
         }
         else
         {
-            Debug.LogError($"Error al eliminar el tópico {bundleName}. No se encontró el archivo.");
+            // Elimado de local pero no existe en remoto
+            Destroy(contentPanel);
         }
     }
 
-
     public void ToggleFilterMode()
     {
-        currentFilterMode = (FilterMode)(((int)currentFilterMode + 1) % 3);
+        currentFilterMode = (FilterMode)(((int)currentFilterMode + 1) % 4);
+        filterIcon.texture = filterIcons[(int)currentFilterMode];
         RefreshPanels();
         FilterBySearch();
     }
@@ -130,21 +213,26 @@ public class ContentMenu : MonoBehaviour
     {
         foreach (Transform child in container)
         {
-            bool isDownloaded = child.Find("Downloaded").gameObject.activeSelf;
-            child.gameObject.SetActive(IsPanelVisible(isDownloaded));
+            bool isLocal = child.Find("Downloaded").gameObject.activeSelf;
+            bool isUpdate = child.Find("Update").gameObject.activeSelf;
+            child.gameObject.SetActive(IsPanelVisible(isLocal, isUpdate));
         }
     }
 
-    private bool IsPanelVisible(bool isDownloaded)
+    private bool IsPanelVisible(bool isDownloaded, bool isUpdate)
     {
         switch (currentFilterMode)
         {
             case FilterMode.All:
                 return true;
-            case FilterMode.NotDownloaded:
+            case FilterMode.Remote:
+                if (isUpdate) return false;
                 return !isDownloaded;
-            case FilterMode.Downloaded:
+            case FilterMode.Local:
+                if (isUpdate) return false;
                 return isDownloaded;
+            case FilterMode.Update:
+                return isUpdate;
             default:
                 return true;
         }
@@ -157,7 +245,9 @@ public class ContentMenu : MonoBehaviour
         foreach (Transform child in container)
         {
             string panelName = child.Find("Name").GetComponent<TextMeshProUGUI>().text.ToLower();
-            child.gameObject.SetActive(panelName.Contains(searchText) && IsPanelVisible(child.Find("Downloaded").gameObject.activeSelf));
+            bool isLocal = child.Find("Downloaded").gameObject.activeSelf;
+            bool isUpdate = child.Find("Update").gameObject.activeSelf;
+            child.gameObject.SetActive(panelName.Contains(searchText) && IsPanelVisible(isLocal, isUpdate));
         }
     }
 
@@ -173,4 +263,55 @@ public class ContentMenu : MonoBehaviour
     {
         gameObject.SetActive(visible);
     }
+
+    public void ImportContent()
+    {
+        // Abrir el cuadro de diálogo para seleccionar un archivo
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Select a Content File", "", "content", false);
+
+        if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
+        {
+            string selectedFilePath = paths[0];
+
+            // Ruta de destino
+            string contentDirectory = Path.Combine(Application.persistentDataPath, "Content");
+            if (!Directory.Exists(contentDirectory))
+            {
+                Directory.CreateDirectory(contentDirectory);
+            }
+
+            string destinationPath = Path.Combine(contentDirectory, Path.GetFileName(selectedFilePath));
+
+            File.Copy(selectedFilePath, destinationPath, overwrite: true);
+            InitScrollView();
+            Popup.Instance.StartCoroutine(Popup.Instance.SuccessImportContent());
+        }
+        else
+        {
+            Debug.Log("Selección de archivo cancelada.");
+        }
+    }
+
+    public void OpenContentFolder()
+    {
+        string contentDirectory = Path.Combine(Application.persistentDataPath, "Content");
+
+        // Asegurarse de que la carpeta exista
+        if (!Directory.Exists(contentDirectory))
+        {
+            Debug.Log($"La carpeta no existe. Creándola en: {contentDirectory}");
+            Directory.CreateDirectory(contentDirectory);
+        }
+
+        // Abrir la carpeta en el sistema operativo
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+        {
+            FileName = contentDirectory,
+            UseShellExecute = true, // Necesario para abrir carpetas en Unity
+            Verb = "open" // Comando para abrir la carpeta
+        });
+
+        Debug.Log($"Abriendo la carpeta: {contentDirectory}");
+    }
+
 }

@@ -9,36 +9,44 @@ public class QuestionData
     public int indexCorrectAnswer;
 
     // Topic
-    public string topic; // De 1 a 3.
+    public string topic;
     public string subTopic;
-    public int level; // Es el puntaje que se le asigna a la pregunta
+    public int level;
 
     public QuestionData() { }
 
-    public QuestionData(string question, string[] answers, int indexCorrectAnswer, int scoreForCorrectAnswer)
+    public QuestionData(string question, string[] answers, int indexCorrectAnswer, string topic, string subTopic, int level)
     {
         this.question = question;
         this.answers = answers;
         this.indexCorrectAnswer = indexCorrectAnswer;
+        this.topic = topic;
+        this.subTopic = subTopic;
+        this.level = level;
     }
 
     #region Write and Read
 
-    // FIXME: Agregar el resto de variables
     public static void WriteQuestionData(NetworkWriter writer, QuestionData questionData)
     {
         writer.WriteString(questionData.question);
+
         writer.WriteInt(questionData.answers.Length);
         foreach (var answer in questionData.answers)
         {
             writer.WriteString(answer);
         }
+
         writer.WriteInt(questionData.indexCorrectAnswer);
+        writer.WriteString(questionData.topic);
+        writer.WriteString(questionData.subTopic);
+        writer.WriteInt(questionData.level);
     }
 
     public static QuestionData ReadQuestionData(NetworkReader reader)
     {
         string question = reader.ReadString();
+
         int answersCount = reader.ReadInt();
         string[] answers = new string[answersCount];
         for (int i = 0; i < answersCount; i++)
@@ -47,9 +55,13 @@ public class QuestionData
         }
 
         int indexCorrectAnswer = reader.ReadInt();
-        int scoreForCorrectAnswer = reader.ReadInt();
-        return new QuestionData(question, answers, indexCorrectAnswer, scoreForCorrectAnswer);
+        string topic = reader.ReadString();
+        string subTopic = reader.ReadString();
+        int level = reader.ReadInt();
+
+        return new QuestionData(question, answers, indexCorrectAnswer, topic, subTopic, level);
     }
+
 
     #endregion
 

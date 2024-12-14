@@ -54,19 +54,8 @@ public class UserMenu : MonoBehaviour
 
     private void Awake()
     {
-        Color color = new Color(1, 1, 1, 1);
-        GameObject[] buttons = new GameObject[] { returnButton.gameObject, configButton.gameObject };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons, color);
-
-        color = new Color(0, 0, 0, 1);
-        buttons = new GameObject[] { loginButton.gameObject, logoutButton.gameObject, changeName.gameObject };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons, color);
-
-        color = new Color(1f, 168 / 255f, 65 / 255f, 1f);
-        buttons = new GameObject[] { change.gameObject, bGamesLogin.gameObject };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons, color);
-
-        buttons = new GameObject[] { exitBGames.gameObject, exitChangeName.gameObject };
+        GameObject[] buttons = new GameObject[] { returnButton.gameObject, configButton.gameObject, exitBGames.gameObject, 
+            exitChangeName.gameObject, change.gameObject, bGamesLogin.gameObject, loginButton.gameObject, logoutButton.gameObject, changeName.gameObject };
         MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
     }
 
@@ -133,6 +122,9 @@ public class UserMenu : MonoBehaviour
     {
         returnButton.interactable = active;
         configButton.interactable = active;
+        changeName.interactable = active;
+        loginButton.interactable = active;
+        logoutButton.interactable = active;
 
         if (active) MenuAnimation.Instance.SelectObject(configButton.gameObject);
     }

@@ -6,7 +6,8 @@ public class Character
 {
     public int characterID;
     public string characterName;
-    public GameObject characterPrefabs;
+    public GameObject characterPrefab;
+    public Sprite characterIcon;
 }
 
 
@@ -30,7 +31,7 @@ public class CharactersDatabase : ScriptableObject
 
     public GameObject GetModel(int index)
     {
-        return characters[index].characterPrefabs;
+        return characters[index].characterPrefab;
     }
 
     private void OnValidate()
@@ -42,9 +43,9 @@ public class CharactersDatabase : ScriptableObject
             characters[i].characterID = i; // Asignar el índice como ID
 
             // Configurar el nombre del personaje igual al prefab si está asignado
-            if (characters[i].characterPrefabs != null)
+            if (characters[i].characterPrefab != null)
             {
-                characters[i].characterName = characters[i].characterPrefabs.name;
+                characters[i].characterName = characters[i].characterPrefab.name;
             }
             else
             {

@@ -12,16 +12,17 @@ public class LobbyOnline : NetworkBehaviour
 
     [Header("Game Data")]
     [SerializeField] private GameData data;
-    [SerializeField] private Topics topics;
+    [SerializeField] private Content content;
 
     [Header("UI Elements")]
-    [SerializeField] private GameObject gameMenu;
     [SerializeField] private GameObject lobbyPanel;
     [SerializeField] private TextMeshProUGUI codeText;
 
     [Header("Game Actions")]
+    public GameObject gameMenu;
     [SerializeField] private TMP_Dropdown topicDropdown;
     [SerializeField] private Button startGame;
+    [SerializeField] private GameObject returnButton;
 
     // Variables for Topics
     private List<string> localTopics = new List<string>();
@@ -37,6 +38,8 @@ public class LobbyOnline : NetworkBehaviour
 
     private void Start()
     {
+        GameObject[] buttons = { startGame.gameObject, returnButton };
+        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
         assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
 
         if (isClient && isServer)
@@ -92,6 +95,14 @@ public class LobbyOnline : NetworkBehaviour
         }
     }
 
+    public void CopyToClipboard()
+    {
+        if (codeText != null && !string.IsNullOrEmpty(codeText.text))
+        {
+            GUIUtility.systemCopyBuffer = codeText.text;
+        }
+    }
+
     #endregion
 
     #region Topics
@@ -101,7 +112,7 @@ public class LobbyOnline : NetworkBehaviour
         // 1. Topics Local
         topicDropdown.ClearOptions();
         List<string> options = new List<string> { "Default" };
-        options.AddRange(topics.LocalTopicList);
+        options.AddRange(content.LocalTopicList);
         topicDropdown.AddOptions(options);
         localTopics = options;
 
@@ -112,7 +123,7 @@ public class LobbyOnline : NetworkBehaviour
         CmdUpdateTopics();
         if (data.DataExists())
         {
-            int topic = topics.LocalTopicList.IndexOf(data.topicName);
+            int topic = content.LocalTopicList.IndexOf(data.topicName);
             CmdChangeTopic(topic);
         }
         else

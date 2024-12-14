@@ -652,7 +652,6 @@ MonoBehaviour:
   syncInterval: 0
   _camera: {fileID: 1282265473}
   gameData: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
-  btnStartGame: {fileID: 0}
 --- !u!4 &537653467
 Transform:
   m_ObjectHideFlags: 0

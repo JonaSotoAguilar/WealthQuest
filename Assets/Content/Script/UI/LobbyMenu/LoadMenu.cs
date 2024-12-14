@@ -14,7 +14,6 @@ public class LoadMenu : MonoBehaviour
     [SerializeField] private LobbySingle singleMenu;             // index = 0
     [SerializeField] private LobbyLocalMulti localMultiRoom;     // index = 1
     [SerializeField] private LobbyLocalPass localPassRoom;       // index = 2
-    //[SerializeField] private LobbyOnline onlineLobby;            // index = 3
 
     [Header("Select Game Mode")]
     [SerializeField] private GameObject playMenu;
@@ -22,6 +21,8 @@ public class LoadMenu : MonoBehaviour
     [SerializeField] private GameObject onlineMenu;
 
     [Header("Online Game")]
+    [SerializeField] private Button createOnlineButton;
+    [SerializeField] private Button joinOnlineButton;
     [SerializeField] private TMP_InputField joinInput;
 
     // Variables de control de carga de datos
@@ -55,6 +56,8 @@ public class LoadMenu : MonoBehaviour
                 break;
             case 3:
             case 4:
+                createOnlineButton.interactable = false;
+                joinOnlineButton.interactable = false;
                 slotData = 3;
                 break;
             default:
@@ -131,6 +134,8 @@ public class LoadMenu : MonoBehaviour
         {
             ShowPanel(false);
             onlineMenu.SetActive(false);
+            createOnlineButton.interactable = true;
+            CleanJoinInput();
         }
         else
         {
@@ -145,7 +150,6 @@ public class LoadMenu : MonoBehaviour
         string joinCode = joinInput.text;
         if (joinCode.Length == 0 || joinCode.Length > 6)
         {
-            Debug.Log("Join code not valid.");
             ShowPanel(false);
             return;
         }
@@ -155,7 +159,8 @@ public class LoadMenu : MonoBehaviour
         {
             ShowPanel(false);
             onlineMenu.SetActive(false);
-            Debug.Log("Relay joined successfully.");
+            createOnlineButton.interactable = true;
+            CleanJoinInput();
         }
         else
         {
@@ -163,6 +168,12 @@ public class LoadMenu : MonoBehaviour
             ShowPanel(false);
             Debug.Log("Failed to join Relay, please try again.");
         }
+    }
+
+    private void CleanJoinInput()
+    {
+        joinInput.text = "";
+        joinOnlineButton.interactable = false;
     }
 
     #endregion

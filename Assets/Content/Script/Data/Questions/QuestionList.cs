@@ -1,11 +1,13 @@
+using System.Collections.Generic;
+
 [System.Serializable]
 public class QuestionList
 {
-    public QuestionData[] questions;
+    public List<QuestionData> questions = new List<QuestionData>();
 
     public QuestionList() { }
 
-    public QuestionList(QuestionData[] questions)
+    public QuestionList(List<QuestionData> questions)
     {
         this.questions = questions;
     }
