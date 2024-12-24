@@ -15,7 +15,7 @@ public class LobbyLocalMulti : MonoBehaviour
     [SerializeField] private GameData gameData;
     [Header("Topics")]
     [SerializeField] private Content content;
-    [SerializeField] private TMP_Dropdown bundleDropdown;
+    [SerializeField] private TMP_Dropdown contentDropdown;
 
     [Header("Players Panel")]
     [SerializeField] private Button startButton;
@@ -31,19 +31,10 @@ public class LobbyLocalMulti : MonoBehaviour
     [Header("Characters")]
     [SerializeField] private List<CharacterSelector> characters;
 
-    [Header("Player Bundle")]
-    private string assetBundleDirectory;
-    private string selectedBundle;
-
     private void Awake()
     {
         GameObject[] buttons = { startButton.gameObject, returnButton };
         MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-    }
-
-    private void Start()
-    {
-        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
     }
 
     public void OnEnable()
@@ -76,9 +67,8 @@ public class LobbyLocalMulti : MonoBehaviour
     public void LoadPanel()
     {
         // Bloquear seleccion de tema
-        selectedBundle = gameData.topicName;
-        bundleDropdown.value = content.LocalTopicList.IndexOf(gameData.topicName);
-        bundleDropdown.interactable = false;
+        contentDropdown.value = content.LocalTopicList.IndexOf(gameData.content);
+        contentDropdown.interactable = false;
         startButton.interactable = false;
         // Limpiar jugadores exededentes
         int maxPlayers = gameData.playersData.Count;
@@ -95,18 +85,19 @@ public class LobbyLocalMulti : MonoBehaviour
 
     private void PopulateBundleDropdown()
     {
-        bundleDropdown.ClearOptions();
-        List<string> options = new List<string> { "Default" };
-        options.AddRange(content.LocalTopicList);
-        bundleDropdown.AddOptions(options);
-        selectedBundle = "Default";
-        bundleDropdown.value = 0;
-        bundleDropdown.interactable = true;
-    }
+        contentDropdown.ClearOptions();
+        List<string> options = new List<string>();
 
-    public void OnBundleSelected(int index)
-    {
-        selectedBundle = bundleDropdown.options[index].text;
+        foreach (var topic in content.LocalTopicList)
+        {
+            string baseName = SaveSystem.ExtractName(topic);
+            options.Add(baseName);
+        }
+
+        // Agregar las opciones al Dropdown
+        contentDropdown.AddOptions(options);
+        contentDropdown.value = 0;
+        contentDropdown.interactable = options.Count > 0;
     }
 
     private void OnPlayerJoined(PlayerInput playerInput)
@@ -188,14 +179,14 @@ public class LobbyLocalMulti : MonoBehaviour
 
     public void StartGame()
     {
-        StartCoroutine(InitGame());
+        StartCoroutine(InitializeGame());
     }
 
-    private IEnumerator InitGame()
+    private IEnumerator InitializeGame()
     {
         yield return SavePlayerInputs();
-        if (!gameData.DataExists()) yield return gameData.LoadCardsAndQuestions(selectedBundle);
-        SceneManager.LoadScene("LocalMulti");
+        if (!gameData.DataExists()) yield return gameData.LoadContent(contentDropdown.options[contentDropdown.value].text);
+        SceneManager.LoadScene("LocalMultiScene");
     }
 
     public IEnumerator SavePlayerInputs()

@@ -8,9 +8,10 @@ public class PlayerLocalUI : MonoBehaviour
     // Question
     private int levelQuestion = 0;
     private string topicQuestion;
-    private int attempts = 3;
+    private int attempts = 2;
     private List<QuestionData> questions = new List<QuestionData>();
     private QuestionData currentQuestion;
+    bool useBGames = false;
 
     // Cards
     private List<Card> selectedCards = new List<Card>();
@@ -24,7 +25,7 @@ public class PlayerLocalUI : MonoBehaviour
         int index = Random.Range(0, questions.Count);
         currentQuestion = questions[index];
 
-        ui.SetupQuestion(currentQuestion, true);
+        ui.SetupQuestion(currentQuestion, attempts, true);
         ui.OnQuestionAnswered += OnAnswerQuestion;
     }
 
@@ -38,17 +39,26 @@ public class PlayerLocalUI : MonoBehaviour
         questions = GameLocalManager.Data.GetQuestionsByTopic(topicQuestion, levelQuestion);
     }
 
+    private void ResetQuestionValues()
+    {
+        useBGames = false;
+        levelQuestion = 0;
+        topicQuestion = null;
+        attempts = 2;
+        currentQuestion = null;
+        questions.Clear();
+    }
+
     private void OnAnswerQuestion(bool isCorrect)
     {
         ui.OnQuestionAnswered -= OnAnswerQuestion;
         ui.ShowQuestion(false);
 
-        // FIXME: Agregar Ui animation
         if (isCorrect)
         {
-            ResetQuestionValues();
-            GetComponent<PlayerLocalData>().AddPoints(currentQuestion.level);
+            GetComponent<PlayerLocalData>().AddPoints(levelQuestion);
             GameLocalManager.Data.DeleteQuestion(currentQuestion);
+            ResetQuestionValues();
             DiceRoll();
         }
         else
@@ -56,8 +66,15 @@ public class PlayerLocalUI : MonoBehaviour
             attempts--;
             if (attempts <= 0)
             {
-                ResetQuestionValues();
-                FinishTurn();
+                if (CanPlayBGames())
+                {
+                    AddAttempt();
+                }
+                else
+                {
+                    ResetQuestionValues();
+                    FinishTurn();
+                }
             }
             else
             {
@@ -67,15 +84,44 @@ public class PlayerLocalUI : MonoBehaviour
         }
     }
 
-    private void ResetQuestionValues()
-    {
-        //FIXME: bGames te da un intento extra
 
-        levelQuestion = 0;
-        topicQuestion = null;
-        attempts = 3;
-        currentQuestion = null;
-        questions.Clear();
+    private bool CanPlayBGames()
+    {
+        if (useBGames || ProfileUser.BGamesProfile == null || ProfileUser.BGamesProfile.points <= 0) return false;
+        return true;
+    }
+
+    private void AddAttempt()
+    {
+        useBGames = true;
+        ui.ShowAttempts(true);
+        ui.OnAttemptFinished += OnAttemptFinished;
+    }
+
+    private async void OnAttemptFinished(bool isYes)
+    {
+        ui.ShowAttempts(false);
+        ui.OnAttemptFinished -= OnAttemptFinished;
+        if (isYes)
+        {
+            bool success = await HttpService.SpendPoints();
+            if (success)
+            {
+                attempts++;
+                questions.Remove(currentQuestion);
+                CreateQuestion();
+            }
+            else
+            {
+                ResetQuestionValues();
+                FinishTurn();
+            }
+        }
+        else
+        {
+            ResetQuestionValues();
+            FinishTurn();
+        }
     }
 
     #endregion
@@ -89,7 +135,7 @@ public class PlayerLocalUI : MonoBehaviour
         foreach (var card in cards)
         {
             selectedCards.Add(card);
-            ui.SetupCard(card, data.Points, data.Money);
+            ui.SetupCard(card, data.Points);
         }
 
         ui.ShowCards(data.Money);

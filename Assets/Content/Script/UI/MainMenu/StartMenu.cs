@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
 using UnityEngine.EventSystems;
+using System.Collections;
 
 public class StartMenu : MonoBehaviour
 {
@@ -15,7 +16,16 @@ public class StartMenu : MonoBehaviour
     [Header("Event System")]
     [SerializeField] private EventSystem system;
 
+    [Header("Content")]
+    [SerializeField] private Content content;
+
     #region Initialize
+
+    private async void Awake()
+    {
+        await ProfileUser.LoadProfile();
+        StartCoroutine(content.InitializeContent());
+    }
 
     private void Start()
     {

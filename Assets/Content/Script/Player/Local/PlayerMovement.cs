@@ -20,9 +20,7 @@ public class PlayerMovement : MonoBehaviour
     // Move
     public IEnumerator Move(int steps, int currPosition)
     {
-        Debug.Log("Move: " + steps + " steps");
         Square[] squares = SquareManager.Squares;
-        Debug.Log("Squares: " + squares.Length);
 
         for (int i = 0; i < steps; i++)
         {

@@ -21,7 +21,7 @@ public class WQRelayManager : NetworkManager
     private UtpTransport utpTransport;
 
     // Scenes
-    private const string SCENE_MENU = "Menu";
+    private const string SCENE_MENU = "MenuScene";
     private const string SCENE_GAME = "Test";
 
     [Header("Relay Settings")]
@@ -32,8 +32,6 @@ public class WQRelayManager : NetworkManager
     [SerializeField] private CharactersDatabase charactersDB;
 
     [Header("Lobby Settings")]
-    //[SerializeField] private LobbyOnline lobby;
-    //[SerializeField] private GameObject bannerParent;
     [SerializeField] private GameObject bannerPrefab;
     public int connBanners = 0;
 
@@ -42,10 +40,7 @@ public class WQRelayManager : NetworkManager
     public int connPlayers = 0;
 
     // Variables for Players
-    //private string bundle;
     public Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = new();
-    //private int dataLoaded = 0;
-    //private bool isDataLoaded = false;
     private Dictionary<int, int> positions = new Dictionary<int, int>(){
         {0, -510},
         {1, -170},
@@ -212,7 +207,6 @@ public class WQRelayManager : NetworkManager
 
     private void SetupBanner(NetworkConnectionToClient conn)
     {
-        //BannerNetwork banner = conn.identity.GetComponent<BannerNetwork>();
         GameObject banner = Instantiate(bannerPrefab);
         BannerNetwork bannerNetwork = banner.GetComponent<BannerNetwork>();
         bannerNetwork.position = new Vector2(positions[connBanners], 0);

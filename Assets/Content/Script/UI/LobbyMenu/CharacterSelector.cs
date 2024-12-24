@@ -28,7 +28,6 @@ public class CharacterSelector : MonoBehaviour
 
     public void UserPlayer()
     {
-        ProfileUser.LoadProfile();
         playerName = ProfileUser.Username;
         characterSelected = 0;
         nameInput.text = playerName;

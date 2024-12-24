@@ -21,7 +21,7 @@ public class FinishGameData
         years = gameData.currentYear;
         timePlayed = gameData.timePlayed;
         date = DateTime.Now.ToString("dd/MM/yyyy");
-        topicName = gameData.topicName;
+        topicName = gameData.content;
         score = gameData.playersData[0].FinalScore / years;
         playersData = gameData.playersData;
         PlayerPrefs.SetInt("gameId", gameID);

@@ -7,7 +7,7 @@ public class BannerNetwork : NetworkBehaviour
 {
     [SyncVar] private string uid = "0";
     [SyncVar(hook = nameof(OnChangePosition))] public Vector2 position = Vector2.zero;
-    [SyncVar(hook = nameof(OnChangeUsername))] private string username = "Jugador";
+    [SyncVar(hook = nameof(OnChangeUsername))] private string username = "Jugador_1";
     [SyncVar(hook = nameof(OnChangeCharacter))] private int character = 0;
 
     [Header("Panel Player")]
@@ -41,8 +41,6 @@ public class BannerNetwork : NetworkBehaviour
         base.OnStartClient();
         if (!isOwned) return;
 
-        // Cargar el perfil del usuario
-        ProfileUser.LoadProfile();
         string uid = ProfileUser.UID;
         string name = ProfileUser.Username;
 

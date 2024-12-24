@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEngine.UI;
 using SFB;
 using System.IO;
+using System.Collections.Generic;
 
 public class ContentMenu : MonoBehaviour
 {
@@ -79,8 +80,8 @@ public class ContentMenu : MonoBehaviour
     {
         GameObject newPanel = Instantiate(topicPrefab, container);
 
-        string name = content.ExtractName(bundleName);
-        int version = content.ExtractVersion(bundleName);
+        string name = SaveSystem.ExtractName(bundleName);
+        int version = SaveSystem.ExtractVersion(bundleName);
         newPanel.transform.Find("Name").GetComponent<TextMeshProUGUI>().text = name;
         newPanel.transform.Find("Version").GetComponent<TextMeshProUGUI>().text = version + ".0";
 
@@ -266,30 +267,87 @@ public class ContentMenu : MonoBehaviour
 
     public void ImportContent()
     {
+        // Definir múltiples extensiones válidas usando ExtensionFilter
+        var extensions = new[]
+        {
+            new ExtensionFilter("Content or JSON Files", "content", "json")
+        };
+
         // Abrir el cuadro de diálogo para seleccionar un archivo
-        string[] paths = StandaloneFileBrowser.OpenFilePanel("Select a Content File", "", "content", false);
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Select a Content File", "", extensions, false);
 
         if (paths.Length > 0 && !string.IsNullOrEmpty(paths[0]))
         {
             string selectedFilePath = paths[0];
 
-            // Ruta de destino
-            string contentDirectory = Path.Combine(Application.persistentDataPath, "Content");
-            if (!Directory.Exists(contentDirectory))
+            if (selectedFilePath.EndsWith(".json"))
             {
-                Directory.CreateDirectory(contentDirectory);
+                ImportJson(selectedFilePath);
             }
-
-            string destinationPath = Path.Combine(contentDirectory, Path.GetFileName(selectedFilePath));
-
-            File.Copy(selectedFilePath, destinationPath, overwrite: true);
-            InitScrollView();
-            Popup.Instance.StartCoroutine(Popup.Instance.SuccessImportContent());
+            else if (selectedFilePath.EndsWith(".content"))
+            {
+                ImportContentFile(selectedFilePath);
+            }
+            else
+            {
+                Debug.LogError("Formato de archivo no soportado.");
+            }
         }
         else
         {
             Debug.Log("Selección de archivo cancelada.");
         }
+    }
+
+    private void ImportJson(string filePath)
+    {
+        try
+        {
+            // Leer el archivo JSON
+            string jsonContent = File.ReadAllText(filePath);
+
+            // Si el JSON representa un array, envuélvelo
+            string wrappedJson = $"{{\"questions\":{jsonContent}}}";
+
+            // Deserializar el JSON en un objeto QuestionList
+            QuestionList questionList = JsonUtility.FromJson<QuestionList>(wrappedJson);
+
+            if (questionList != null && questionList.questions != null && questionList.questions.Count > 0)
+            {
+                Debug.Log($"Importadas {questionList.questions.Count} preguntas desde JSON.");
+
+                // Guardar el archivo como .content
+                string name = Path.GetFileNameWithoutExtension(filePath);
+                StartCoroutine(SaveSystem.SaveContent(questionList, name));
+            }
+            else
+            {
+                Debug.LogWarning("El JSON no contiene preguntas o el formato no es válido.");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Error al importar el archivo JSON: {ex.Message}");
+        }
+    }
+
+    private void ImportContentFile(string filePath)
+    {
+        // Ruta de destino
+        string contentDirectory = Path.Combine(Application.persistentDataPath, "Content");
+        if (!Directory.Exists(contentDirectory))
+        {
+            Directory.CreateDirectory(contentDirectory);
+        }
+
+        string destinationPath = Path.Combine(contentDirectory, Path.GetFileName(filePath));
+
+        // Copiar el archivo seleccionado a la ubicación de destino
+        File.Copy(filePath, destinationPath, overwrite: true);
+
+        Debug.Log($"Archivo .content importado y copiado a: {destinationPath}");
+        InitScrollView();
+        Popup.Instance.StartCoroutine(Popup.Instance.SuccessImportContent());
     }
 
     public void OpenContentFolder()

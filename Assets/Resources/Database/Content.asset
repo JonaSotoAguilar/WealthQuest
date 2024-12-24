@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79b90b63a25a540408b74bba343065d3, type: 3}
   m_Name: Content
   m_EditorClassIdentifier: 
-  localTopicList:
-  - democards
-  remoteTopicList: []
+  localContentList: []
+  remoteContentList: []
+  remoteContentUpdateList: []
+  allRemoteContentList:
+  - Test_2

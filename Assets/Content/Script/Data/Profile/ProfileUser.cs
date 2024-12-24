@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using Mirror.Examples.Basic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 [System.Serializable]
@@ -15,8 +14,7 @@ public static class ProfileUser
     private static int playedGames;
 
     [Header("bGames")]
-    private static BGamesPlayer bGamesPlayer;
-    public static List<BGamesAttributes> bGamesAttributes;
+    private static BGamesProfile bGamesProfile;
 
     #region Methods Getters & Setters
 
@@ -27,13 +25,13 @@ public static class ProfileUser
     public static int AverageScore { get => averageScore; }
     public static int BestScore { get => bestScore; }
     public static int PlayedGames { get => playedGames; }
-    public static BGamesPlayer BGamesPlayer { get => bGamesPlayer; }
+    public static BGamesProfile BGamesProfile { get => bGamesProfile; }
 
     #endregion
 
     #region Methods Load Profile
 
-    public static void LoadProfile()
+    public static async Task LoadProfile()
     {
         uid = PlayerPrefs.GetString("uid", GenerateUID());
         username = PlayerPrefs.GetString("username", "Jugador");
@@ -43,8 +41,7 @@ public static class ProfileUser
         bestScore = PlayerPrefs.GetInt("bestScoreUser", 0);
         playedGames = PlayerPrefs.GetInt("playedGames", 0);
 
-        int id = PlayerPrefs.GetInt("bGamesId", -1);
-        if (id != -1) HttpService.LoginBGamesPlayer($"/players/{id}");
+        await LoadBGamesProfile();
     }
 
     private static string GenerateUID()
@@ -55,32 +52,55 @@ public static class ProfileUser
         return uid;
     }
 
+    private static async Task LoadBGamesProfile()
+    {
+        int id = PlayerPrefs.GetInt("bGamesId", -1);
+        if (id == -1)
+        {
+            Debug.LogWarning("No hay un ID de BGames guardado en PlayerPrefs.");
+            return;
+        }
+
+        bool success = await HttpService.Authenticator(id);
+        if (success)
+        {
+            Debug.Log("Perfil de BGames cargado exitosamente.");
+        }
+        else
+        {
+            Debug.LogError("No se pudo cargar el perfil de BGames.");
+        }
+    }
+
+    public static void LoadBGamesPlayer(BGamesProfile bgames)
+    {
+        if (bgames == null) return;
+        bGamesProfile = bgames;
+    }
+
+    public static void LogoutBGames()
+    {
+        PlayerPrefs.DeleteKey("bGamesId");
+        bGamesProfile = null;
+    }
+
     #endregion
 
     #region Methods Update Profile
 
-    public static void SaveNameUser(String name)
+    public static void SaveNameUser(string name)
     {
         username = name;
         PlayerPrefs.SetString("username", username);
         PlayerPrefs.Save();
     }
 
-    public static void SaveBGamesPlayer(BGamesPlayer player)
+    public static void SaveBGamesPlayer(BGamesProfile bgames)
     {
-        bGamesPlayer = player;
-        if (player == null)
-        {
-            PlayerPrefs.SetInt("bGamesId", -1);
-            return;
-        };
-        PlayerPrefs.SetInt("bGamesId", player.id_players);
+        if (bgames == null) return;
+        bGamesProfile = bgames;
+        PlayerPrefs.SetInt("bGamesId", bgames.id);
         PlayerPrefs.Save();
-    }
-
-    public static void LoadBGamesPlayer(BGamesPlayer player)
-    {
-        bGamesPlayer = player;
     }
 
     // FIXME: Revisar guardar atributos termino partida

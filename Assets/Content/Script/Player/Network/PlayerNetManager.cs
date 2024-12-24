@@ -42,13 +42,6 @@ public class PlayerNetManager : NetworkBehaviour
         Debug.Log("PlayerNetManager OnStartServer: " + data.UID);
     }
 
-    // public override void OnStartClient()
-    // {
-    //     base.OnStartClient();
-    //     GameNetManager.PlayerJoined(this);
-    //     GameUIManager.InitializeHUD(data.UID, false);
-    // }
-
     #endregion
 
     #region Game Actions

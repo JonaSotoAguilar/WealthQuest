@@ -16,6 +16,7 @@ public class PlayerNetData : NetworkBehaviour
     // Game Data
     [SyncVar] private int position = 0;
     [SyncVar(hook = nameof(OnChangePoints))] private int points = 0;
+    [SyncVar] private int level = 1;
 
     // Finances
     [SyncVar(hook = nameof(OnChangeMoney))] private int money = 0;
@@ -41,6 +42,7 @@ public class PlayerNetData : NetworkBehaviour
 
     public int Position { get => position; }
     public int Points { get => points; }
+    public int Level { get => level; }
 
     public int Money { get => money; }
     public int Salary { get => salary; }
@@ -117,6 +119,14 @@ public class PlayerNetData : NetworkBehaviour
     {
         points += addPoints;
         playerData.Points = points;
+        UpdateLevel();
+    }
+
+    [Server]
+    private void UpdateLevel()
+    {
+        level = Mathf.Min(4, Mathf.FloorToInt(Points / 8) + 1);
+        playerData.Level = level;
     }
 
     [Server]

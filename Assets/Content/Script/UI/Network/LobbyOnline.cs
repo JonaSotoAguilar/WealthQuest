@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using Mirror;
 using TMPro;
 using UnityEngine;
@@ -20,19 +19,14 @@ public class LobbyOnline : NetworkBehaviour
 
     [Header("Game Actions")]
     public GameObject gameMenu;
-    [SerializeField] private TMP_Dropdown topicDropdown;
+    [SerializeField] private TMP_Dropdown contentDropdown;
     [SerializeField] private Button startGame;
     [SerializeField] private GameObject returnButton;
 
-    // Variables for Topics
-    private List<string> localTopics = new List<string>();
-    private readonly SyncList<string> onlineTopics = new SyncList<string>();
-    [SyncVar(hook = nameof(OnChangeTopic))] private int selectedTopic = 0;
-    private string assetBundleDirectory;
-
-    // Flags
-    private int playersReady = 0;
-
+    // Variables for Content
+    private readonly SyncList<string> contents = new SyncList<string>();
+    [SyncVar(hook = nameof(OnChangeContent))] private int selectedContent = 0;
+    [SyncVar(hook = nameof(OnChangeCode))] private string code;
 
     #region Initialization
 
@@ -40,14 +34,11 @@ public class LobbyOnline : NetworkBehaviour
     {
         GameObject[] buttons = { startGame.gameObject, returnButton };
         MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-        assetBundleDirectory = Path.Combine(Application.persistentDataPath, "AssetBundles");
 
         if (isClient && isServer)
         {
-            Debug.Log("LobbyOnline Start");
             startGame.onClick.AddListener(StartGameScene);
         }
-        Debug.Log("LobbyOnline Start End");
     }
 
     public void ShowPanel(bool visible)
@@ -55,29 +46,57 @@ public class LobbyOnline : NetworkBehaviour
         gameObject.SetActive(visible);
     }
 
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+
+        lobbyPanel.SetActive(true);
+        code = WQRelayManager.Instance.relayJoinCode;
+        //contents.OnAdd += OnAddContent;
+        PopulateBundleDropdown();
+    }
+
     public override void OnStartClient()
     {
         base.OnStartClient();
-        Debug.Log("OnStartClient LobbyOnline");
 
         lobbyPanel.SetActive(true);
-        codeText.text = WQRelayManager.Instance.relayJoinCode;
-
-        onlineTopics.OnAdd += OnAddOnlineTopic;
-        onlineTopics.OnRemove += OnRemoveTopic;
-        PopulateBundleDropdown();
+        if (isClient && isServer) contentDropdown.interactable = true;
+        else contentDropdown.interactable = false;
         SetupStartButton();
+
+        // Sincronizar contenido del Dropdown
+        contentDropdown.ClearOptions();
+        foreach (var content in contents)
+        {
+            contentDropdown.options.Add(new TMP_Dropdown.OptionData(content));
+        }
+
+        // Asegurar que el valor inicial sea correcto
+        if (contents.Count > 0)
+        {
+            contentDropdown.value = selectedContent; // Ajustar al valor sincronizado
+            contentDropdown.captionText.text = contentDropdown.options[selectedContent].text; // Actualizar el texto del Label
+        }
+        else
+        {
+            Debug.LogWarning("No hay opciones disponibles en el Dropdown.");
+        }
+
+        Debug.Log($"OnStartClient: Selected Content: {selectedContent}");
     }
 
     public override void OnStopClient()
     {
         base.OnStopClient();
 
-        onlineTopics.OnAdd -= OnAddOnlineTopic;
-        onlineTopics.OnRemove -= OnRemoveTopic;
+        if (contentDropdown != null)
+        {
+            contentDropdown.onValueChanged.RemoveAllListeners();
+            contentDropdown.ClearOptions();
+        }
 
-        //FIXME: Volver a cargar menu game
-        if (this != null && gameObject.activeInHierarchy)
+        if (gameObject.activeInHierarchy)
         {
             gameMenu.SetActive(true);
         }
@@ -103,91 +122,69 @@ public class LobbyOnline : NetworkBehaviour
         }
     }
 
+    private void OnChangeCode(string oldCode, string newCode)
+    {
+        if (codeText != null)
+        {
+            codeText.text = newCode;
+        }
+    }
+
     #endregion
 
     #region Topics
 
+    [Server]
     private void PopulateBundleDropdown()
     {
-        // 1. Topics Local
-        topicDropdown.ClearOptions();
-        List<string> options = new List<string> { "Default" };
-        options.AddRange(content.LocalTopicList);
-        topicDropdown.AddOptions(options);
-        localTopics = options;
+        List<string> options = new List<string>();
 
-        // 2. Topics Online
-        topicDropdown.interactable = false;
-        if (!(isClient && isServer)) return;
-
-        CmdUpdateTopics();
-        if (data.DataExists())
+        foreach (var topic in content.LocalTopicList)
         {
-            int topic = content.LocalTopicList.IndexOf(data.topicName);
-            CmdChangeTopic(topic);
+            string baseName = SaveSystem.ExtractName(topic);
+            if (!string.IsNullOrEmpty(baseName))
+            {
+                options.Add(baseName);
+            }
+        }
+
+        contents.Clear();
+        contents.AddRange(options);
+
+        // Seleccionar un tema predeterminado
+        if (data.DataExists() && content.LocalTopicList.Contains(data.content))
+        {
+            selectedContent = content.LocalTopicList.IndexOf(data.content);
         }
         else
         {
-            CmdChangeTopic(0);
-            topicDropdown.interactable = true;
-            topicDropdown.onValueChanged.AddListener(OnDropdownValueChanged);
-        }
-    }
-
-    [Command(requiresAuthority = false)]
-    private void CmdUpdateTopics()
-    {
-        onlineTopics.Clear();
-        foreach (string topic in localTopics)
-            onlineTopics.Add(topic);
-    }
-
-    private void OnAddOnlineTopic(int index)
-    {
-        string topic = onlineTopics[index];
-
-        if (!localTopics.Contains(topic))
-        {
-            //FIXME: Si no tiene el topic local, lo descarga
-            CmdDeleteTopic(index);
-        }
-    }
-
-    [Command(requiresAuthority = false)]
-    private void CmdDeleteTopic(int index)
-    {
-        onlineTopics.RemoveAt(index);
-    }
-
-    private void OnRemoveTopic(int index, string oldTopic)
-    {
-        if (selectedTopic == index)
-        {
-            topicDropdown.value = 0;
-            if (isClient && isServer) CmdChangeTopic(0);
-        }
-
-        if (localTopics.Contains(oldTopic))
-        {
-            topicDropdown.options.RemoveAt(index);
-            localTopics.Remove(oldTopic);
+            selectedContent = 0;
         }
     }
 
     private void OnDropdownValueChanged(int topic)
     {
-        CmdChangeTopic(topic);
+        if (topic >= 0 && topic < contents.Count)
+        {
+            CmdChangeContent(topic);
+        }
     }
 
     [Command(requiresAuthority = false)]
-    private void CmdChangeTopic(int topic)
+    private void CmdChangeContent(int content)
     {
-        selectedTopic = topic;
+        if (content >= 0 && content < contents.Count)
+        {
+            selectedContent = content;
+        }
     }
 
-    private void OnChangeTopic(int oldTopic, int newTopic)
+    private void OnChangeContent(int oldTopic, int newTopic)
     {
-        topicDropdown.value = newTopic;
+        if (contentDropdown != null && newTopic >= 0 && newTopic < contentDropdown.options.Count)
+        {
+            contentDropdown.value = newTopic;
+        }
     }
 
     #endregion
@@ -207,59 +204,31 @@ public class LobbyOnline : NetworkBehaviour
 
     public void StartGameScene()
     {
-        Debug.Log("StartGameScene");
-        string bundle = topicDropdown.options[selectedTopic].text;
-        Debug.Log("Bundle: " + bundle);
-        CmdSavePlayersData(bundle);
+        string content = contentDropdown.options[selectedContent].text;
+        CmdSavePlayersData(content);
     }
 
     [Command(requiresAuthority = false)]
-    private void CmdSavePlayersData(string bundle)
+    private void CmdSavePlayersData(string content)
     {
-        if (data.DataExists())
-        {
-            RpcLoadQuestions(bundle);
-            return;
-        };
-
-        Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = WQRelayManager.Instance.clientPanels;
-        foreach (var pair in clientPanels)
-        {
-            BannerNetwork bannerPlayer = pair.Value;
-
-            PlayerData player = new PlayerData(bannerPlayer.UID, bannerPlayer.Username, bannerPlayer.Character);
-            data.playersData.Add(player);
-        }
-
-        RpcLoadQuestions(bundle);
-    }
-
-    [ClientRpc]
-    private void RpcLoadQuestions(string bundle)
-    {
-        StartCoroutine(RoutineLoadQuestions(bundle));
-    }
-
-    private IEnumerator RoutineLoadQuestions(string bundle)
-    {
-        yield return data.LoadCardsAndQuestions(bundle);
-        CmdFinishLoad();
-    }
-
-    [Command(requiresAuthority = false)]
-    private void CmdFinishLoad()
-    {
-        playersReady++;
-
-        if (playersReady == data.playersData.Count)
-        {
-            WQRelayManager.Instance.ServerChangeScene(SCENE_GAME);
-        }
+        StartCoroutine(LoadBoard(content));
     }
 
     [Server]
-    public void LoadBoard()
+    public IEnumerator LoadBoard(string content)
     {
+        yield return data.LoadContent(content);
+        if (!data.DataExists())
+        {
+            Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = WQRelayManager.Instance.clientPanels;
+            foreach (var pair in clientPanels)
+            {
+                BannerNetwork bannerPlayer = pair.Value;
+
+                PlayerData player = new PlayerData(bannerPlayer.UID, bannerPlayer.Username, bannerPlayer.Character);
+                data.playersData.Add(player);
+            }
+        }
         WQRelayManager.Instance.ServerChangeScene(SCENE_GAME);
     }
 

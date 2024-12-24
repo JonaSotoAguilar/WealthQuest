@@ -5,12 +5,13 @@ using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 public class UIPlayer : MonoBehaviour
 {
     private static CultureInfo chileanCulture = new CultureInfo("es-CL");
-    [SerializeField] private EventSystem system;
+    [SerializeField] private MultiplayerEventSystem systemLocal;
 
     [Header("Questions")]
     [SerializeField] private GameObject questionPanel;
@@ -18,11 +19,19 @@ public class UIPlayer : MonoBehaviour
     [SerializeField] private Button[] optionButtons;
     public event Action<bool> OnQuestionAnswered;
 
+    [Header("Attempts")]
+    [SerializeField] private GameObject attemptsPanel;
+    [SerializeField] private TextMeshProUGUI attemptsText;
+    [SerializeField] private TextMeshProUGUI attemptsValue;
+    [SerializeField] private Button[] attemptsButtons;
+    public event Action<bool> OnAttemptFinished;
+
     [Header("Cards")]
     [SerializeField] private GameObject cardsPanel;
     [SerializeField] private Transform cardGrid;
     [SerializeField] private GameObject cardPrefab;
-    private List<Card> selectedCards = new List<Card>();
+    private List<Button> cardButtons = new List<Button>();
+    private bool isInvestmentCard = false;
     public event Action<Card> OnCardSelected;
 
     [Header("Invest")]
@@ -45,8 +54,8 @@ public class UIPlayer : MonoBehaviour
 
     void Awake()
     {
-        selectedCards = new List<Card>();
         ShowQuestion(false);
+        ShowAttempts(false);
         CloseCards();
 
         cancelButton.onClick.AddListener(CancelSelection);
@@ -54,7 +63,7 @@ public class UIPlayer : MonoBehaviour
 
     #region QuestionPanel
 
-    public void SetupQuestion(QuestionData questionData, bool isOwned)
+    public void SetupQuestion(QuestionData questionData, int attemps, bool isOwned)
     {
         questionText.text = questionData.question;
 
@@ -66,12 +75,13 @@ public class UIPlayer : MonoBehaviour
             if (isOwned) optionButtons[i].onClick.AddListener(() => Answer(localIndex, questionData));
         }
 
-        if (system != null) system.SetSelectedGameObject(optionButtons[0].gameObject);
-
+        attemptsValue.text = attemps.ToString();
         ShowQuestion(true);
+
+        if (systemLocal != null) systemLocal.SetSelectedGameObject(optionButtons[0].gameObject);
+        else EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
     }
 
-    //FIXME: Revisar
     void Answer(int index, QuestionData questionData)
     {
         bool isCorrect = index == questionData.indexCorrectAnswer;
@@ -86,9 +96,35 @@ public class UIPlayer : MonoBehaviour
 
     #endregion
 
+    #region AttemptsPanel
+
+    public void ShowAttempts(bool show)
+    {
+        if (show)
+        {
+            int points = ProfileUser.BGamesProfile.points;
+            attemptsText.text = "Tienes " + points + " puntos de bGames, ¿quieres usar 1 punto para tener un intento extra?";
+            if (systemLocal != null) systemLocal.SetSelectedGameObject(attemptsButtons[0].gameObject);
+            else EventSystem.current.SetSelectedGameObject(attemptsButtons[0].gameObject);
+        }
+        attemptsPanel.SetActive(show);
+    }
+
+    public void YesMoreAttempts()
+    {
+        OnAttemptFinished?.Invoke(true);
+    }
+
+    public void NoMoreAttempts()
+    {
+        OnAttemptFinished?.Invoke(false);
+    }
+
+    #endregion
+
     #region CardsPanel
 
-    public void SetupCard(Card card, int points, int money)
+    public void SetupCard(Card card, int points)
     {
         GameObject cardInstance = Instantiate(cardPrefab, cardGrid);
 
@@ -104,8 +140,8 @@ public class UIPlayer : MonoBehaviour
         Button cardButton = cardInstance.GetComponent<Button>();
         cardButton.onClick.AddListener(() => HandleOptionSelected(card));
 
-        if (card is InvestmentCard && money < minInvestment) cardButton.interactable = false;
-        selectedCards.Add(card);
+        if (card is InvestmentCard) isInvestmentCard = true;
+        cardButtons.Add(cardButton);
     }
 
     public void HandleOptionSelected(Card selectedCard)
@@ -122,7 +158,7 @@ public class UIPlayer : MonoBehaviour
 
     private void ClearCards()
     {
-        selectedCards.Clear();
+        cardButtons.Clear();
         foreach (Transform child in cardGrid)
             Destroy(child.gameObject);
     }
@@ -130,7 +166,11 @@ public class UIPlayer : MonoBehaviour
     public void ShowCards(int money)
     {
         cardsPanel.SetActive(true);
-        if (selectedCards[0] is InvestmentCard)
+
+        if (systemLocal != null) systemLocal.SetSelectedGameObject(cardButtons[0].gameObject);
+        else EventSystem.current.SetSelectedGameObject(cardButtons[0].gameObject);
+
+        if (isInvestmentCard)
         {
             if (money < minInvestment) ActiveAmount(false);
             else ActiveAmount(true);
@@ -149,6 +189,22 @@ public class UIPlayer : MonoBehaviour
     #endregion
 
     #region InvestmentPanel
+
+    private void ActiveAmount(bool active)
+    {
+        if (!active)
+        {
+            if (systemLocal != null) systemLocal.SetSelectedGameObject(cancelButton.gameObject);
+            else EventSystem.current.SetSelectedGameObject(cancelButton.gameObject);
+        }
+
+        increaseAmount.interactable = active;
+        lowerAmount.interactable = active;
+        cancelButton.interactable = true;
+
+        foreach (Button cardButton in cardButtons)
+            cardButton.interactable = active;
+    }
 
     public void IncreaseAmount()
     {
@@ -179,15 +235,6 @@ public class UIPlayer : MonoBehaviour
     {
         amountInvest = minInvestment;
         amountText.text = amountInvest.ToString("C0", chileanCulture);
-    }
-
-    private void ActiveAmount(bool active)
-    {
-        if (active && system != null) system.SetSelectedGameObject(cardGrid.GetChild(0).gameObject);
-        else if (system != null) system.SetSelectedGameObject(cancelButton.gameObject);
-
-        increaseAmount.interactable = active;
-        lowerAmount.interactable = active;
     }
 
     public void ChangeAmountInvest(int newAmount)

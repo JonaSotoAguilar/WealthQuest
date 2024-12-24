@@ -27,14 +27,9 @@ public class Content : ScriptableObject
     public List<string> RemoteTopicList { get => remoteContentList; set => remoteContentList = value; }
     public List<string> RemoteTopicUpdateList { get => remoteContentUpdateList; set => remoteContentUpdateList = value; }
 
-    private void OnEnable()
-    {
-        if (localContentList.Count == 0) InitializateLocalContent();
-    }
-
     public IEnumerator InitializeContent()
     {
-        yield return InitializateLocalContent();
+        InitializateLocalContent();
         yield return InitializateRemoteContent();
 
         // Revisa si tiene la última versión de los temas locales
@@ -51,7 +46,7 @@ public class Content : ScriptableObject
 
             // Verificar si hay una actualización disponible para el contenido remoto
             string localContent = localContentList.FirstOrDefault(item =>
-                ExtractName(item) == ExtractName(remoteContent));
+                SaveSystem.ExtractName(item) == SaveSystem.ExtractName(remoteContent));
 
             if (!string.IsNullOrEmpty(localContent) && IsUpdateAvailable(localContent, remoteContent))
             {
@@ -64,12 +59,16 @@ public class Content : ScriptableObject
         }
     }
 
+    public void GetLocalContent()
+    {
+        if (localContentList.Count == 0) InitializateLocalContent();
+    }
 
-    // Método para inicializar los temas locales
-    private IEnumerator InitializateLocalContent()
+    private void InitializateLocalContent()
     {
         localContentList.Clear();
-        yield return SaveSystem.LoadContentNames(localContentList);
+        SaveSystem.InitializateDefaultContent();
+        SaveSystem.LoadContentNames(localContentList);
     }
 
     // FIXME: Método para obtener la lista de Content remotos desde un JSON alojado en GitHub
@@ -118,8 +117,8 @@ public class Content : ScriptableObject
     public IEnumerator UpdateContent(string contentName)
     {
         // Obtener el nombre base del contenido (sin versión)
-        string baseName = ExtractName(contentName);
-        SaveSystem.DeleteContent(ExtractName(baseName));
+        string baseName = SaveSystem.ExtractName(contentName);
+        SaveSystem.DeleteContent(SaveSystem.ExtractName(baseName));
 
         // Descargar la nueva versión
         yield return DownloadContent(contentName);
@@ -160,10 +159,10 @@ public class Content : ScriptableObject
                     localContentList.Add(baseName);
                 }
 
-                string name = ExtractName(contentName);
-                if (remoteContentList.Any(item => ExtractName(item) == name))
+                string name = SaveSystem.ExtractName(contentName);
+                if (remoteContentList.Any(item => SaveSystem.ExtractName(item) == name))
                 {
-                    remoteContentList.RemoveAll(item => ExtractName(item) == name);
+                    remoteContentList.RemoveAll(item => SaveSystem.ExtractName(item) == name);
                 }
             }
         }
@@ -171,14 +170,14 @@ public class Content : ScriptableObject
 
     public bool DeleteLocalContent(string contentName)
     {
-        string baseName = ExtractName(contentName);
+        string baseName = SaveSystem.ExtractName(contentName);
         bool success = SaveSystem.DeleteContent(baseName);
 
         if (success)
         {
             localContentList.Remove(contentName);
 
-            string remoteContent = allRemoteContentList.FirstOrDefault(item => ExtractName(item) == baseName);
+            string remoteContent = allRemoteContentList.FirstOrDefault(item => SaveSystem.ExtractName(item) == baseName);
 
             if (!string.IsNullOrEmpty(remoteContent))
             {
@@ -192,37 +191,10 @@ public class Content : ScriptableObject
 
     private bool IsUpdateAvailable(string localContent, string remoteContent)
     {
-        int localVersion = ExtractVersion(localContent);
-        int remoteVersion = ExtractVersion(remoteContent);
+        int localVersion = SaveSystem.ExtractVersion(localContent);
+        int remoteVersion = SaveSystem.ExtractVersion(remoteContent);
 
         return remoteVersion > localVersion;
-    }
-
-    public int ExtractVersion(string contentName)
-    {
-        int underscoreIndex = contentName.LastIndexOf('_');
-        if (underscoreIndex == -1)
-        {
-            return 0;
-        }
-
-        string versionString = contentName.Substring(underscoreIndex + 1);
-        if (int.TryParse(versionString, out int version))
-        {
-            return version;
-        }
-        return 0;
-    }
-
-    public string ExtractName(string contentName)
-    {
-        int underscoreIndex = contentName.LastIndexOf('_');
-        if (underscoreIndex == -1)
-        {
-            return contentName;
-        }
-
-        return contentName.Substring(0, underscoreIndex);
     }
 
     public bool ExistsContent(string name)

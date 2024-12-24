@@ -8,6 +8,11 @@ public class PlayerNetUI : NetworkBehaviour
 
     // Question
     [SyncVar(hook = nameof(SetupQuestion))] private QuestionData currentQuestion;
+    private List<QuestionData> questions = new List<QuestionData>();
+    private int levelQuestion = 0;
+    private string topicQuestion;
+    [SyncVar] private int attempts = 2;
+    private bool useBGames = false;
 
     // Cards
     private readonly SyncList<Card> selectedCards = new SyncList<Card>();
@@ -32,13 +37,27 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     public void CreateQuestion()
     {
-        QuestionData questionData = GameNetManager.Data.GetRandomQuestion();
-        currentQuestion = questionData;
+        if (questions.Count == 0) GetQuestionsTopic();
+
+        int index = Random.Range(0, questions.Count);
+        currentQuestion = questions[index];
     }
+
+    private void GetQuestionsTopic()
+    {
+        if (levelQuestion == 0 || topicQuestion == null)
+        {
+            levelQuestion = GetComponent<PlayerNetData>().Level;
+            topicQuestion = GameLocalManager.Data.GetRandomTopicQuestions(levelQuestion);
+        }
+        questions = GameLocalManager.Data.GetQuestionsByTopic(topicQuestion, levelQuestion);
+    }
+
+
 
     private void SetupQuestion(QuestionData oldQuestion, QuestionData newQuestion)
     {
-        ui.SetupQuestion(currentQuestion, isOwned);
+        ui.SetupQuestion(currentQuestion, attempts, isOwned);
         if (isOwned) ui.OnQuestionAnswered += OnAnswerQuestion;
     }
 
@@ -48,32 +67,116 @@ public class PlayerNetUI : NetworkBehaviour
         CmdSubmitAnswer(isCorrect);
     }
 
-    [Command]
-    private void CmdSubmitAnswer(bool isCorrect)
-    {
-        if (isCorrect)
-        {
-            GetComponent<PlayerNetData>().AddPoints(currentQuestion.level);
-            GameNetManager.Data.DeleteQuestion(currentQuestion);
-        }
 
-        CloseQuestion(isCorrect);
+    [Server]
+    private void ResetQuestionValues()
+    {
+        //FIXME: bGames te da un intento extra
+
+        levelQuestion = 0;
+        topicQuestion = null;
+        attempts = 2;
+        currentQuestion = null;
+        questions.Clear();
     }
 
     [ClientRpc]
-    private void CloseQuestion(bool isCorrect)
+    private void RpcCloseQuestion(bool isCorrect)
     {
         ui.ShowQuestion(false);
-        if (!isOwned) return;
+        if (isOwned && isCorrect) DiceRoll();
+    }
 
+    [Command]
+    private void CmdSubmitAnswer(bool isCorrect)
+    {
+        RpcCloseQuestion(true);
         if (isCorrect)
         {
-            DiceRoll();
+            GetComponent<PlayerNetData>().AddPoints(levelQuestion);
+            GameNetManager.Data.DeleteQuestion(currentQuestion);
+            ResetQuestionValues();
         }
         else
         {
-            CmdFinishTurn();
+            attempts--;
+            if (attempts <= 0)
+            {
+                if (CanPlayBGames())
+                {
+                    AddAttempt();
+                }
+                else
+                {
+                    ResetQuestionValues();
+                    FinishTurn();
+                }
+            }
+            else
+            {
+                questions.Remove(currentQuestion);
+                CreateQuestion();
+            }
         }
+    }
+
+    [Server]
+    private bool CanPlayBGames()
+    {
+        if (useBGames || ProfileUser.BGamesProfile == null || ProfileUser.BGamesProfile.points <= 0) return false;
+        return true;
+    }
+
+    [Server]
+    private void AddAttempt()
+    {
+        useBGames = true;
+        RpcSetupBGames(true);
+    }
+
+    [ClientRpc]
+    private void RpcSetupBGames(bool show)
+    {
+        ui.ShowAttempts(show);
+        if (isOwned && show) ui.OnAttemptFinished += OnAttemptFinished;
+    }
+
+    private async void OnAttemptFinished(bool isYes)
+    {
+        ui.OnAttemptFinished -= OnAttemptFinished;
+        if (isYes)
+        {
+            bool success = await HttpService.SpendPoints();
+            CmdOnAttemptFinished(success);
+        }
+        else
+        {
+            CmdFinishQuestion();
+        }
+    }
+
+    [Command]
+    private void CmdOnAttemptFinished(bool success)
+    {
+        RpcSetupBGames(false);
+        if (success)
+        {
+            attempts++;
+            questions.Remove(currentQuestion);
+            CreateQuestion();
+        }
+        else
+        {
+            ResetQuestionValues();
+            FinishTurn();
+        }
+    }
+
+    [Command]
+    private void CmdFinishQuestion()
+    {
+        ResetQuestionValues();
+        FinishTurn();
     }
 
     #endregion
@@ -92,7 +195,7 @@ public class PlayerNetUI : NetworkBehaviour
     private void OnCardAdded(int index)
     {
         PlayerNetData data = GetComponent<PlayerNetData>();
-        ui.SetupCard(selectedCards[index], data.Points, data.Money);
+        ui.SetupCard(selectedCards[index], data.Points);
 
         if (!ui.ActiveCards()) ShowCards();
     }
@@ -181,6 +284,11 @@ public class PlayerNetUI : NetworkBehaviour
     private void CmdFinishTurn()
     {
         GetComponent<PlayerNetManager>().FinishTurn();
+    }
+
+    private void FinishTurn()
+    {
+        GetComponent<PlayerLocalManager>().FinishTurn();
     }
 
     #endregion

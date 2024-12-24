@@ -19,7 +19,7 @@ public class GameData : ScriptableObject
     public List<PlayerData> playersData;
 
     [Header("Cards & Questions")]
-    public string topicName;
+    public string content;
     public List<QuestionData> allQuestionList;
     public List<QuestionData> questionList;
     public List<ExpenseCard> expenseCards;
@@ -63,7 +63,7 @@ public class GameData : ScriptableObject
         turnPlayer = 0;
         playersData = new List<PlayerData>();
 
-        topicName = "Default";
+        content = SaveSystem.defaultContentName;
         allQuestionList = new List<QuestionData>();
         questionList = new List<QuestionData>();
         expenseCards = new List<ExpenseCard>();
@@ -72,99 +72,107 @@ public class GameData : ScriptableObject
         eventCards = new List<EventCard>();
     }
 
+    public IEnumerator LoadContent(string newContent)
+    {
+        content = newContent;
+        LoadCards();
+        yield return LoadQuestions(content);
+    }
+
     #endregion
 
-    #region Asset Bundle
+    #region Methods Cards
 
-    public IEnumerator LoadCardsAndQuestions(string bundle)
+    private void LoadCards()
     {
-        topicName = bundle;
-        string currentBundlePath;
-        if (topicName == "Default")
-            currentBundlePath = Path.Combine(Application.streamingAssetsPath, "AssetBundles/defaultbundle");
-        else
+        LoadExpenseCards();
+        LoadInvestmentCards();
+        LoadIncomeCards();
+        LoadEventCards();
+    }
+
+    private void LoadExpenseCards()
+    {
+        ExpenseCard[] loadedCards = Resources.LoadAll<ExpenseCard>("Card/Expense");
+
+        if (loadedCards.Length > 0)
         {
-            string assetBundleDirectory = Path.Combine(Application.persistentDataPath, "Topics");
-            currentBundlePath = Path.Combine(assetBundleDirectory, topicName);
-        }
+            expenseCards.Clear(); // Limpiar la lista antes de cargar
+            expenseCards.AddRange(loadedCards);
 
-        yield return LoadDataFromBundle(currentBundlePath);
-    }
-
-    private IEnumerator LoadDataFromBundle(string currentBundlePath)
-    {
-        AssetBundleCreateRequest bundleRequest = AssetBundle.LoadFromFileAsync(currentBundlePath);
-        AssetBundle assetbundle = bundleRequest.assetBundle;
-
-        if (assetbundle == null)
-            yield break;
-        yield return LoadQuestionsFromBundle(assetbundle);
-        yield return LoadCardsFromBundle(assetbundle);
-        assetbundle.Unload(false);
-    }
-
-    private IEnumerator LoadCardsFromBundle(AssetBundle assetbundle)
-    {
-        yield return LoadExpenseCards(assetbundle);
-        yield return LoadInvestmentCards(assetbundle);
-        yield return LoadIncomeCards(assetbundle);
-        yield return LoadEventCards(assetbundle);
-    }
-
-    private IEnumerator LoadExpenseCards(AssetBundle bundle)
-    {
-        AssetBundleRequest loadExpenseCardsRequest = bundle.LoadAllAssetsAsync<ExpenseCard>();
-        yield return loadExpenseCardsRequest;
-        if (loadExpenseCardsRequest.allAssets.Length > 0)
-            expenseCards.AddRange(loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>());
-        else
-            expenseCards = loadExpenseCardsRequest.allAssets.OfType<ExpenseCard>().ToList();
-    }
-
-    private IEnumerator LoadInvestmentCards(AssetBundle bundle)
-    {
-        AssetBundleRequest loadInvestmentCardsRequest = bundle.LoadAllAssetsAsync<InvestmentCard>();
-        yield return loadInvestmentCardsRequest;
-        if (loadInvestmentCardsRequest.allAssets.Length > 0)
-            investmentCards.AddRange(loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>());
-        else
-            investmentCards = loadInvestmentCardsRequest.allAssets.OfType<InvestmentCard>().ToList();
-    }
-
-    private IEnumerator LoadIncomeCards(AssetBundle bundle)
-    {
-        AssetBundleRequest loadIncomeCardsRequest = bundle.LoadAllAssetsAsync<IncomeCard>();
-        yield return loadIncomeCardsRequest;
-        if (loadIncomeCardsRequest.allAssets.Length > 0)
-            incomeCards.AddRange(loadIncomeCardsRequest.allAssets.OfType<IncomeCard>());
-        else
-            incomeCards = loadIncomeCardsRequest.allAssets.OfType<IncomeCard>().ToList();
-    }
-
-    private IEnumerator LoadEventCards(AssetBundle bundle)
-    {
-        AssetBundleRequest loadEventCardsRequest = bundle.LoadAllAssetsAsync<EventCard>();
-        yield return loadEventCardsRequest;
-        if (loadEventCardsRequest.allAssets.Length > 0)
-            eventCards.AddRange(loadEventCardsRequest.allAssets.OfType<EventCard>());
-        else
-            eventCards = loadEventCardsRequest.allAssets.OfType<EventCard>().ToList();
-    }
-
-    private IEnumerator LoadQuestionsFromBundle(AssetBundle assetbundle)
-    {
-        AssetBundleRequest loadJsonRequest = assetbundle.LoadAssetAsync<TextAsset>("Questions");
-        yield return loadJsonRequest;
-        TextAsset jsonFile = loadJsonRequest.asset as TextAsset;
-        if (jsonFile != null)
-        {
-            QuestionList questionJSON = JsonUtility.FromJson<QuestionList>(jsonFile.text);
-            questionList = new List<QuestionData>(questionJSON.questions);
-            allQuestionList = new List<QuestionData>(questionJSON.questions);
+            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
         }
         else
         {
-            Debug.LogError("No se encontró el archivo JSON en el Asset Bundle.");
+            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
+        }
+    }
+
+    private void LoadInvestmentCards()
+    {
+        InvestmentCard[] loadedCards = Resources.LoadAll<InvestmentCard>("Card/Investment");
+
+        if (loadedCards.Length > 0)
+        {
+            investmentCards.Clear(); // Limpiar la lista antes de cargar
+            investmentCards.AddRange(loadedCards);
+
+            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
+        }
+        else
+        {
+            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
+        }
+    }
+
+    public void LoadIncomeCards()
+    {
+        IncomeCard[] loadedCards = Resources.LoadAll<IncomeCard>("Card/Income");
+
+        if (loadedCards.Length > 0)
+        {
+            incomeCards.Clear(); // Limpiar la lista antes de cargar
+            incomeCards.AddRange(loadedCards);
+
+            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
+        }
+        else
+        {
+            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
+        }
+    }
+
+    private void LoadEventCards()
+    {
+        EventCard[] loadedCards = Resources.LoadAll<EventCard>("Card/Event");
+
+        if (loadedCards.Length > 0)
+        {
+            eventCards.Clear(); // Limpiar la lista antes de cargar
+            eventCards.AddRange(loadedCards);
+
+            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
+        }
+        else
+        {
+            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
+        }
+    }
+
+    private IEnumerator LoadQuestions(string content)
+    {
+        QuestionList questionList = new QuestionList();
+        yield return SaveSystem.LoadContent(questionList, content);
+
+        if (questionList.questions != null && questionList.questions.Count > 0)
+        {
+            allQuestionList = new List<QuestionData>(questionList.questions);
+            ResetQuestionList();
+            Debug.Log($"Se cargaron {allQuestionList.Count} preguntas.");
+        }
+        else
+        {
+            Debug.LogWarning("No se cargaron preguntas desde el contenido.");
         }
     }
 
@@ -205,16 +213,6 @@ public class GameData : ScriptableObject
         }
 
         return questions;
-    }
-
-    // FIXME: Eliminar
-    public QuestionData GetRandomQuestion()
-    {
-        if (questionList == null || questionList.Count == 0)
-            ResetQuestionList();
-
-        int randomIndex = UnityEngine.Random.Range(0, questionList.Count);
-        return questionList[randomIndex];
     }
 
     public void ResetQuestionsByLevel(int level)

@@ -10,6 +10,7 @@ public class UserMenu : MonoBehaviour
     [Header("Profile")]
     [SerializeField] private TextMeshProUGUI username;
     [SerializeField] private TextMeshProUGUI bGamesUsername;
+    [SerializeField] private TextMeshProUGUI bGamesPoints;
 
     [Header("Statistics")]
     [SerializeField] private TextMeshProUGUI level;
@@ -54,7 +55,7 @@ public class UserMenu : MonoBehaviour
 
     private void Awake()
     {
-        GameObject[] buttons = new GameObject[] { returnButton.gameObject, configButton.gameObject, exitBGames.gameObject, 
+        GameObject[] buttons = new GameObject[] { returnButton.gameObject, configButton.gameObject, exitBGames.gameObject,
             exitChangeName.gameObject, change.gameObject, bGamesLogin.gameObject, loginButton.gameObject, logoutButton.gameObject, changeName.gameObject };
         MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
     }
@@ -82,36 +83,49 @@ public class UserMenu : MonoBehaviour
 
     public void LoadSettings()
     {
-        ProfileUser.LoadProfile();
+        LoadData();
+        LoadLevel();
 
+        if (ProfileUser.BGamesProfile != null) LoadBGames();
+        else WithoutBGames();
+    }
+
+    private void LoadData()
+    {
         username.text = ProfileUser.Username;
-
-        if (ProfileUser.BGamesPlayer != null)
-        {
-            connected.SetActive(true);
-            disconnected.SetActive(false);
-            loginButton.gameObject.SetActive(false);
-            logoutButton.gameObject.SetActive(true);
-            bGamesUsername.text = ProfileUser.BGamesPlayer.name;
-        }
-        else
-        {
-            connected.SetActive(false);
-            disconnected.SetActive(true);
-            loginButton.gameObject.SetActive(true);
-            logoutButton.gameObject.SetActive(false);
-        }
-
         level.text = "Nivel: " + ProfileUser.Level.ToString();
         scoreAverage.text = ProfileUser.AverageScore.ToString();
         bestScore.text = ProfileUser.BestScore.ToString();
         playedGames.text = ProfileUser.PlayedGames.ToString();
+    }
 
+    private void LoadLevel()
+    {
         int currentXp = ProfileUser.XP;
         int xpNextLevel = ProfileUser.XPNextLevel();
         float fillValue = (float)currentXp / xpNextLevel;
         xpUser.value = fillValue;
         nextLevelXP.text = currentXp + "/" + xpNextLevel.ToString();
+    }
+
+    private void LoadBGames()
+    {
+        connected.SetActive(true);
+        disconnected.SetActive(false);
+        loginButton.gameObject.SetActive(false);
+        logoutButton.gameObject.SetActive(true);
+        bGamesUsername.text = ProfileUser.BGamesProfile.name;
+        bGamesPoints.text = "Puntos bGames: " + ProfileUser.BGamesProfile.points;
+    }
+
+    private void WithoutBGames()
+    {
+        connected.SetActive(false);
+        disconnected.SetActive(true);
+        loginButton.gameObject.SetActive(true);
+        logoutButton.gameObject.SetActive(false);
+        bGamesUsername.text = "Desconectado";
+        bGamesPoints.text = "";
     }
 
     #endregion
@@ -208,6 +222,34 @@ public class UserMenu : MonoBehaviour
 
     #region bGames Menu
 
+    public void Logout()
+    {
+        ProfileUser.LogoutBGames();
+        WithoutBGames();
+    }
+
+    public async void AttemptLogin()
+    {
+        bGamesLogin.interactable = false;
+        bool success = await HttpService.Login(bGamesNick.text, bGamesPass.text);
+        HandleTryLoginResponse(success);
+    }
+
+    private void HandleTryLoginResponse(bool success)
+    {
+        if (success)
+        {
+            LoadBGames();
+            invalidMessage.SetActive(false);
+            ShowBGamesMenu(false);
+        }
+        else
+        {
+            invalidMessage.SetActive(true);
+        }
+        bGamesLogin.interactable = true;
+    }
+
     public void ShowBGamesMenu(bool show)
     {
         bGamesMenu.SetActive(show);
@@ -224,74 +266,6 @@ public class UserMenu : MonoBehaviour
         {
             ActiveButtons(true);
             bGamesLogin.onClick.RemoveAllListeners();
-        }
-    }
-
-    public void Logout()
-    {
-        ProfileUser.SaveBGamesPlayer(null);
-        connected.SetActive(false);
-        disconnected.SetActive(true);
-        loginButton.gameObject.SetActive(true);
-        logoutButton.gameObject.SetActive(false);
-
-    }
-
-    public void AttemptLogin()
-    {
-        bGamesLogin.interactable = false;
-        string endpoint = $"/player/{bGamesNick.text}/{bGamesPass.text}";
-        HttpService.Get(endpoint, HandleTryLoginResponse);
-    }
-
-    private void HandleTryLoginResponse(string response, bool success)
-    {
-        if (success)
-        {
-            if (!string.IsNullOrEmpty(response) && response != "No response received")
-            {
-                int id = int.Parse(response);
-                FetchPlayerData(id);
-                invalidMessage.SetActive(false);
-                ShowBGamesMenu(false);
-            }
-            else
-            {
-                invalidMessage.SetActive(true);
-            }
-        }
-        else
-        {
-            invalidMessage.SetActive(true);
-        }
-        bGamesLogin.interactable = true;
-    }
-
-    private void FetchPlayerData(int playerId)
-    {
-        string endpoint = $"/players/{playerId}";
-        HttpService.Get(endpoint, HandlePlayerDataResponse);
-    }
-
-    private void HandlePlayerDataResponse(string response, bool success)
-    {
-        if (success)
-        {
-            BGamesPlayerList userDataList = JsonUtility.FromJson<BGamesPlayerList>("{\"players\":" + response + "}");
-            if (userDataList.players != null && userDataList.players.Count > 0)
-            {
-                BGamesPlayer data = userDataList.players[0];
-                ProfileUser.SaveBGamesPlayer(data);
-                bGamesUsername.text = data.name;
-            }
-            else
-            {
-                invalidMessage.SetActive(true);
-            }
-        }
-        else
-        {
-            invalidMessage.SetActive(true);
         }
     }
 

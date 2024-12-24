@@ -25,7 +25,6 @@ public class PlayerLocalManager : MonoBehaviour
 
     public void Initialize(PlayerData data, PlayerInput input)
     {
-        Debug.Log("PlayerLocalManager Initialize");
         this.data.PlayerData = data;
         this.input = input;
 
@@ -34,7 +33,6 @@ public class PlayerLocalManager : MonoBehaviour
 
         animator = GetComponentInChildren<Animator>();
         movement.Animator = animator;
-        Debug.Log("PlayerLocalManager Finish Initialize");
     }
 
     #endregion

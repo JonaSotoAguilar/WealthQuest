@@ -64,12 +64,9 @@ public class PlayerLocalData : MonoBehaviour
 
     private void UpdateLevel()
     {
-        //FIXME: Convertir a formula
-        if (Level == 4) return;
-        else if (Points >= 24) Level = 4;
-        else if (Points >= 12) Level = 3;
-        else if (Points >= 4) Level = 2;
+        Level = Mathf.Min(4, Mathf.FloorToInt(Points / 8) + 1);
     }
+
 
     public void AddMoney(int amount)
     {
