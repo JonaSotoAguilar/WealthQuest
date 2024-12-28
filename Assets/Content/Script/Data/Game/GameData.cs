@@ -17,6 +17,7 @@ public class GameData : ScriptableObject
     public int currentYear;
     public int turnPlayer;
     public List<PlayerData> playersData;
+    public int mode;
 
     [Header("Cards & Questions")]
     public string content;
@@ -32,16 +33,6 @@ public class GameData : ScriptableObject
     public PlayerData GetPlayerData(string uid)
     {
         return playersData.FirstOrDefault(p => p.UID == uid);
-    }
-
-    public Card GetCardByName(string name)
-    {
-        // Busca en todas las listas de cartas
-        Card card = expenseCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
-                        investmentCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
-                        incomeCards.OfType<Card>().FirstOrDefault(c => c.name == name) ??
-                        eventCards.OfType<Card>().FirstOrDefault(c => c.name == name);
-        return card;
     }
 
     public bool DataExists()
@@ -81,6 +72,15 @@ public class GameData : ScriptableObject
 
     #endregion
 
+    # region Players
+
+    public void SavePlayer(string uid, string username, int model){
+        PlayerData data = new PlayerData(uid, username, model);
+        playersData.Add(data);
+    }
+
+    #endregion
+
     #region Methods Cards
 
     private void LoadCards()
@@ -97,14 +97,8 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            expenseCards.Clear(); // Limpiar la lista antes de cargar
+            expenseCards.Clear(); 
             expenseCards.AddRange(loadedCards);
-
-            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
-        }
-        else
-        {
-            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
         }
     }
 
@@ -114,14 +108,8 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            investmentCards.Clear(); // Limpiar la lista antes de cargar
+            investmentCards.Clear(); 
             investmentCards.AddRange(loadedCards);
-
-            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
-        }
-        else
-        {
-            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
         }
     }
 
@@ -131,14 +119,8 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            incomeCards.Clear(); // Limpiar la lista antes de cargar
+            incomeCards.Clear(); 
             incomeCards.AddRange(loadedCards);
-
-            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
-        }
-        else
-        {
-            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
         }
     }
 
@@ -148,14 +130,8 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            eventCards.Clear(); // Limpiar la lista antes de cargar
+            eventCards.Clear(); 
             eventCards.AddRange(loadedCards);
-
-            Debug.Log($"Se han cargado {loadedCards.Length} cartas de ingreso.");
-        }
-        else
-        {
-            Debug.LogWarning("No se encontraron cartas de ingreso en Resources/Card/Income.");
         }
     }
 
@@ -168,11 +144,6 @@ public class GameData : ScriptableObject
         {
             allQuestionList = new List<QuestionData>(questionList.questions);
             ResetQuestionList();
-            Debug.Log($"Se cargaron {allQuestionList.Count} preguntas.");
-        }
-        else
-        {
-            Debug.LogWarning("No se cargaron preguntas desde el contenido.");
         }
     }
 

@@ -341,27 +341,27 @@ public class WQRelayManager : NetworkManager
         utpTransport.GetRelayRegions(onSuccess, onFailure);
     }
 
-    public async Task<bool> StartRelayHostAsync(int maxPlayers, string regionId = null)
+public async Task<bool> StartRelayHostAsync(int maxPlayers, string regionId = null)
+{
+    TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+
+    utpTransport.useRelay = true;
+    utpTransport.AllocateRelayServer(maxPlayers, regionId,
+    (string joinCode) =>
     {
-        TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+        relayJoinCode = joinCode;
+        Debug.Log($"Relay join code: {joinCode}");
+        StartHost();
+        tcs.SetResult(true);
+    },
+    () =>
+    {
+        UtpLog.Error("Failed to start a Relay host.");
+        tcs.SetResult(false);
+    });
 
-        utpTransport.useRelay = true;
-        utpTransport.AllocateRelayServer(maxPlayers, regionId,
-        (string joinCode) =>
-        {
-            relayJoinCode = joinCode;
-            Debug.Log($"Relay join code: {joinCode}");
-            StartHost();
-            tcs.SetResult(true);
-        },
-        () =>
-        {
-            UtpLog.Error("Failed to start a Relay host.");
-            tcs.SetResult(false);
-        });
-
-        return await tcs.Task;
-    }
+    return await tcs.Task;
+}
 
     public void JoinStandardServer()
     {

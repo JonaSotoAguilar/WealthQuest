@@ -66,10 +66,6 @@ public static class ProfileUser
         {
             Debug.Log("Perfil de BGames cargado exitosamente.");
         }
-        else
-        {
-            Debug.LogError("No se pudo cargar el perfil de BGames.");
-        }
     }
 
     public static void LoadBGamesPlayer(BGamesProfile bgames)

@@ -10,8 +10,7 @@ public static class HttpService
     private static readonly string getService = "http://localhost:3001";
     private static readonly string sensorService = "http://localhost:3007";
     private static readonly string spendService = "http://localhost:3008";
-
-    # region Login & Authenticator
+    private static readonly string videogame = "WealthQuest";
 
     private static Dictionary<string, string> urlDictionary = new Dictionary<string, string>
     {
@@ -23,24 +22,24 @@ public static class HttpService
         { "spendAttributes", $"{spendService}/spend_attributes_apis" }
     };
 
+    # region Login & Authenticator
+
     // Método para manejar el login
     public static async Task<bool> Login(string name, string password)
     {
         try
         {
             // Primera solicitud: Obtener el ID del jugador
-            string loginUrl = $"{urlDictionary["login"]}{name}/{password}";
-            int playerId = await GetPlayerId(loginUrl);
+            int playerId = await GetPlayerId(name, password);
 
-            if (playerId == 0)
+            if (playerId < 0)
             {
                 Debug.LogError("ID del jugador no encontrado o inválido.");
                 return false;
             }
 
             // Segunda solicitud: Obtener los datos del jugador
-            string getPlayerUrl = $"{urlDictionary["getPlayerById"]}{playerId}";
-            BGamesProfile profile = await GetPlayerData(getPlayerUrl);
+            BGamesProfile profile = await GetPlayerData(playerId);
 
             if (profile != null)
             {
@@ -71,8 +70,7 @@ public static class HttpService
         try
         {
             // Obtener los datos básicos del jugador
-            string getPlayerUrl = $"{urlDictionary["getPlayerById"]}{id}";
-            BGamesProfile profile = await GetPlayerData(getPlayerUrl);
+            BGamesProfile profile = await GetPlayerData(id);
 
             if (profile != null)
             {
@@ -87,7 +85,6 @@ public static class HttpService
             }
             else
             {
-                Debug.LogError("No se pudo autenticar al jugador.");
                 return false;
             }
         }
@@ -99,9 +96,10 @@ public static class HttpService
     }
 
     // Método privado para obtener el ID del jugador
-    private static async Task<int> GetPlayerId(string url)
+    private static async Task<int> GetPlayerId(string name, string password)
     {
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        string loginUrl = $"{urlDictionary["login"]}{name}/{password}";
+        using (UnityWebRequest request = UnityWebRequest.Get(loginUrl))
         {
             var operation = request.SendWebRequest();
             while (!operation.isDone)
@@ -124,9 +122,10 @@ public static class HttpService
     }
 
     // Método privado para obtener los datos del jugador
-    private static async Task<BGamesProfile> GetPlayerData(string url)
+    private static async Task<BGamesProfile> GetPlayerData(int playerId)
     {
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        string getPlayerUrl = $"{urlDictionary["getPlayerById"]}{playerId}";
+        using (UnityWebRequest request = UnityWebRequest.Get(getPlayerUrl))
         {
             var operation = request.SendWebRequest();
             while (!operation.isDone)
@@ -136,7 +135,6 @@ public static class HttpService
 
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
-                Debug.LogError($"Error en GetPlayerData: {request.error}");
                 return null;
             }
             else
@@ -227,31 +225,31 @@ public static class HttpService
     # region Spend Attributes
 
     // Método principal para gestionar la funcionalidad
-    public static async Task<bool> SpendPoints()
+    public static async Task<bool> SpendPoints(int points)
     {
         try
         {
-            // Obtener el ID del jugador
+            // Obtener el ID del perfil del jugador
             int idPlayer = ProfileUser.BGamesProfile.id;
 
-            // Paso 1: Obtener el ID del videojuego "WealthQuest"
-            int idVideogame = await GetVideogameId("WealthQuest");
-            if (idVideogame == 0)
+            // Paso 1: Obtener el ID del videojuego
+            int idVideogame = await GetVideogameId(videogame);
+            if (idVideogame < 0)
             {
-                Debug.LogError("No se encontró el videojuego WealthQuest.");
+                Debug.LogError($"No se encontró el videojuego {videogame}.");
                 return false;
             }
 
             // Paso 2: Obtener el ID de la mecánica modificable
             int idModifiableMechanic = await GetModifiableMechanicId(idVideogame);
-            if (idModifiableMechanic == 0)
+            if (idModifiableMechanic < 0)
             {
-                Debug.LogError("No se encontró una mecánica modificable para WealthQuest.");
+                Debug.LogError($"No se encontró una mecánica modificable para {videogame}.");
                 return false;
             }
 
-            // Paso 3: Realizar el POST con los datos necesarios
-            bool success = await PostSpendAttributes(idPlayer, idVideogame, idModifiableMechanic, 1);
+            // Paso 3: Realizar el POST para consumir los puntos
+            bool success = await PostSpendAttributes(idPlayer, idVideogame, idModifiableMechanic, points);
 
             if (success)
             {
@@ -272,7 +270,7 @@ public static class HttpService
         }
     }
 
-    // Método para obtener el ID del videojuego "WealthQuest"
+    // Método para obtener el ID del videojuego
     private static async Task<int> GetVideogameId(string videogameName)
     {
         using (UnityWebRequest request = UnityWebRequest.Get(urlDictionary["videogames"]))

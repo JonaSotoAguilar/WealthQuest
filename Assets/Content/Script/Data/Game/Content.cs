@@ -64,7 +64,7 @@ public class Content : ScriptableObject
         if (localContentList.Count == 0) InitializateLocalContent();
     }
 
-    private void InitializateLocalContent()
+    public void InitializateLocalContent()
     {
         localContentList.Clear();
         SaveSystem.InitializateDefaultContent();
@@ -102,7 +102,6 @@ public class Content : ScriptableObject
                     {
                         string contentNameWithoutExtension = Path.GetFileNameWithoutExtension(content.name);
 
-                        Debug.Log($"Remote content found: {contentNameWithoutExtension}");
                         remoteContentList.Add(contentNameWithoutExtension);
                         allRemoteContentList.Add(contentNameWithoutExtension);
                     }

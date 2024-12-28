@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/OnlineScene.unity
     guid: 3b4e80575d9129843a8083b2ffc2ea0f
+  - enabled: 1
+    path: Assets/Scenes/LocalBoard.unity
+    guid: 0f7c1a1149c33f34bb1a7fab02b3d5a7
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: f4ba481fd4f667a40bc41c5dffa78710, type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: d1bcdf9d2e856a4498b15919c3f469ec, type: 2}

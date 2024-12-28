@@ -48,8 +48,6 @@ public class GameLocalManager : MonoBehaviour
 
     public static void InitializeGame()
     {
-        // FIXME: Cinematic select first player
-
         // 1. Update UI
         instance.UpdateYear(Data.currentYear);
 

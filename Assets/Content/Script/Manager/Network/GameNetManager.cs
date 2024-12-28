@@ -118,6 +118,7 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     public static void FinishTurn()
     {
+        Debug.Log("Finish Turn");
         instance.UpdateTime();
         instance.NextYear();
 
@@ -125,12 +126,14 @@ public class GameNetManager : NetworkBehaviour
         instance.NextPlayer();
         instance.SaveGame(3);
         instance._camera.CurrentCamera(instance.currPlayer.transform);
+        Debug.Log("Next Player: " + instance.currPlayer.Data.UID);
         instance.StartTurn();
     }
 
     [Server]
     private void NextPlayer()
     {
+        Debug.Log("Next Player");
         int nexTurn = (gameData.turnPlayer + 1) % gameData.playersData.Count;
         UpdateTurnPlayer(nexTurn);
         currPlayer = playersNet[nexTurn];
@@ -177,7 +180,7 @@ public class GameNetManager : NetworkBehaviour
 
     #endregion
 
-    #region Game Data
+    #region Game Data (Revisar)
 
     [Server]
     private void SaveGame(int slot)

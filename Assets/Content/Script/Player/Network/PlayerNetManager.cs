@@ -15,6 +15,10 @@ public class PlayerNetManager : NetworkBehaviour
     [SerializeField] private PlayerMovement movement;
     [SerializeField] private Animator animator;
 
+    // Actions
+    [SerializeField] private InputActionAsset inputActions;
+    private InputAction throwAction;
+
     // Flags
     [SyncVar(hook = nameof(DiceRoll))] private bool rollDice = false;
 
@@ -30,16 +34,33 @@ public class PlayerNetManager : NetworkBehaviour
 
     public void Start()
     {
-        Debug.Log("PlayerNetManager Start: " + data.UID);
-
         GameNetManager.PlayerJoined(this);
         GameUIManager.InitializeHUD(data.UID, false);
+
+        if (isOwned)
+        {
+            throwAction = inputActions.FindAction("Throw");
+
+            if (throwAction != null)
+            {
+                throwAction.performed += ctx => Throw();
+                throwAction.Enable();
+            }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (throwAction != null)
+        {
+            throwAction.performed -= ctx => Throw();
+            throwAction.Disable();
+        }
     }
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        Debug.Log("PlayerNetManager OnStartServer: " + data.UID);
     }
 
     #endregion
@@ -57,15 +78,21 @@ public class PlayerNetManager : NetworkBehaviour
     }
 
     //3. Throw Dice
-    public void Throw(CallbackContext context)
+    public void Throw()
     {
-        if (!isOwned || !rollDice || (context.phase != InputActionPhase.Performed)) return;
+        if (!rollDice) return;
 
         CmdEnableDice(false);
     }
 
     [Command]
     public void CmdEnableDice(bool enable)
+    {
+        rollDice = enable;
+    }
+
+    [Server]
+    public void EnableDice(bool enable)
     {
         rollDice = enable;
     }

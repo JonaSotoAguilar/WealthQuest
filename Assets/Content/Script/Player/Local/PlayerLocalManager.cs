@@ -11,7 +11,13 @@ public class PlayerLocalManager : MonoBehaviour
     [SerializeField] private Dice dice;
     [SerializeField] private PlayerMovement movement;
     private Animator animator;
+
+    [Header("Input System")]
+    [SerializeField] private InputActionAsset inputActions;
     private PlayerInput input;
+    private InputAction throwAction;
+
+    private bool rollDice = false;
 
     #region Getters
 
@@ -23,16 +29,35 @@ public class PlayerLocalManager : MonoBehaviour
 
     #region Initialization
 
-    public void Initialize(PlayerData data, PlayerInput input)
+    public void Initialize(PlayerData data, PlayerInput input = null)
     {
         this.data.PlayerData = data;
         this.input = input;
 
-        GameLocalManager.PlayerJoined(this);
-        GameUIManager.InitializeHUD(data.UID);
-
         animator = GetComponentInChildren<Animator>();
         movement.Animator = animator;
+
+        if (input == null) SetActions();
+    }
+
+    private void SetActions()
+    {
+        throwAction = inputActions?.FindAction("Throw");
+
+        if (throwAction != null)
+        {
+            throwAction.performed += ctx => OnThrowAction();
+            throwAction.Enable();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (throwAction != null)
+        {
+            throwAction.performed -= ctx => OnThrowAction();
+            throwAction.Disable();
+        }
     }
 
     #endregion
@@ -41,18 +66,22 @@ public class PlayerLocalManager : MonoBehaviour
 
     public void StartTurn()
     {
-        //1. Center player
+        // Centrar jugador
         movement.CenterPlayer(data.Position);
 
-        //2. Initialize Question
+        // Crear pregunta
         ui.CreateQuestion();
     }
 
-    //3. Throw Dice
-    public void Throw(CallbackContext context)
+    private void Throw(CallbackContext context)
     {
         if (context.phase != InputActionPhase.Performed) return;
-        input.SwitchCurrentActionMap("UI");
+        OnThrowAction();
+    }
+
+    public void OnThrowAction()
+    {
+        if (!rollDice) return;
         DiceRoll(false);
     }
 
@@ -60,12 +89,15 @@ public class PlayerLocalManager : MonoBehaviour
     {
         if (active)
         {
-            input.SwitchCurrentActionMap("Player");
+            rollDice = true;
+            if (input != null) input.SwitchCurrentActionMap("Player");
             dice.ShowDice(true);
             StartCoroutine(dice.RotateDiceRoutine());
         }
         else
         {
+            rollDice = false;
+            if (input != null) input.SwitchCurrentActionMap("UI");
             animator.SetTrigger("Jump");
             StartCoroutine(StopDice());
         }
@@ -79,7 +111,7 @@ public class PlayerLocalManager : MonoBehaviour
         StartCoroutine(Move(dice.DiceRoll));
     }
 
-    //4. Move Player
+    // Mover jugador
     private IEnumerator Move(int steps)
     {
         yield return movement.Move(steps, data.Position);
@@ -87,14 +119,14 @@ public class PlayerLocalManager : MonoBehaviour
         ActiveSquare();
     }
 
-    //5. Active Square
+    // Activar casilla
     public void ActiveSquare()
     {
         Square square = SquareManager.Squares[data.Position];
         ui.SetupCards(square);
     }
 
-    //6. Finish Turn
+    // Finalizar turno
     public void FinishTurn()
     {
         movement.CornerPlayer(data.Position);

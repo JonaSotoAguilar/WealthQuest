@@ -84,7 +84,6 @@ public class PlayerLocalUI : MonoBehaviour
         }
     }
 
-
     private bool CanPlayBGames()
     {
         if (useBGames || ProfileUser.BGamesProfile == null || ProfileUser.BGamesProfile.points <= 0) return false;
@@ -104,7 +103,7 @@ public class PlayerLocalUI : MonoBehaviour
         ui.OnAttemptFinished -= OnAttemptFinished;
         if (isYes)
         {
-            bool success = await HttpService.SpendPoints();
+            bool success = await HttpService.SpendPoints(1);
             if (success)
             {
                 attempts++;
