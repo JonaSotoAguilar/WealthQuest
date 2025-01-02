@@ -5,7 +5,6 @@ using Mirror;
 [CreateAssetMenu(fileName = "EventCard", menuName = "Cards/EventCard")]
 public class EventCard : Card
 {
-    [TextArea(minLines: 2, maxLines: 4), Tooltip("Descripcion de carta.")] public string description;
     [Tooltip("Monto a ganar/perder")] public int amount;
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
@@ -13,17 +12,17 @@ public class EventCard : Card
     {
         if (amount > 0)
         {
-            return $"{description}. Todos ganan: <color=green>{amount.ToString("C0", chileanCulture)}</color>.";
+            return $"Todos ganan: <color=green>{amount.ToString("C0", chileanCulture)}</color>.";
         }
         else
         {
-            return $"{description}. Todos pagan: <color=red>{amount.ToString("C0", chileanCulture)}</color>.";
+            int absAmount = -amount;
+            return $"Todos pagan: <color=red>{absAmount.ToString("C0", chileanCulture)}</color>.";
         }
     }
 
     public override void ApplyEffect(int capital = 0, bool isLocalGame = true)
     {
-        Debug.Log("Amount: " + amount);
         if (isLocalGame)
         {
             foreach (PlayerLocalManager player in GameLocalManager.Players)
@@ -32,7 +31,7 @@ public class EventCard : Card
                     player.Data.AddMoney(amount);
                 else
                 {
-                    Expense expense = new Expense(1, amount);
+                    Expense expense = new Expense(1, -amount);
                     player.Data.NewExpense(expense, false);
                 }
             }
@@ -49,6 +48,14 @@ public class EventCard : Card
                     player.Data.NewExpense(expense, false);
                 }
             }
+        }
+    }
+
+    private void OnValidate()
+    {
+        if (amount == 0)
+        {
+            amount = 1;
         }
     }
 

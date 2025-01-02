@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e30a4035defec84cae5bee5e058ecbf, type: 3}
+  m_Name: Bus
+  m_EditorClassIdentifier: 
+  title: Pagas gastos de transporte
+  image: {fileID: 21300000, guid: 9c5b90c7b7a483043b198d6919f03066, type: 3}
+  duration: 12
+  cost: 70

@@ -99,26 +99,33 @@ public static class ProfileUser
         PlayerPrefs.Save();
     }
 
-    // FIXME: Revisar guardar atributos termino partida
     public static void UpdateStats(FinishGameData data)
     {
         SaveXPUser(xp + data.score);
-        SaveAverageScoreUser((averageScore * playedGames + data.score) / playedGames + 1);
+
+        if (playedGames == 0)
+        {
+            SaveAverageScoreUser(data.score);
+        }
+        else
+        {
+            SaveAverageScoreUser((averageScore * playedGames + data.score) / (playedGames + 1));
+        }
+
         SavePlayedGames(playedGames + 1);
-        if (bestScore < data.score) SaveBestScoreUser(data.score);
+
+        if (bestScore < data.score)
+        {
+            SaveBestScoreUser(data.score);
+        }
     }
 
     private static void SaveXPUser(int score)
     {
-        xp = score;
+        xp = xp + score;
         NextLevel(xp);
-        PlayerPrefs.SetInt("scoreUser", xp);
+        PlayerPrefs.SetInt("xpUser", xp);
         PlayerPrefs.Save();
-    }
-
-    public static int XPNextLevel()
-    {
-        return 100 * (level + 1) * (level + 1);
     }
 
     private static void NextLevel(int xp)
@@ -130,6 +137,11 @@ public static class ProfileUser
             PlayerPrefs.SetInt("levelUser", level);
             PlayerPrefs.Save();
         }
+    }
+
+    public static int XPNextLevel()
+    {
+        return 100 * (level + 1) * (level + 1);
     }
 
     private static void SaveAverageScoreUser(int average)

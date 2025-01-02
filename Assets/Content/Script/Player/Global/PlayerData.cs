@@ -57,14 +57,14 @@ public class PlayerData
         points = 0;
         level = 1;
 
-        money = 0;
-        salary = 0;
+        money = 1000;
+        salary = 1000;
         invest = 0;
         debt = 0;
         investments = new List<Investment>();
         expenses = new List<Expense>();
 
-        income = 0;
+        income = 0 + salary;
         expense = 0;
     }
 }

@@ -1,23 +1,20 @@
 using UnityEngine;
 using System.Globalization;
-using Mirror.Examples.Basic;
-using Mirror;
 
 [CreateAssetMenu(fileName = "IncomeCard", menuName = "Cards/IncomeCard")]
 public class IncomeCard : Card
 {
-    [TextArea(minLines: 2, maxLines: 4), Tooltip("Descripcion de carta.")] public string description;
-    [Tooltip("Afecta al salario")] public bool affectSalary;
-    [Tooltip("affectSalary = true: Aplica salaryChange al salario")] public float salaryChange;
+    [Tooltip("Afecta al salario")] public bool affectIncome;
+    [Tooltip("affectSalary = true: Aplica salaryChange al salario")] public float incomeChange;
     [Tooltip("affectSalary = false: Agrega Income al dinero")] public int income;
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
 
     public override string GetFormattedText(int playerKFP)
     {
-        if (affectSalary)
-            return $"{description}. Tu salario aumenta un <color=green>{salaryChange * 100}%</color>.";
+        if (affectIncome)
+            return $"Tu salario aumenta un <color=green>{incomeChange * 100}%</color>.";
         else
-            return $"{description}. Recibes <color=green>{income.ToString("C0", chileanCulture)}</color>.";
+            return $"Recibes <color=green>{income.ToString("C0", chileanCulture)}</color>.";
     }
 
     public override void ApplyEffect(int capital = 0, bool isLocalGame = true)
@@ -25,9 +22,9 @@ public class IncomeCard : Card
         if (isLocalGame)
         {
             PlayerLocalData player = GameLocalManager.CurrentPlayer.Data;
-            if (affectSalary)
+            if (affectIncome)
             {
-                int newSalary = (int)(player.Salary * (1 + salaryChange));
+                int newSalary = (int)(player.Salary * (1 + incomeChange));
                 player.NewSalary(newSalary);
             }
             else
@@ -36,9 +33,9 @@ public class IncomeCard : Card
         else
         {
             PlayerNetData player = GameNetManager.CurrentPlayer.Data;
-            if (affectSalary)
+            if (affectIncome)
             {
-                int newSalary = (int)(player.Salary * (1 + salaryChange));
+                int newSalary = (int)(player.Salary * (1 + incomeChange));
                 player.NewSalary(newSalary);
             }
             else
@@ -48,14 +45,14 @@ public class IncomeCard : Card
 
     private void OnValidate()
     {
-        if (affectSalary)
+        if (affectIncome)
         {
             income = 0;
-            salaryChange = Mathf.Clamp(salaryChange, 0.01f, 1);
+            incomeChange = Mathf.Clamp(incomeChange, 0.01f, 1);
         }
         else
         {
-            salaryChange = 0;
+            incomeChange = 0;
             income = Mathf.Max(1, income);
         }
     }

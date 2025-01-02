@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -202,8 +203,8 @@ public class UserMenu : MonoBehaviour
 
             GameObject statsPanel = newPanel.transform.Find("Stats").gameObject;
             statsPanel.transform.Find("Years").GetComponent<TextMeshProUGUI>().text = game.years.ToString();
-            statsPanel.transform.Find("TimePlayed").GetComponent<TextMeshProUGUI>().text = game.timePlayed.ToString();
-            statsPanel.transform.Find("Topic").GetComponent<TextMeshProUGUI>().text = game.topicName;
+            statsPanel.transform.Find("TimePlayed").GetComponent<TextMeshProUGUI>().text = game.timePlayed;
+            statsPanel.transform.Find("Content").GetComponent<TextMeshProUGUI>().text = game.content;
             statsPanel.transform.Find("Score").GetComponent<TextMeshProUGUI>().text = game.score.ToString();
 
             newPanel.SetActive(true);

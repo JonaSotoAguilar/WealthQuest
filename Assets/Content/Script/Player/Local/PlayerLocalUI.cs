@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ public class PlayerLocalUI : MonoBehaviour
     private int attempts = 2;
     private List<QuestionData> questions = new List<QuestionData>();
     private QuestionData currentQuestion;
+    private Coroutine questionTimerCoroutine;
+
     bool useBGames = false;
 
     // Cards
@@ -27,6 +30,8 @@ public class PlayerLocalUI : MonoBehaviour
 
         ui.SetupQuestion(currentQuestion, attempts, true);
         ui.OnQuestionAnswered += OnAnswerQuestion;
+
+        questionTimerCoroutine = StartCoroutine(QuestionTimer());
     }
 
     private void GetQuestionsTopic()
@@ -52,6 +57,14 @@ public class PlayerLocalUI : MonoBehaviour
     private void OnAnswerQuestion(bool isCorrect)
     {
         ui.OnQuestionAnswered -= OnAnswerQuestion;
+
+        // Detener el temporizador
+        if (questionTimerCoroutine != null)
+        {
+            StopCoroutine(questionTimerCoroutine);
+            questionTimerCoroutine = null;
+        }
+
         ui.ShowQuestion(false);
 
         if (isCorrect)
@@ -83,6 +96,27 @@ public class PlayerLocalUI : MonoBehaviour
             }
         }
     }
+
+    private IEnumerator QuestionTimer()
+    {
+        float timeRemaining = 15f;
+        while (timeRemaining > 0)
+        {
+            timeRemaining -= Time.deltaTime;
+
+            // Puedes actualizar la UI del temporizador aquí, si tienes una
+            ui.UpdateTimerDisplay(Mathf.CeilToInt(timeRemaining));
+
+            yield return null;
+        }
+
+        // Si se agota el tiempo, se considera respuesta incorrecta
+        OnAnswerQuestion(false);
+    }
+
+    #endregion
+
+    #region Attempts
 
     private bool CanPlayBGames()
     {

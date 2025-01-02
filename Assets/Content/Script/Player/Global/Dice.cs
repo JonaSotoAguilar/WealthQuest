@@ -8,7 +8,7 @@ public class Dice : MonoBehaviour
     private int diceRoll;
     private bool isSpinning = false;
     private Vector3 initialPosition;
-    private Vector3 rotationDirection = new Vector3(300f, 300f, 300f);
+    private Vector3 rotationDirection = new Vector3(350f, 350f, 350f);
 
     public int DiceRoll { get => diceRoll; }
 
@@ -59,7 +59,7 @@ public class Dice : MonoBehaviour
         while (isSpinning)
         {
             // Esperar un tiempo aleatorio antes de cambiar la dirección
-            yield return new WaitForSeconds(Random.Range(0.5f, 2f));
+            yield return new WaitForSeconds(Random.Range(0.5f, 1.5f));
 
             // Cambiar la dirección de la rotación aleatoriamente (invirtiendo los ejes)
             rotationDirection = new Vector3(

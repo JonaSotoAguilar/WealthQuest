@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
+using UnityEngine.Playables;
 using UnityEngine.UI;
 
 public class GameNetManager : NetworkBehaviour
@@ -12,19 +13,22 @@ public class GameNetManager : NetworkBehaviour
 
     [Header("Components")]
     [SerializeField] private CameraManager _camera;
+    [SerializeField] private PlayableDirector cinematicDirector;
 
     [Header("Status")]
     [SerializeField] private GameData gameData;
     private GameStatus status = GameStatus.None;
-    private DateTime currTime;
+    private DateTime initTime;
 
     // Players
     private List<PlayerNetManager> playersNet = new List<PlayerNetManager>();
     private PlayerNetManager currPlayer;
+    private int turnPlayer = 0;
 
     // SyncVars
+    [SyncVar] private string content = "Default";
+    [SyncVar] private TimeSpan timePlayed = new TimeSpan();
     [SyncVar(hook = nameof(OnChangeYear))] private int currentYear = 0;
-    [SyncVar(hook = nameof(OnChangeTurnPlayer))] private int turnPlayer = 0;
 
     # region Getters
 
@@ -63,9 +67,14 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     public static void InitializeGame()
     {
-        // FIXME: Cinematic select first player
+        instance.RpcStartIntroCinematic();
+    }
 
-        // 1. Update UI
+    [Server]
+    public static void StartGame()
+    {
+        // 1. Active and Update UI
+        instance.RpcActiveUI();
         instance.UpdateYear(Data.currentYear);
 
         // 2. Position players
@@ -79,7 +88,8 @@ public class GameNetManager : NetworkBehaviour
         instance._camera.CurrentCamera(instance.currPlayer.transform);
 
         // 5. Start game
-        instance.currTime = DateTime.Now;
+        instance.content = instance.gameData.content;
+        instance.initTime = DateTime.Now;
         instance.StartTurn();
     }
 
@@ -112,13 +122,13 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     private void StartTurn()
     {
+        RpcNextPlayer(currPlayer.Data.UID);
         currPlayer.StartTurn();
     }
 
     [Server]
     public static void FinishTurn()
     {
-        Debug.Log("Finish Turn");
         instance.UpdateTime();
         instance.NextYear();
 
@@ -126,14 +136,13 @@ public class GameNetManager : NetworkBehaviour
         instance.NextPlayer();
         instance.SaveGame(3);
         instance._camera.CurrentCamera(instance.currPlayer.transform);
-        Debug.Log("Next Player: " + instance.currPlayer.Data.UID);
         instance.StartTurn();
     }
 
     [Server]
     private void NextPlayer()
     {
-        Debug.Log("Next Player");
+        RpcResetPlayerHUD(currPlayer.Data.UID);
         int nexTurn = (gameData.turnPlayer + 1) % gameData.playersData.Count;
         UpdateTurnPlayer(nexTurn);
         currPlayer = playersNet[nexTurn];
@@ -149,6 +158,7 @@ public class GameNetManager : NetworkBehaviour
 
         if (newYear > gameData.yearsToPlay)
         {
+            status = GameStatus.Finish;
             instance.FinishGame();
             return;
         }
@@ -161,8 +171,6 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     private void FinishGame()
     {
-        status = GameStatus.Finish;
-
         // 1. Calculate winner
         PlayerNetManager winner = playersNet[0];
         foreach (var player in playersNet)
@@ -175,12 +183,52 @@ public class GameNetManager : NetworkBehaviour
         // 2. Announce winner (Cinematic)
 
 
-        // 3. Close game (Return to main menu)
+        // 3. Save History
+        RpcSaveHistory();
+
+        // 4. Close game (Return to main menu)
+        LoadMenu();
+    }
+
+    [ClientRpc]
+    private void RpcSaveHistory()
+    {
+        int score = GetPlayer(ProfileUser.UID).Data.FinalScore;
+        FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score);
+        StartCoroutine(SaveSystem.SaveHistory(finishData, 3));
+    }
+
+    [Server]
+    private void LoadMenu()
+    {
+        WQRelayManager.Instance.ServerChangeScene("Menu");
     }
 
     #endregion
 
-    #region Game Data (Revisar)
+    #region UI
+
+    [ClientRpc]
+    private void RpcResetPlayerHUD(string clientID)
+    {
+        GameUIManager.ResetPlayerTurn(clientID);
+    }
+
+    [ClientRpc]
+    private void RpcNextPlayer(string clientID)
+    {
+        GameUIManager.SetPlayerTurn(clientID);
+    }
+
+    [ClientRpc]
+    private void RpcActiveUI()
+    {
+        GameUIManager.ShowPanel(true);
+    }
+
+    #endregion
+
+    #region Game Data
 
     [Server]
     private void SaveGame(int slot)
@@ -192,8 +240,8 @@ public class GameNetManager : NetworkBehaviour
     private void UpdateTime()
     {
         DateTime timeNow = DateTime.Now;
-        gameData.timePlayed = timeNow - currTime;
-        currTime = timeNow;
+        gameData.timePlayed = timeNow - initTime;
+        timePlayed = gameData.timePlayed;
     }
 
     [Server]
@@ -215,10 +263,40 @@ public class GameNetManager : NetworkBehaviour
         gameData.turnPlayer = newTurn;
     }
 
-    private void OnChangeTurnPlayer(int oldTurn, int newTurn)
+    #endregion
+
+    #region Cinematic
+
+    [ClientRpc]
+    private void RpcStartIntroCinematic()
     {
-        gameData.turnPlayer = newTurn;
+        if (cinematicDirector != null)
+        {
+            cinematicDirector.Play();
+
+            // Registrar un evento para cuando termine
+            if (isClient && isServer)
+                cinematicDirector.stopped += OnIntroCinematicEnd;
+        }
+        else
+        {
+            if (isClient && isServer) StartGame();
+        }
     }
 
+    private void OnIntroCinematicEnd(PlayableDirector director)
+    {
+        if (director == cinematicDirector)
+        {
+            // Desregistrar el evento
+            cinematicDirector.stopped -= OnIntroCinematicEnd;
+
+            // Continuar con el flujo del juego
+            StartGame();
+        }
+    }
+
+
     #endregion
+
 }

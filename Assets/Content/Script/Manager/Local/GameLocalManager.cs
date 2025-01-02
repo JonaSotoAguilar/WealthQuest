@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.SceneManagement;
 
 public class GameLocalManager : MonoBehaviour
 {
@@ -9,11 +12,12 @@ public class GameLocalManager : MonoBehaviour
 
     [Header("Components")]
     [SerializeField] private CameraManager _camera;
+    [SerializeField] private PlayableDirector cinematicDirector;
 
     [Header("Status")]
     [SerializeField] private GameData gameData;
     private GameStatus status = GameStatus.None;
-    private DateTime currTime;
+    private DateTime initTime;
 
     // Players
     private List<PlayerLocalManager> playersLocal = new List<PlayerLocalManager>();
@@ -48,7 +52,14 @@ public class GameLocalManager : MonoBehaviour
 
     public static void InitializeGame()
     {
-        // 1. Update UI
+        //instance.StartIntroCinematic();
+        StartGame();
+    }
+
+    private static void StartGame()
+    {
+        // 1. Active and Update UI
+        instance.ActiveUI();
         instance.UpdateYear(Data.currentYear);
 
         // 2. Position players
@@ -62,7 +73,7 @@ public class GameLocalManager : MonoBehaviour
         instance._camera.CurrentCamera(instance.currPlayer.transform);
 
         // 5. Start game
-        instance.currTime = DateTime.Now;
+        instance.initTime = DateTime.Now;
         instance.StartTurn();
     }
 
@@ -87,12 +98,18 @@ public class GameLocalManager : MonoBehaviour
         }
     }
 
+    private void ActiveUI()
+    {
+        GameUIManager.ShowPanel(true);
+    }
+
     #endregion
 
     #region Turn Management
 
     private void StartTurn()
     {
+        GameUIManager.SetPlayerTurn(currPlayer.Data.UID);
         currPlayer.StartTurn();
     }
 
@@ -110,6 +127,7 @@ public class GameLocalManager : MonoBehaviour
 
     private void NextPlayer()
     {
+        GameUIManager.ResetPlayerTurn(currPlayer.Data.UID);
         int nexTurn = (gameData.turnPlayer + 1) % gameData.playersData.Count;
         UpdateTurnPlayer(nexTurn);
         currPlayer = playersLocal[nexTurn];
@@ -124,6 +142,7 @@ public class GameLocalManager : MonoBehaviour
 
         if (newYear > gameData.yearsToPlay)
         {
+            status = GameStatus.Finish;
             instance.FinishGame();
             return;
         }
@@ -135,8 +154,6 @@ public class GameLocalManager : MonoBehaviour
 
     private void FinishGame()
     {
-        status = GameStatus.Finish;
-
         // 1. Calculate winner
         PlayerLocalManager winner = playersLocal[0];
         foreach (var player in playersLocal)
@@ -149,7 +166,24 @@ public class GameLocalManager : MonoBehaviour
         // 2. Announce winner (Cinematic)
 
 
-        // 3. Close game (Return to main menu)
+        // 3. Save History
+        SaveHistory();
+
+        // 4. Close game (Return to main menu)
+        LoadMenu();
+    }
+
+    private void SaveHistory()
+    {
+        int score = GetPlayer(ProfileUser.UID).Data.FinalScore;
+        FinishGameData finishData = new FinishGameData(gameData.currentYear, gameData.timePlayed, gameData.content, score);
+        int slotData = gameData.mode == 0 ? 1 : 2;
+        StartCoroutine(SaveSystem.SaveHistory(finishData, slotData));
+    }
+
+    private void LoadMenu()
+    {
+        SceneManager.LoadScene("Menu");
     }
 
     #endregion
@@ -164,8 +198,7 @@ public class GameLocalManager : MonoBehaviour
     private void UpdateTime()
     {
         DateTime timeNow = DateTime.Now;
-        gameData.timePlayed = timeNow - currTime;
-        currTime = timeNow;
+        gameData.timePlayed = timeNow - initTime;
     }
 
     private void UpdateYear(int newYear)
@@ -180,4 +213,36 @@ public class GameLocalManager : MonoBehaviour
     }
 
     #endregion
+
+    #region Cinematic
+
+    private void StartIntroCinematic()
+    {
+        if (cinematicDirector != null)
+        {
+            cinematicDirector.Play(); // Reproduce la cinemática
+
+            // Registrar un evento para cuando termine
+            cinematicDirector.stopped += OnIntroCinematicEnd;
+        }
+        else
+        {
+            StartGame(); // Si no hay cinemática, comienza el juego directamente
+        }
+    }
+
+    private void OnIntroCinematicEnd(PlayableDirector director)
+    {
+        if (director == cinematicDirector)
+        {
+            // Desregistrar el evento
+            cinematicDirector.stopped -= OnIntroCinematicEnd;
+
+            // Continuar con el flujo del juego
+            StartGame();
+        }
+    }
+
+    #endregion
+
 }

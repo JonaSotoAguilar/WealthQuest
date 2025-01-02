@@ -1,28 +1,25 @@
-using System.Collections.Generic;
 using UnityEngine;
 using System;
-using System.Collections;
 
 [System.Serializable]
 public class FinishGameData
 {
     public int gameID;
     public int years;
-    public TimeSpan timePlayed;
+    public string timePlayed;
     public string date;
-    public string topicName;
+    public string content;
     public int score;
-    public List<PlayerData> playersData = new List<PlayerData>();
 
-    public FinishGameData(GameData gameData)
+    public FinishGameData(int currentYear, TimeSpan timePlayed, string content, int finalScore)
     {
         gameID = PlayerPrefs.GetInt("gameId", 0) + 1;
-        years = gameData.currentYear;
-        timePlayed = gameData.timePlayed;
+        years = currentYear;
+        this.timePlayed = timePlayed.ToString(@"hh\:mm\:ss");
         date = DateTime.Now.ToString("dd/MM/yyyy");
-        topicName = gameData.content;
-        score = gameData.playersData[0].FinalScore / years;
-        playersData = gameData.playersData;
+        this.content = content;
+        this.score = finalScore;
         PlayerPrefs.SetInt("gameId", gameID);
     }
+
 }

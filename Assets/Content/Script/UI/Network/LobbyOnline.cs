@@ -7,13 +7,14 @@ using UnityEngine.UI;
 
 public class LobbyOnline : NetworkBehaviour
 {
-    private const string SCENE_GAME = "Test";
+    private const string SCENE_GAME = "OnlineBoard";
 
     [Header("Game Data")]
     [SerializeField] private GameData data;
     [SerializeField] private Content content;
 
     [Header("UI Elements")]
+    [SerializeField] private TMP_Dropdown yearDropdown;
     [SerializeField] private GameObject lobbyPanel;
     [SerializeField] private TextMeshProUGUI codeText;
 
@@ -26,6 +27,7 @@ public class LobbyOnline : NetworkBehaviour
     // Variables for Content
     private readonly SyncList<string> contents = new SyncList<string>();
     [SyncVar(hook = nameof(OnChangeContent))] private int selectedContent = 0;
+    [SyncVar(hook = nameof(OnChangeYear))] private int selectedYear = 0;
     [SyncVar(hook = nameof(OnChangeCode))] private string code;
 
     #region Initialization
@@ -38,6 +40,8 @@ public class LobbyOnline : NetworkBehaviour
         if (isClient && isServer)
         {
             startGame.onClick.AddListener(StartGameScene);
+            yearDropdown.onValueChanged.AddListener(OnDropdownYearValueChanged);
+            contentDropdown.onValueChanged.AddListener(OnDropdownContentChanged);
         }
     }
 
@@ -52,7 +56,6 @@ public class LobbyOnline : NetworkBehaviour
 
         lobbyPanel.SetActive(true);
         code = WQRelayManager.Instance.relayJoinCode;
-        //contents.OnAdd += OnAddContent;
         PopulateBundleDropdown();
     }
 
@@ -75,15 +78,13 @@ public class LobbyOnline : NetworkBehaviour
         // Asegurar que el valor inicial sea correcto
         if (contents.Count > 0)
         {
-            contentDropdown.value = selectedContent; // Ajustar al valor sincronizado
-            contentDropdown.captionText.text = contentDropdown.options[selectedContent].text; // Actualizar el texto del Label
+            contentDropdown.value = selectedContent;
+            contentDropdown.captionText.text = contentDropdown.options[selectedContent].text;
         }
         else
         {
             Debug.LogWarning("No hay opciones disponibles en el Dropdown.");
         }
-
-        Debug.Log($"OnStartClient: Selected Content: {selectedContent}");
     }
 
     public override void OnStopClient()
@@ -92,6 +93,8 @@ public class LobbyOnline : NetworkBehaviour
 
         if (contentDropdown != null)
         {
+            yearDropdown.value = 0;
+            contentDropdown.value = 0;
             contentDropdown.onValueChanged.RemoveAllListeners();
             contentDropdown.ClearOptions();
         }
@@ -132,11 +135,12 @@ public class LobbyOnline : NetworkBehaviour
 
     #endregion
 
-    #region Topics
+    #region Content
 
     [Server]
     private void PopulateBundleDropdown()
     {
+        yearDropdown.value = 0;
         List<string> options = new List<string>();
 
         foreach (var topic in content.LocalTopicList)
@@ -162,7 +166,7 @@ public class LobbyOnline : NetworkBehaviour
         }
     }
 
-    private void OnDropdownValueChanged(int topic)
+    public void OnDropdownContentChanged(int topic)
     {
         if (topic >= 0 && topic < contents.Count)
         {
@@ -185,6 +189,27 @@ public class LobbyOnline : NetworkBehaviour
         {
             contentDropdown.value = newTopic;
         }
+    }
+
+    #endregion
+
+    #region Year
+
+    public void OnDropdownYearValueChanged(int year)
+    {
+        CmdChangeYear(year);
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdChangeYear(int year)
+    {
+        selectedYear = year;
+    }
+
+    private void OnChangeYear(int oldYear, int newYear)
+    {
+        Debug.Log("New Year: " + newYear);
+        yearDropdown.value = newYear;
     }
 
     #endregion
@@ -220,6 +245,7 @@ public class LobbyOnline : NetworkBehaviour
         yield return data.LoadContent(content);
         if (!data.DataExists())
         {
+            CreateNewGameData();
             Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = WQRelayManager.Instance.clientPanels;
             foreach (var pair in clientPanels)
             {
@@ -231,6 +257,14 @@ public class LobbyOnline : NetworkBehaviour
         }
         WQRelayManager.Instance.ServerChangeScene(SCENE_GAME);
     }
+
+    private void CreateNewGameData()
+    {
+        data.mode = 3;
+        int years = 10 + (selectedYear * 5);
+        data.yearsToPlay = years;
+    }
+
 
     #endregion
 }

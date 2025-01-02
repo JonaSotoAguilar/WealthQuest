@@ -9,7 +9,7 @@ public class PlayerLocalData : MonoBehaviour
     [SerializeField] private PlayerData playerData;
 
     // Variables
-    [SerializeField] private float interest = 0.1f;
+    [SerializeField] private float interest = 0.05f;
 
     #region Getters
 
@@ -56,7 +56,6 @@ public class PlayerLocalData : MonoBehaviour
 
     public void AddPoints(int addPoints)
     {
-        // FIXME: Si cumple con la condición, sube de nivel
         Points += addPoints;
         OnChangePoints(Points);
         UpdateLevel();
@@ -122,7 +121,6 @@ public class PlayerLocalData : MonoBehaviour
         if (withInterest)
         {
             newExpense.Amount += (int)(newExpense.Amount * interest);
-            newExpense.Turns++;
         }
         AddDebt(newExpense.Amount * newExpense.Turns);
         AddExpense(newExpense.Amount);
@@ -164,18 +162,17 @@ public class PlayerLocalData : MonoBehaviour
         Investments.RemoveAt(index);
     }
 
-    private void UpdateExpense(int index, int interest)
+    private void UpdateExpense(int index, int amountInterest)
     {
         if (index < 0 || index >= Expenses.Count) return;
 
         // No tiene para pagar: Suma interes
         Expense currExpense = Expenses[index];
-        if (interest > 0)
+        if (amountInterest > 0)
         {
-            currExpense.Amount += interest;
-            currExpense.Turns++;
-            AddDebt(interest * currExpense.Turns);
-            AddExpense(interest);
+            currExpense.Amount += amountInterest;
+            AddDebt(amountInterest);
+            AddExpense(amountInterest);
             Expenses[index] = currExpense;
             return;
         }

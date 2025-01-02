@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 118b2dab2df296e43912ffeab125576b, type: 3}
+  m_Name: MA
+  m_EditorClassIdentifier: 
+  title: Mastercard Incorporated (MA)
+  image: {fileID: 0}
+  duration: 6
+  startYear: 2016
+  pctChangePrevious:
+  - 0.328
+  - 0.692
+  - 0.05
+  - 0.134
+  pctChange:
+  - 0.065
+  - 0.475
+  - 0.253
+  - 0.583
+  - 0.202
+  - 0.012
+  pctDividend:
+  - 0.008
+  - 0.006
+  - 0.005
+  - 0.005
+  - 0.005
+  - 0.005

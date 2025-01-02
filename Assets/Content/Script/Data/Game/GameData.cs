@@ -47,7 +47,7 @@ public class GameData : ScriptableObject
     public void ClearGameData()
     {
         initialPlayerIndex = 0;
-        yearsToPlay = 5;
+        yearsToPlay = 2;
 
         timePlayed = new TimeSpan();
         currentYear = 1;
@@ -74,7 +74,8 @@ public class GameData : ScriptableObject
 
     # region Players
 
-    public void SavePlayer(string uid, string username, int model){
+    public void SavePlayer(string uid, string username, int model)
+    {
         PlayerData data = new PlayerData(uid, username, model);
         playersData.Add(data);
     }
@@ -97,7 +98,7 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            expenseCards.Clear(); 
+            expenseCards.Clear();
             expenseCards.AddRange(loadedCards);
         }
     }
@@ -108,7 +109,7 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            investmentCards.Clear(); 
+            investmentCards.Clear();
             investmentCards.AddRange(loadedCards);
         }
     }
@@ -119,7 +120,7 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            incomeCards.Clear(); 
+            incomeCards.Clear();
             incomeCards.AddRange(loadedCards);
         }
     }
@@ -130,7 +131,7 @@ public class GameData : ScriptableObject
 
         if (loadedCards.Length > 0)
         {
-            eventCards.Clear(); 
+            eventCards.Clear();
             eventCards.AddRange(loadedCards);
         }
     }

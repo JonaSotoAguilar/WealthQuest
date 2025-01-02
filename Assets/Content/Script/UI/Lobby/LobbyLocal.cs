@@ -12,9 +12,11 @@ using UnityEngine.SceneManagement;
 
 public class LobbyLocal : MonoBehaviour
 {
+    private const string SCENE_GAME = "LocalBoard";
     [SerializeField] private GameData gameData;
 
     [Header("Mode")]
+    [SerializeField] private TMP_Dropdown yearDropdown;
     [SerializeField] private TextMeshProUGUI modeText;
     private int mode = 0;
 
@@ -66,6 +68,7 @@ public class LobbyLocal : MonoBehaviour
 
     public void OnEnable()
     {
+        yearDropdown.value = 0;
         PopulateContentDropdown();
         if (!gameData.DataExists()) NewGameData();
         else LoadGameData();
@@ -237,7 +240,6 @@ public class LobbyLocal : MonoBehaviour
 
     private void OnPlayerJoined(PlayerInput playerInput)
     {
-        Debug.Log("Player Joined");
         int index = playerInput.playerIndex;
         if (index == 0) return;
         playerInput.actions.FindActionMap("Player").Disable();
@@ -257,8 +259,6 @@ public class LobbyLocal : MonoBehaviour
 
     private void CreateBanner(PlayerInput playerInput, int index)
     {
-        Debug.Log("Create Banner");
-
         Transform parent = parentBannerPanel.transform;
         int siblingIndex = bannersPanel[index].transform.GetSiblingIndex();
         Destroy(bannersPanel[index]);
@@ -301,19 +301,20 @@ public class LobbyLocal : MonoBehaviour
 
     private IEnumerator InitializeGame()
     {
-        Debug.Log("Initialize Game");
         if (mode == 2) SavePlayerInputs();
         if (!gameData.DataExists())
         {
             yield return gameData.LoadContent(contentDropdown.options[contentDropdown.value].text);
             CreateNewGameData();
         }
-        SceneManager.LoadScene("LocalBoard");
+        SceneManager.LoadScene(SCENE_GAME);
     }
 
     private void CreateNewGameData()
     {
         gameData.mode = mode;
+        int years = 10 + (yearDropdown.value * 5);
+        gameData.yearsToPlay = years;
         SavePlayer();
     }
 

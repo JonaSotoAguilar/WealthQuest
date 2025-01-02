@@ -24,9 +24,15 @@ public class GameUIManager : MonoBehaviour
         }
 
         instance = this;
+        ShowPanel(false);
     }
 
     #region Initialization
+
+    public static void ShowPanel(bool show)
+    {
+        instance.gameObject.SetActive(show);
+    }
 
     public static void InitializeHUD(string clientID, bool isLocal = true)
     {
@@ -58,6 +64,25 @@ public class GameUIManager : MonoBehaviour
             return null;
         }
         return instance.HUDs[clientID];
+    }
+
+    public static void SetPlayerTurn(string clientID)
+    {
+        HUD currentHUD = GetHUD(clientID);
+        foreach (Transform child in currentHUD.transform)
+        {
+            child.position -= new Vector3(0, 15, 0);
+        }
+
+    }
+
+    public static void ResetPlayerTurn(string clientID)
+    {
+        HUD currentHUD = GetHUD(clientID);
+        foreach (Transform child in currentHUD.transform)
+        {
+            child.position += new Vector3(0, 15, 0);
+        }
     }
 
     #endregion

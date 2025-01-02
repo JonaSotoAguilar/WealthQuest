@@ -31,7 +31,7 @@ public class PlayerNetData : NetworkBehaviour
     [SyncVar(hook = nameof(OnChangeExpense))] private int expense = 0;
 
     // Variables
-    [SerializeField] private float interest = 0.1f;
+    [SerializeField] private float interest = 0.05f;
 
     #region Getters
 
@@ -66,10 +66,8 @@ public class PlayerNetData : NetworkBehaviour
         position = playerData.Position;
         points = playerData.Points;
 
-        // money = playerData.Money;
-        // salary = playerData.Salary;
-        money = 10000;
-        salary = 1000;
+        money = playerData.Money;
+        salary = playerData.Salary;
 
         invest = playerData.Invest;
         debt = playerData.Debt;
@@ -193,7 +191,6 @@ public class PlayerNetData : NetworkBehaviour
         if (withInterest)
         {
             newExpense.Amount += (int)(newExpense.Amount * interest);
-            newExpense.Turns++;
         }
         AddDebt(newExpense.Amount * newExpense.Turns);
         AddExpense(newExpense.Amount);
@@ -242,7 +239,7 @@ public class PlayerNetData : NetworkBehaviour
     }
 
     [Server]
-    private void UpdateExpense(int index, int interest)
+    private void UpdateExpense(int index, int amountInterest)
     {
         if (index < 0 || index >= expenses.Count) return;
 
@@ -250,10 +247,9 @@ public class PlayerNetData : NetworkBehaviour
         Expense currExpense = expenses[index];
         if (interest > 0)
         {
-            currExpense.Amount += interest;
-            currExpense.Turns++;
-            AddDebt(interest * currExpense.Turns);
-            AddExpense(interest);
+            currExpense.Amount += amountInterest;
+            AddDebt(amountInterest * currExpense.Turns);
+            AddExpense(amountInterest);
             expenses[index] = currExpense;
             playerData.Expenses[index] = currExpense;
             return;

@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc63105b09fa09b4d8a7a121e885812a, type: 3}
+  m_Name: Inflation
+  m_EditorClassIdentifier: 
+  title: "Una alta inflaci\xF3n aumenta el costo de vida"
+  image: {fileID: 21300000, guid: 7c23ed3bf432e234ba4a63faa32d4a6f, type: 3}
+  amount: -600

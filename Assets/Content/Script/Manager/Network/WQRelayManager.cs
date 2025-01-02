@@ -21,8 +21,8 @@ public class WQRelayManager : NetworkManager
     private UtpTransport utpTransport;
 
     // Scenes
-    private const string SCENE_MENU = "MenuScene";
-    private const string SCENE_GAME = "Test";
+    private const string SCENE_MENU = "Menu";
+    private const string SCENE_GAME = "OnlineBoard";
 
     [Header("Relay Settings")]
     public string relayJoinCode = "";
@@ -53,6 +53,12 @@ public class WQRelayManager : NetworkManager
     public override void Awake()
     {
         base.Awake();
+
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         Instance = this;
 

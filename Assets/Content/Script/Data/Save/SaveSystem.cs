@@ -120,9 +120,8 @@ public static class SaveSystem
 
     #region Save and Load History
 
-    public static IEnumerator SaveHistory(GameData data, int slotData)
+    public static IEnumerator SaveHistory(FinishGameData finishGameData, int slotData)
     {
-        FinishGameData finishGameData = new FinishGameData(data);
         string json = JsonUtility.ToJson(finishGameData);
         byte[] encryptedData = EncryptStringToBytes_Aes(json);
         if (!Directory.Exists(historyDirectory)) Directory.CreateDirectory(historyDirectory);
@@ -130,6 +129,8 @@ public static class SaveSystem
         string historyPath = Path.Combine(historyDirectory, "game_" + PlayerPrefs.GetInt("gameId") + ".save");
         File.WriteAllBytes(historyPath, encryptedData);
         DeleteSave(slotData);
+
+        ProfileUser.UpdateStats(finishGameData);
 
         yield return null;
     }
@@ -185,11 +186,7 @@ public static class SaveSystem
         string baseName = ExtractName(Path.GetFileNameWithoutExtension(defaultContentName));
 
         // Verificar si ya existe una versión en PersistentDataPath
-        if (CheckContentFile(baseName))
-        {
-            Debug.Log($"El archivo {baseName} ya existe en PersistentDataPath. No se copiará.");
-        }
-        else
+        if (!CheckContentFile(baseName))
         {
             // Copiar el archivo desde StreamingAssets
             if (File.Exists(sourcePath))
@@ -334,7 +331,6 @@ public static class SaveSystem
 
             // Deserializar los datos al objeto QuestionList
             JsonUtility.FromJsonOverwrite(decryptedData, questionList);
-            Debug.Log($"Contenido cargado exitosamente desde: {contentPath}");
         }
         catch (System.Exception ex)
         {
@@ -424,32 +420,32 @@ public static class SaveSystem
     #region Encrypt and Decrypt
 
     // Encritar los datos
-private static byte[] EncryptStringToBytes_Aes(string plainText)
-{
-    byte[] encrypted;
-
-    using (Aes aesAlg = Aes.Create())
+    private static byte[] EncryptStringToBytes_Aes(string plainText)
     {
-        aesAlg.Key = aesKey;
-        aesAlg.IV = aesIV;
+        byte[] encrypted;
 
-        ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, 
-        aesAlg.IV);
-
-        using (MemoryStream msEncrypt = new MemoryStream())
+        using (Aes aesAlg = Aes.Create())
         {
-            using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+            aesAlg.Key = aesKey;
+            aesAlg.IV = aesIV;
+
+            ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key,
+            aesAlg.IV);
+
+            using (MemoryStream msEncrypt = new MemoryStream())
             {
-                using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
                 {
-                    swEncrypt.Write(plainText);
+                    using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                    {
+                        swEncrypt.Write(plainText);
+                    }
+                    encrypted = msEncrypt.ToArray();
                 }
-                encrypted = msEncrypt.ToArray();
             }
         }
+        return encrypted;
     }
-    return encrypted;
-}
 
     // Descifrar los datos
     private static string DecryptStringFromBytes_Aes(byte[] cipherText)

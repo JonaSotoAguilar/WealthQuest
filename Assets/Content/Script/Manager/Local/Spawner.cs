@@ -23,17 +23,14 @@ public class Spawner : MonoBehaviour
         switch (mode)
         {
             case Mode.Single:
-                Debug.Log("Spawning Single");
                 eventSystem.SetActive(true);
                 SpawnSingle();
                 break;
             case Mode.LocalPass:
-                Debug.Log("Spawning Local Pass");
                 eventSystem.SetActive(true);
                 SpawnLocalPass();
                 break;
             case Mode.LocalMulti:
-                Debug.Log("Spawning Local Multi");
                 eventSystem.SetActive(false);
                 SpawnLocalMulti();
                 break;

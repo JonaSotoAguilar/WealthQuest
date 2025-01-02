@@ -14,6 +14,7 @@ public class PlayerNetUI : NetworkBehaviour
     private string topicQuestion;
     [SyncVar] private int attempts = 2;
     private bool useBGames = false;
+    [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 15f;
 
     // Cards
     private readonly SyncList<Card> selectedCards = new SyncList<Card>();
@@ -42,6 +43,8 @@ public class PlayerNetUI : NetworkBehaviour
 
         int index = Random.Range(0, questions.Count);
         currentQuestion = questions[index];
+
+        StartQuestionTimer();
     }
 
     [Server]
@@ -82,6 +85,14 @@ public class PlayerNetUI : NetworkBehaviour
     [Command]
     private void CmdSubmitAnswer(bool isCorrect)
     {
+        SubmitAnswer(isCorrect);
+    }
+
+    [Server]
+    private void SubmitAnswer(bool isCorrect)
+    {
+        StopCoroutine(nameof(QuestionTimer));
+
         if (isCorrect)
         {
             GetComponent<PlayerNetData>().AddPoints(levelQuestion);
@@ -111,6 +122,38 @@ public class PlayerNetUI : NetworkBehaviour
             }
         }
     }
+
+    [Server]
+    private void StartQuestionTimer()
+    {
+        if (timeRemaining > 0)
+        {
+            StopCoroutine(nameof(QuestionTimer));
+        }
+        timeRemaining = 15f; // Reinicia el tiempo
+        StartCoroutine(nameof(QuestionTimer));
+    }
+
+    [Server]
+    private IEnumerator QuestionTimer()
+    {
+        while (timeRemaining > 0)
+        {
+            timeRemaining -= Time.deltaTime;
+            yield return null;
+        }
+
+        SubmitAnswer(false);
+    }
+
+    private void OnTimerUpdated(float oldTime, float newTime)
+    {
+        ui.UpdateTimerDisplay(Mathf.CeilToInt(newTime));
+    }
+
+    #endregion
+
+    #region Attempts
 
     [Server]
     private bool CanPlayBGames()
