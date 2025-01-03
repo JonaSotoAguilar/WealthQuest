@@ -56,7 +56,7 @@ Para que WealthQuest pueda consumir puntos de bGames:
 
 ### Captura de Datos Financieros (Opcional)
 
-El sensor de Fintual proporciona herramientas avanzadas para capturar y analizar datos financieros directamente en el juego. Revisa su documentación para más detalles.
+El sensor de Fintual proporciona una herramienta para capturar y analizar hábitos de ahorro, obteniendo puntos para utilizar en el juego. Revisa su documentación para más detalles.
 
 ---
 
