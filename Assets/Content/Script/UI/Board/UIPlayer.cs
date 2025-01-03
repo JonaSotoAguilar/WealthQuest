@@ -108,7 +108,7 @@ public class UIPlayer : MonoBehaviour
     {
         if (show)
         {
-            int points = ProfileUser.BGamesProfile.points;
+            int points = ProfileUser.bGamesProfile.points;
             attemptsText.text = "Tienes " + points + " puntos de bGames, ¿quieres usar 1 punto para tener un intento extra?";
             if (systemLocal != null) systemLocal.SetSelectedGameObject(attemptsButtons[0].gameObject);
             else EventSystem.current.SetSelectedGameObject(attemptsButtons[0].gameObject);

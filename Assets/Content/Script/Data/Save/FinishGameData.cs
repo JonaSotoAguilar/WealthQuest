@@ -1,7 +1,8 @@
 using UnityEngine;
 using System;
+using Firebase.Firestore;
 
-[System.Serializable]
+[Serializable, FirestoreData]
 public class FinishGameData
 {
     public int gameID;
@@ -11,6 +12,15 @@ public class FinishGameData
     public string content;
     public int score;
 
+    [FirestoreProperty] public int GameID { get => gameID; set => gameID = value; }
+    [FirestoreProperty] public int Years { get => years; set => years = value; }
+    [FirestoreProperty] public string TimePlayed { get => timePlayed; set => timePlayed = value; }
+    [FirestoreProperty] public string Date { get => date; set => date = value; }
+    [FirestoreProperty] public string Content { get => content; set => content = value; }
+    [FirestoreProperty] public int Score { get => score; set => score = value; }
+
+    public FinishGameData() { }
+
     public FinishGameData(int currentYear, TimeSpan timePlayed, string content, int finalScore)
     {
         gameID = PlayerPrefs.GetInt("gameId", 0) + 1;
@@ -19,7 +29,6 @@ public class FinishGameData
         date = DateTime.Now.ToString("dd/MM/yyyy");
         this.content = content;
         this.score = finalScore;
-        PlayerPrefs.SetInt("gameId", gameID);
     }
 
 }

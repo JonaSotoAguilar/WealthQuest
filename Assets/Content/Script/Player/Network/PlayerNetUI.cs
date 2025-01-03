@@ -158,7 +158,7 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private bool CanPlayBGames()
     {
-        if (useBGames || ProfileUser.BGamesProfile == null || ProfileUser.BGamesProfile.points <= 0) return false;
+        if (useBGames || ProfileUser.bGamesProfile == null || ProfileUser.bGamesProfile.points <= 0) return false;
         return true;
     }
 

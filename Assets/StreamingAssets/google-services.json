@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "980735954670",
+    "project_id": "wealthquest-5874f",
+    "storage_bucket": "wealthquest-5874f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980735954670:android:cf5c0b505931f1cf332dff",
+        "android_client_info": {
+          "package_name": "com.InTeractiOn.WealthQuest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIgEZaahXhsHx67Xqi9Gy4AnRh9GvQRa0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

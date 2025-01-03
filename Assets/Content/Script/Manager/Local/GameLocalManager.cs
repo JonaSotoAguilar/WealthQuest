@@ -175,10 +175,10 @@ public class GameLocalManager : MonoBehaviour
 
     private void SaveHistory()
     {
-        int score = GetPlayer(ProfileUser.UID).Data.FinalScore;
+        int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
         FinishGameData finishData = new FinishGameData(gameData.currentYear, gameData.timePlayed, gameData.content, score);
         int slotData = gameData.mode == 0 ? 1 : 2;
-        StartCoroutine(SaveSystem.SaveHistory(finishData, slotData));
+        ProfileUser.SaveGame(finishData, slotData);
     }
 
     private void LoadMenu()

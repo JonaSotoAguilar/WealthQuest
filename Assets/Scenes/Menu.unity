@@ -22569,7 +22569,6 @@ MonoBehaviour:
   changeName: {fileID: 1277362805}
   loginButton: {fileID: 335400}
   logoutButton: {fileID: 1257744623}
-  gameHistory: {fileID: 11400000, guid: 9a73c01042f30164ebbf0ce6ea32dcd6, type: 2}
   gamePrefab: {fileID: 3578459020835515486, guid: 9d409b235784857449479ea8a9260691, type: 3}
   container: {fileID: 1973778102}
   connected: {fileID: 942627491}
@@ -45230,7 +45229,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1090245169}
-  - component: {fileID: 1090245170}
   - component: {fileID: 1090245168}
   - component: {fileID: 1090245167}
   m_Layer: 0
@@ -45325,19 +45323,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1090245170
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1090245166}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0708e7518666f64f9188e54fb5ffc6e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  content: {fileID: 11400000, guid: 78aab1f83ea0ee64e9a1ee1b604d4a59, type: 2}
 --- !u!4 &1090317557 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 421600, guid: f9c5e344bb1131f4f83e34b3f8cae927, type: 3}

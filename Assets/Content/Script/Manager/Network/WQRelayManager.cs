@@ -282,13 +282,13 @@ public class WQRelayManager : NetworkManager
 
     #endregion
 
-    # region Relay Methods
+    #region Relay Methods
 
     private async Task SetupRelay()
     {
         utpTransport = GetComponent<UtpTransport>();
 
-        // Lee argumentos de línea de comando para el puerto
+        // Leer argumentos de línea de comando para el puerto
         string[] args = Environment.GetCommandLineArgs();
         for (int key = 0; key < args.Length; key++)
         {
@@ -306,6 +306,13 @@ public class WQRelayManager : NetworkManager
             }
         }
 
+        // Verificar conexión a Internet antes de continuar
+        while (Application.internetReachability == NetworkReachability.NotReachable)
+        {
+            Debug.LogWarning("No internet connection. Waiting for network...");
+            await Task.Delay(1000); // Espera 1 segundo antes de volver a comprobar
+        }
+
         try
         {
             // Inicializar Unity Services
@@ -320,6 +327,7 @@ public class WQRelayManager : NetworkManager
             Debug.LogError($"Error setting up relay: {e.Message}");
         }
     }
+
     public ushort GetPort()
     {
         return utpTransport.Port;

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using System;
 using Mirror;
+using System.Threading.Tasks;
 
 public static class SaveSystem
 {
@@ -120,37 +121,48 @@ public static class SaveSystem
 
     #region Save and Load History
 
-    public static IEnumerator SaveHistory(FinishGameData finishGameData, int slotData)
+    public static async Task SaveHistory(FinishGameData finishGameData, int slotData)
     {
         string json = JsonUtility.ToJson(finishGameData);
         byte[] encryptedData = EncryptStringToBytes_Aes(json);
-        if (!Directory.Exists(historyDirectory)) Directory.CreateDirectory(historyDirectory);
 
-        string historyPath = Path.Combine(historyDirectory, "game_" + PlayerPrefs.GetInt("gameId") + ".save");
-        File.WriteAllBytes(historyPath, encryptedData);
+        // Crear el directorio si no existe
+        if (!Directory.Exists(historyDirectory))
+            Directory.CreateDirectory(historyDirectory);
+
+        // Guardar el archivo
+        string historyPath = Path.Combine(historyDirectory, "game_" + finishGameData.gameID + ".save");
+        await Task.Run(() => File.WriteAllBytes(historyPath, encryptedData));
+
+        // Eliminar el guardado anterior (si aplica)
         DeleteSave(slotData);
 
-        ProfileUser.UpdateStats(finishGameData);
-
-        yield return null;
+        // Actualizar estadísticas del usuario
+        if (slotData != 0){
+            PlayerPrefs.SetInt("gameId", finishGameData.gameID);
+            ProfileUser.UpdateStats(finishGameData);
+        }
     }
 
-    public static IEnumerator LoadHistory(GameHistory data)
+    public static async Task LoadHistory()
     {
-        data.ClearHistory();
-        string[] files = Directory.GetFiles(historyDirectory, "*.save");
-
-        Array.Reverse(files);
-
-        foreach (string file in files)
+        if (Directory.Exists(historyDirectory))
         {
-            byte[] encryptedData = File.ReadAllBytes(file);
-            string decryptedData = DecryptStringFromBytes_Aes(encryptedData);
-            FinishGameData finishGameData = JsonUtility.FromJson<FinishGameData>(decryptedData);
-            data.finishGameData.Add(finishGameData);
-        }
+            // Obtener todos los archivos .save
+            string[] files = Directory.GetFiles(historyDirectory, "*.save");
 
-        yield return null;
+            // Invertir el orden de los archivos
+            Array.Reverse(files);
+
+            // Leer y desencriptar cada archivo
+            foreach (string file in files)
+            {
+                byte[] encryptedData = await Task.Run(() => File.ReadAllBytes(file));
+                string decryptedData = DecryptStringFromBytes_Aes(encryptedData);
+                FinishGameData finishGameData = JsonUtility.FromJson<FinishGameData>(decryptedData);
+                ProfileUser.history.Add(finishGameData);
+            }
+        }
     }
 
     #endregion

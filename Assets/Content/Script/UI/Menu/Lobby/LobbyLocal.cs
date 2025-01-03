@@ -322,7 +322,7 @@ public class LobbyLocal : MonoBehaviour
     {
         // Jugador principal
         var character = characters[0];
-        gameData.SavePlayer(ProfileUser.UID, character.PlayerName, character.Model);
+        gameData.SavePlayer(ProfileUser.uid, character.PlayerName, character.Model);
 
         // Jugadores secundarios
         for (int i = 1; i < characters.Count; i++)

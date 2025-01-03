@@ -230,7 +230,7 @@ public static class HttpService
         try
         {
             // Obtener el ID del perfil del jugador
-            int idPlayer = ProfileUser.BGamesProfile.id;
+            int idPlayer = ProfileUser.bGamesProfile.id;
 
             // Paso 1: Obtener el ID del videojuego
             int idVideogame = await GetVideogameId(videogame);
@@ -254,7 +254,7 @@ public static class HttpService
             if (success)
             {
                 Debug.Log("Puntos consumidos exitosamente.");
-                ProfileUser.BGamesProfile.points--;
+                ProfileUser.bGamesProfile.points--;
                 return true;
             }
             else

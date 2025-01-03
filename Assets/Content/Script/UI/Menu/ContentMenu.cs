@@ -4,7 +4,6 @@ using System.Collections;
 using UnityEngine.UI;
 using SFB;
 using System.IO;
-using System.Collections.Generic;
 
 public class ContentMenu : MonoBehaviour
 {

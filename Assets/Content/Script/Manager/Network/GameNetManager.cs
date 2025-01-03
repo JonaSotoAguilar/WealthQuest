@@ -193,9 +193,9 @@ public class GameNetManager : NetworkBehaviour
     [ClientRpc]
     private void RpcSaveHistory()
     {
-        int score = GetPlayer(ProfileUser.UID).Data.FinalScore;
+        int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
         FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score);
-        StartCoroutine(SaveSystem.SaveHistory(finishData, 3));
+        ProfileUser.SaveGame(finishData, 3);
     }
 
     [Server]

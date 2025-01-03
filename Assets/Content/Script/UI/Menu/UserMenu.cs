@@ -30,7 +30,6 @@ public class UserMenu : MonoBehaviour
     [SerializeField] private Button logoutButton;
 
     [Header("History")]
-    [SerializeField] private GameHistory gameHistory;
     [SerializeField] private GameObject gamePrefab;
     [SerializeField] private Transform container;
 
@@ -63,7 +62,7 @@ public class UserMenu : MonoBehaviour
 
     private void OnEnable()
     {
-        StartCoroutine(CreateGamePanel());
+        CreateGamePanel();
         LoadSettings();
         MenuAnimation.Instance.SelectObject(configButton.gameObject);
     }
@@ -87,22 +86,22 @@ public class UserMenu : MonoBehaviour
         LoadData();
         LoadLevel();
 
-        if (ProfileUser.BGamesProfile != null) LoadBGames();
+        if (ProfileUser.bGamesProfile != null) LoadBGames();
         else WithoutBGames();
     }
 
     private void LoadData()
     {
-        username.text = ProfileUser.Username;
-        level.text = "Nivel: " + ProfileUser.Level.ToString();
-        scoreAverage.text = ProfileUser.AverageScore.ToString();
-        bestScore.text = ProfileUser.BestScore.ToString();
-        playedGames.text = ProfileUser.PlayedGames.ToString();
+        username.text = ProfileUser.username;
+        level.text = "Nivel: " + ProfileUser.level.ToString();
+        scoreAverage.text = ProfileUser.averageScore.ToString();
+        bestScore.text = ProfileUser.bestScore.ToString();
+        playedGames.text = ProfileUser.playedGames.ToString();
     }
 
     private void LoadLevel()
     {
-        int currentXp = ProfileUser.XP;
+        int currentXp = ProfileUser.xp;
         int xpNextLevel = ProfileUser.XPNextLevel();
         float fillValue = (float)currentXp / xpNextLevel;
         xpUser.value = fillValue;
@@ -115,8 +114,8 @@ public class UserMenu : MonoBehaviour
         disconnected.SetActive(false);
         loginButton.gameObject.SetActive(false);
         logoutButton.gameObject.SetActive(true);
-        bGamesUsername.text = ProfileUser.BGamesProfile.name;
-        bGamesPoints.text = "Puntos bGames: " + ProfileUser.BGamesProfile.points;
+        bGamesUsername.text = ProfileUser.bGamesProfile.name;
+        bGamesPoints.text = "Puntos bGames: " + ProfileUser.bGamesProfile.points;
     }
 
     private void WithoutBGames()
@@ -192,10 +191,9 @@ public class UserMenu : MonoBehaviour
 
     #region History
 
-    private IEnumerator CreateGamePanel()
+    private void CreateGamePanel()
     {
-        yield return gameHistory.GetGames();
-        List<FinishGameData> finishGameData = gameHistory.finishGameData;
+        List<FinishGameData> finishGameData = ProfileUser.history;
         foreach (FinishGameData game in finishGameData)
         {
             GameObject newPanel = Instantiate(gamePrefab, container);
@@ -279,7 +277,7 @@ public class UserMenu : MonoBehaviour
         changeNamePanel.SetActive(show);
         if (show)
         {
-            nameInput.text = ProfileUser.Username;
+            nameInput.text = ProfileUser.username;
             nameInput.Select();
             nameInput.ActivateInputField();
             ActiveButtons(false);
@@ -296,7 +294,7 @@ public class UserMenu : MonoBehaviour
     private void ChangeName()
     {
         string name = nameInput.text;
-        if (name == "" || name == ProfileUser.Username || name.Trim() == "")
+        if (name == "" || name == ProfileUser.username || name.Trim() == "")
         {
             ShowChangeName(false);
             return;

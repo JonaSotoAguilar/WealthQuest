@@ -41,8 +41,8 @@ public class BannerNetwork : NetworkBehaviour
         base.OnStartClient();
         if (!isOwned) return;
 
-        string uid = ProfileUser.UID;
-        string name = ProfileUser.Username;
+        string uid = ProfileUser.uid;
+        string name = ProfileUser.username;
 
         // Verificar si es una partida Cargada o Nueva
         if (data.DataExists())

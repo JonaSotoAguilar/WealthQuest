@@ -32,7 +32,7 @@ public class CharacterSelector : MonoBehaviour
 
     public void UserPlayer()
     {
-        playerName = ProfileUser.Username;
+        playerName = ProfileUser.username;
         characterSelected = 0;
         characterSprite.sprite = characterDB.GetCharacter(characterSelected).characterIcon;
         nameInput.text = playerName;
