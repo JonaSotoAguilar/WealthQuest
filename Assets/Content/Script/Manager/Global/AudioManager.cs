@@ -37,22 +37,22 @@ public class AudioManager : MonoBehaviour
         optionMenu.LoadResolution();
     }
 
-    public void PlayBackgroundMusic()
+    private void PlayBackgroundMusic()
     {
         musicSource.loop = true;
         musicSource.Play();
     }
 
-    public void PlaySoundButtonSelect()
+    public static void PlaySoundButtonSelect()
     {
-        AudioClip clip = buttonSelectClip;
-        sfxSource.PlayOneShot(clip);
+        AudioClip clip = Instance.buttonSelectClip;
+        Instance.sfxSource.PlayOneShot(clip);
     }
 
-    public void PlaySoundButtonPress()
+    public static void PlaySoundButtonPress()
     {
-        AudioClip clip = buttonPressClip;
-        sfxSource.PlayOneShot(clip);
+        AudioClip clip = Instance.buttonPressClip;
+        Instance.sfxSource.PlayOneShot(clip);
     }
 }
 

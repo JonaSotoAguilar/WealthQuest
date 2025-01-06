@@ -10,11 +10,6 @@ public class CreateContent : MonoBehaviour
     [SerializeField] private GameObject questionPanelPrefab;
     [SerializeField] private List<CreateQuestion> questions = new List<CreateQuestion>();
 
-    [Header("Buttons")]
-    [SerializeField] private GameObject addQuestionButton;
-    [SerializeField] private GameObject createBundleButton;
-    [SerializeField] private GameObject returnButton;
-
     [Header("Content")]
     [SerializeField] private Content content;
     [SerializeField] private GameObject confirmPanel;
@@ -24,12 +19,6 @@ public class CreateContent : MonoBehaviour
 
     private bool update = false;
     private int version = 1;
-
-    private void Awake()
-    {
-        GameObject[] buttons = new GameObject[] { addQuestionButton, createBundleButton, returnButton, confirmButton.gameObject };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-    }
 
     private void Start()
     {
@@ -146,16 +135,15 @@ public class CreateContent : MonoBehaviour
         if (update)
         {
             StartCoroutine(SaveSystem.UpdateContent(questionList, nameInput.text, version));
-            Popup.Instance.StartCoroutine(Popup.Instance.SuccessUpdateContent());
+            MenuManager.Instance.OpenMessagePopup("Contenido modificado con éxito.");
         }
         else
         {
             StartCoroutine(SaveSystem.SaveContent(questionList, nameInput.text));
-            Popup.Instance.StartCoroutine(Popup.Instance.SuccessCreateContent());
+            MenuManager.Instance.OpenMessagePopup("Contenido creado con éxito.");
         }
 
         ActiveConfirmPanel(false);
-
     }
 
 }

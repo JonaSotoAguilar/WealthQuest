@@ -3,8 +3,8 @@ using UnityEngine.Playables;
 
 public class TimelineSpeedController : MonoBehaviour
 {
-    [SerializeField] private PlayableDirector playableDirector; // Asigna el PlayableDirector en el Inspector
-    [SerializeField] private float speedMultiplier = 2f; // Multiplicador de velocidad (2x en este caso)
+    [SerializeField] private PlayableDirector playableDirector;
+    [SerializeField] private float speedMultiplier = 2f; 
 
     private void Start()
     {

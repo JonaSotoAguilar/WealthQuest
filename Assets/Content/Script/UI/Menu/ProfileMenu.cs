@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class UserMenu : MonoBehaviour
+public class ProfileMenu : MonoBehaviour
 {
     [Header("Profile")]
     [SerializeField] private TextMeshProUGUI username;
@@ -43,28 +43,19 @@ public class UserMenu : MonoBehaviour
     [SerializeField] private TMP_InputField bGamesPass;
     [SerializeField] private GameObject invalidMessage;
     [SerializeField] private Button bGamesLogin;
-    [SerializeField] private Button exitBGames;
 
     [Header("Change Name")]
     [SerializeField] private GameObject changeNamePanel;
     [SerializeField] private TMP_InputField nameInput;
-    [SerializeField] private Button change;
-    [SerializeField] private Button exitChangeName;
+    [SerializeField] private Button changeNameButton;
 
     #region Initialize
 
-    private void Awake()
-    {
-        GameObject[] buttons = new GameObject[] { returnButton.gameObject, configButton.gameObject, exitBGames.gameObject,
-            exitChangeName.gameObject, change.gameObject, bGamesLogin.gameObject, loginButton.gameObject, logoutButton.gameObject, changeName.gameObject };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-    }
 
     private void OnEnable()
     {
         CreateGamePanel();
         LoadSettings();
-        MenuAnimation.Instance.SelectObject(configButton.gameObject);
     }
 
     private void OnDisable()
@@ -139,8 +130,6 @@ public class UserMenu : MonoBehaviour
         changeName.interactable = active;
         loginButton.interactable = active;
         logoutButton.interactable = active;
-
-        if (active) MenuAnimation.Instance.SelectObject(configButton.gameObject);
     }
 
     public void ShowConfigPanel()
@@ -221,13 +210,34 @@ public class UserMenu : MonoBehaviour
 
     #region bGames Menu
 
-    public void Logout()
+    public void ShowBGamesMenu(bool show)
+    {
+        bGamesMenu.SetActive(show);
+        if (show)
+        {
+            bGamesNick.text = "";
+            bGamesPass.text = "";
+            invalidMessage.SetActive(false);
+            ActiveButtons(false);
+        }
+        else
+        {
+            ActiveButtons(true);
+        }
+    }
+
+    public void LogoutBGames()
     {
         ProfileUser.LogoutBGames();
         WithoutBGames();
     }
 
-    public async void AttemptLogin()
+    public void LoginBGames()
+    {
+        AttemptLogin();
+    }
+
+    private async void AttemptLogin()
     {
         bGamesLogin.interactable = false;
         bool success = await HttpService.Login(bGamesNick.text, bGamesPass.text);
@@ -249,25 +259,6 @@ public class UserMenu : MonoBehaviour
         bGamesLogin.interactable = true;
     }
 
-    public void ShowBGamesMenu(bool show)
-    {
-        bGamesMenu.SetActive(show);
-        if (show)
-        {
-            bGamesNick.text = "";
-            bGamesPass.text = "";
-            invalidMessage.SetActive(false);
-            ActiveButtons(false);
-            bGamesLogin.onClick.AddListener(AttemptLogin);
-            MenuAnimation.Instance.SelectObject(bGamesNick.gameObject);
-        }
-        else
-        {
-            ActiveButtons(true);
-            bGamesLogin.onClick.RemoveAllListeners();
-        }
-    }
-
     #endregion
 
     #region Name Menu
@@ -281,18 +272,16 @@ public class UserMenu : MonoBehaviour
             nameInput.Select();
             nameInput.ActivateInputField();
             ActiveButtons(false);
-            change.onClick.AddListener(() => ChangeName());
-            MenuAnimation.Instance.SelectObject(nameInput.gameObject);
         }
         else
         {
             ActiveButtons(true);
-            change.onClick.RemoveAllListeners();
         }
     }
 
-    private void ChangeName()
+    public void ChangeName()
     {
+        changeNameButton.interactable = false;
         string name = nameInput.text;
         if (name == "" || name == ProfileUser.username || name.Trim() == "")
         {
@@ -302,6 +291,7 @@ public class UserMenu : MonoBehaviour
         username.text = name;
         ProfileUser.SaveNameUser(username.text);
         ShowChangeName(false);
+        changeNameButton.interactable = true;
     }
 
     #endregion

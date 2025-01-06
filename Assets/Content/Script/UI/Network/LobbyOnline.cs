@@ -19,10 +19,8 @@ public class LobbyOnline : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI codeText;
 
     [Header("Game Actions")]
-    public GameObject gameMenu;
     [SerializeField] private TMP_Dropdown contentDropdown;
     [SerializeField] private Button startGame;
-    [SerializeField] private GameObject returnButton;
 
     // Variables for Content
     private readonly SyncList<string> contents = new SyncList<string>();
@@ -32,11 +30,10 @@ public class LobbyOnline : NetworkBehaviour
 
     #region Initialization
 
+    //FIXME: Reviusar Load Game y reconexion
+
     private void Start()
     {
-        GameObject[] buttons = { startGame.gameObject, returnButton };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-
         if (isClient && isServer)
         {
             startGame.onClick.AddListener(StartGameScene);
@@ -56,7 +53,14 @@ public class LobbyOnline : NetworkBehaviour
 
         lobbyPanel.SetActive(true);
         code = WQRelayManager.Instance.relayJoinCode;
+        YearDropdown();
         PopulateBundleDropdown();
+    }
+
+    private void YearDropdown()
+    {
+        yearDropdown.value = 0;
+        yearDropdown.interactable = true;
     }
 
     public override void OnStartClient()
@@ -93,15 +97,14 @@ public class LobbyOnline : NetworkBehaviour
 
         if (contentDropdown != null)
         {
-            yearDropdown.value = 0;
-            contentDropdown.value = 0;
             contentDropdown.onValueChanged.RemoveAllListeners();
             contentDropdown.ClearOptions();
         }
 
         if (gameObject.activeInHierarchy)
         {
-            gameMenu.SetActive(true);
+            MenuManager.Instance.CloseExitOnlineLobbyPopup();
+            MenuManager.Instance.OpenPlayMenu();
         }
     }
 
@@ -116,6 +119,10 @@ public class LobbyOnline : NetworkBehaviour
             WQRelayManager.Instance.StopClient();
         }
     }
+
+    #endregion
+
+    #region Code
 
     public void CopyToClipboard()
     {
@@ -140,7 +147,6 @@ public class LobbyOnline : NetworkBehaviour
     [Server]
     private void PopulateBundleDropdown()
     {
-        yearDropdown.value = 0;
         List<string> options = new List<string>();
 
         foreach (var topic in content.LocalTopicList)

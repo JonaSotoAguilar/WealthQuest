@@ -2,13 +2,10 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
-using System.Collections.Generic;
 
 
-public class CharacterSelector : MonoBehaviour
+public class BannerLocal : MonoBehaviour
 {
-    [SerializeField] private Button DeletePlayer;
-
     [Header("Character")]
     [SerializeField] private CharactersDatabase characterDB;
     [SerializeField] private Button nextCharacter;
@@ -20,6 +17,10 @@ public class CharacterSelector : MonoBehaviour
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private Button changeName;
     [SerializeField] private string playerName;
+
+    [Header("Status")]
+    [SerializeField] private GameObject deleteCharacter;
+    [SerializeField] private TextMeshProUGUI connectedText;
 
     public string PlayerName { get => playerName; set => playerName = value; }
     public int Model { get => characterSelected; }
@@ -41,10 +42,11 @@ public class CharacterSelector : MonoBehaviour
     public void ActiveChanges(bool active)
     {
         nameInput.interactable = active;
-        changeName.interactable = active;
-        nextCharacter.interactable = active;
-        previousCharacter.interactable = active;
-        if (DeletePlayer != null) Destroy(DeletePlayer.gameObject);
+        changeName.gameObject.SetActive(active);
+        nextCharacter.gameObject.SetActive(active);
+        previousCharacter.gameObject.SetActive(active);
+        deleteCharacter.SetActive(active);
+        connectedText.gameObject.SetActive(!active);
     }
 
     #region Character Selection
@@ -65,7 +67,6 @@ public class CharacterSelector : MonoBehaviour
     {
         characterSelected = selected;
         characterSprite.sprite = characterDB.GetCharacter(selected).characterIcon;
-        // Bloquear botones de selección
     }
 
     #endregion

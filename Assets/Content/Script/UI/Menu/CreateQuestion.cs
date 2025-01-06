@@ -14,12 +14,6 @@ public class CreateQuestion : MonoBehaviour
 
     [SerializeField] public Button deleteButton;
 
-    private void Awake()
-    {
-        GameObject[] buttons = new GameObject[] { deleteButton.gameObject };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-    }
-
     public void LoadQuestion(QuestionData questionData)
     {
         question.text = questionData.question;

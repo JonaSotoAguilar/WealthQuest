@@ -14,27 +14,14 @@ public class ContentMenu : MonoBehaviour
     [SerializeField] private Transform container;
     [SerializeField] private TMP_InputField searchInput;
 
-    [Header("Buttons")]
-    [SerializeField] private GameObject filterButton;
-    [SerializeField] private GameObject rechargeButton;
-    [SerializeField] private GameObject returnButton;
-    [SerializeField] private GameObject createContentButton;
-    [SerializeField] private GameObject importContentButton;
-    [SerializeField] private GameObject fileContentButton;
-
     [Header("Filter")]
     [SerializeField] private Texture[] filterIcons;
     [SerializeField] private RawImage filterIcon;
+
     private enum FilterMode { All, Local, Remote, Update }
     private FilterMode currentFilterMode = FilterMode.All;
 
     #region Initialization
-
-    private void Awake()
-    {
-        GameObject[] buttons = new GameObject[] { filterButton, rechargeButton, returnButton, createContentButton, importContentButton, fileContentButton };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-    }
 
     private void Start()
     {
@@ -43,7 +30,6 @@ public class ContentMenu : MonoBehaviour
 
     private void OnEnable()
     {
-        MenuAnimation.Instance.SelectObject(rechargeButton);
         InitScrollView();
     }
 
@@ -94,18 +80,18 @@ public class ContentMenu : MonoBehaviour
 
         if (isUpdate)
         {
+            deleteButton.SetActive(true);
             downloadButton.SetActive(false);
             downloadedButton.SetActive(false);
-            deleteButton.SetActive(true);
             updateButton.SetActive(true);
             changeButton.SetActive(false);
             exportButton.SetActive(false);
         }
         else
         {
+            if (name != SaveSystem.defaultContentName) deleteButton.SetActive(isLocal);
             downloadButton.SetActive(!isLocal);
             downloadedButton.SetActive(isLocal);
-            deleteButton.SetActive(isLocal);
             updateButton.SetActive(false);
             changeButton.SetActive(isLocal);
             exportButton.SetActive(isLocal);
@@ -123,15 +109,13 @@ public class ContentMenu : MonoBehaviour
         });
         changeButton.GetComponent<Button>().onClick.AddListener(() =>
         {
-            AudioManager.Instance?.PlaySoundButtonPress();
             gameObject.SetActive(false);
             createContent.ChangeContent(name, version);
         });
         exportButton.GetComponent<Button>().onClick.AddListener(() =>
         {
-            AudioManager.Instance?.PlaySoundButtonPress();
             SaveSystem.ExportContentFile(name);
-            Popup.Instance.StartCoroutine(Popup.Instance.SuccessExportContent());
+            MenuManager.Instance.OpenMessagePopup("Contenido exportado con éxito en Descargas.");
         });
 
         ShowContent(isLocal, isUpdate, newPanel, searchInput.text.ToLower(), name.ToLower());
@@ -145,7 +129,6 @@ public class ContentMenu : MonoBehaviour
 
     private IEnumerator DownloadBundle(string contentName, GameObject contentPanel)
     {
-        AudioManager.Instance?.PlaySoundButtonPress();
         contentPanel.transform.Find("Download").GetComponent<Button>().interactable = false;
         yield return StartCoroutine(content.DownloadContent(contentName));
 
@@ -161,7 +144,6 @@ public class ContentMenu : MonoBehaviour
 
     private IEnumerator UpdateContent(string contentName, GameObject contentPanel)
     {
-        AudioManager.Instance?.PlaySoundButtonPress();
         contentPanel.transform.Find("Update").GetComponent<Button>().interactable = false;
         yield return StartCoroutine(content.UpdateContent(contentName));
 
@@ -177,8 +159,6 @@ public class ContentMenu : MonoBehaviour
 
     private void DeleteLocalTopic(string contentName, GameObject contentPanel)
     {
-        AudioManager.Instance?.PlaySoundButtonPress();
-
         bool success = content.DeleteLocalContent(contentName);
 
         if (success)
@@ -346,7 +326,7 @@ public class ContentMenu : MonoBehaviour
 
         Debug.Log($"Archivo .content importado y copiado a: {destinationPath}");
         InitScrollView();
-        Popup.Instance.StartCoroutine(Popup.Instance.SuccessImportContent());
+        MenuManager.Instance.OpenMessagePopup("Contenido importado con éxito.");
     }
 
     public void OpenContentFolder()

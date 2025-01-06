@@ -24,8 +24,8 @@ public static class SaveSystem
     public static string defaultContentName = "Contenido Basico_1.content";
 
     // Clave de Encriptación AES
-    private static readonly byte[] aesKey = Encoding.UTF8.GetBytes("1234567890123456");  // 16 bytes exactos
-    private static readonly byte[] aesIV = Encoding.UTF8.GetBytes("abcdefghijklmnop");   // 16 bytes exactos
+    private static readonly byte[] aesKey = Encoding.UTF8.GetBytes("1234567890123456");
+    private static readonly byte[] aesIV = Encoding.UTF8.GetBytes("abcdefghijklmnop");
 
     #region Save and Load Game
 
@@ -33,6 +33,7 @@ public static class SaveSystem
     public static IEnumerator SaveGame(GameData data, int slotData)
     {
         string json = JsonUtility.ToJson(data);
+        Debug.Log(json);
         byte[] encryptedData = EncryptStringToBytes_Aes(json);
         if (!Directory.Exists(saveDirectory)) Directory.CreateDirectory(saveDirectory);
 
@@ -138,7 +139,8 @@ public static class SaveSystem
         DeleteSave(slotData);
 
         // Actualizar estadísticas del usuario
-        if (slotData != 0){
+        if (slotData != 0)
+        {
             PlayerPrefs.SetInt("gameId", finishGameData.gameID);
             ProfileUser.UpdateStats(finishGameData);
         }

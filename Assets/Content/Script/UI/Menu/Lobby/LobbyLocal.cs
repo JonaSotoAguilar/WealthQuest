@@ -26,7 +26,6 @@ public class LobbyLocal : MonoBehaviour
 
     [Header("Buttons")]
     [SerializeField] private Button startButton;
-    [SerializeField] private GameObject returnButton;
 
     [Header("Players Panel")]
     [SerializeField] private GameObject bannerDisconnectedPrefab;
@@ -39,15 +38,9 @@ public class LobbyLocal : MonoBehaviour
     [Header("Characters")]
     [SerializeField] private GameObject bannerPrefab;
     [SerializeField] private List<GameObject> bannersPanel;
-    [SerializeField] private List<CharacterSelector> characters;
+    [SerializeField] private List<BannerLocal> characters;
 
     #region Initializers
-
-    private void Awake()
-    {
-        //GameObject[] buttons = { startButton.gameObject, returnButton };
-        //MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-    }
 
     public void SetMode(int mode)
     {
@@ -68,14 +61,20 @@ public class LobbyLocal : MonoBehaviour
 
     public void OnEnable()
     {
-        yearDropdown.value = 0;
         PopulateContentDropdown();
-        if (!gameData.DataExists()) NewGameData();
-        else LoadGameData();
 
         if (mode == 0) SingleMode();
         else if (mode == 1) PassMode();
         else if (mode == 2) MultiMode();
+
+        if (!gameData.DataExists()) NewGameData();
+        else LoadGameData();
+    }
+
+    public void OnDisable()
+    {
+        DisconnectPlayers();
+        if (mode == 2) playerInputManager.onPlayerJoined -= OnPlayerJoined;
     }
 
     private void SingleMode()
@@ -114,22 +113,10 @@ public class LobbyLocal : MonoBehaviour
         }
     }
 
-    public void OnDisable()
-    {
-        if (mode == 2)
-        {
-            DisconnectPlayers();
-            playerInputManager.onPlayerJoined -= OnPlayerJoined;
-        }
-    }
-
-    public void ShowPanel(bool visible)
-    {
-        gameObject.SetActive(visible);
-    }
-
     public void NewGameData()
     {
+        yearDropdown.value = 0;
+        yearDropdown.interactable = true;
         startButton.interactable = true;
         characters[0].ActiveChanges(true);
         characters[0].UserPlayer();
@@ -140,8 +127,29 @@ public class LobbyLocal : MonoBehaviour
         // Bloquear seleccion de tema
         contentDropdown.value = content.LocalTopicList.IndexOf(gameData.content);
         contentDropdown.interactable = false;
+        // Bloquear seleccion de años
+        yearDropdown.value = (gameData.yearsToPlay - 10) / 5;
+        yearDropdown.interactable = false;
+        // Cargar jugadores como desconectados 
+        if (mode != 0) CreatePlayers();
+    }
+
+    private void CreatePlayers()
+    {
         MainPlayer();
-        if (mode != 0) CleanPlayers();
+        int maxPlayers = gameData.playersData.Count;
+        for (int i = bannersPanel.Count - 1; i >= maxPlayers; i--)
+        {
+            Destroy(bannersPanel[i]);
+            bannersPanel.RemoveAt(i);
+        }
+        if (mode == 1)
+        {
+            startButton.interactable = true;
+            for (int i = 1; i < maxPlayers; i++)
+                AddBanner();
+        }
+        else if (mode == 2) startButton.interactable = false;
     }
 
     private void MainPlayer()
@@ -149,17 +157,6 @@ public class LobbyLocal : MonoBehaviour
         characters[0].UpdateName(gameData.playersData[0].Nickname);
         characters[0].LoadCharacter(gameData.playersData[0].CharacterID);
         characters[0].ActiveChanges(false);
-    }
-
-    private void CleanPlayers()
-    {
-        startButton.interactable = false;
-        int maxPlayers = gameData.playersData.Count;
-        for (int i = bannersPanel.Count - 1; i >= maxPlayers; i--)
-        {
-            Destroy(bannersPanel[i]);
-            bannersPanel.RemoveAt(i);
-        }
     }
 
     #endregion
@@ -189,7 +186,7 @@ public class LobbyLocal : MonoBehaviour
 
     private void CreateCharacter(int index, GameObject newPanel)
     {
-        CharacterSelector character = newPanel.GetComponent<CharacterSelector>();
+        BannerLocal character = newPanel.GetComponent<BannerLocal>();
         characters.Add(character);
 
         // Revisa si el jugador ya tiene data cargada
@@ -199,12 +196,13 @@ public class LobbyLocal : MonoBehaviour
             character.LoadCharacter(gameData.playersData[index].CharacterID);
             character.ActiveChanges(false);
         }
+
+        EnableStartGame();
     }
 
     public void DeletePlayer(GameObject panel)
     {
-        Debug.Log("Delete Player");
-        CharacterSelector characterSelector = panel.GetComponent<CharacterSelector>();
+        BannerLocal characterSelector = panel.GetComponent<BannerLocal>();
 
         bannersPanel.Remove(panel);
         characters.Remove(characterSelector);
@@ -220,7 +218,6 @@ public class LobbyLocal : MonoBehaviour
             disconnectedPanel.name = "PlayerDisconnected_" + i;
             disconnectedPanel.transform.Find("PlayerIndex").GetComponent<TextMeshProUGUI>().text = "Jugador " + (i + 1);
         }
-
     }
 
     #endregion
@@ -230,7 +227,6 @@ public class LobbyLocal : MonoBehaviour
     private void AddBanner()
     {
         if (characters.Count == 4) return;
-        int index = characters.Count;
         Instantiate(bannerPrefab, parentBannerPanel.transform);
     }
 
@@ -240,21 +236,12 @@ public class LobbyLocal : MonoBehaviour
 
     private void OnPlayerJoined(PlayerInput playerInput)
     {
+        Debug.Log("Player Joined");
         int index = playerInput.playerIndex;
-        if (index == 0) return;
+        if (index == 0 || index >= bannersPanel.Count) return;
         playerInput.actions.FindActionMap("Player").Disable();
         playerInput.SwitchCurrentActionMap("UI");
         CreateBanner(playerInput, index);
-    }
-
-    private void EnableStartGame()
-    {
-        if (!gameData.DataExists()) return;
-        if (gameData.playersData.Count == characters.Count)
-        {
-            startButton.interactable = true;
-            if (playerInputManager != null) playerInputManager.DisableJoining();
-        }
     }
 
     private void CreateBanner(PlayerInput playerInput, int index)
@@ -277,7 +264,7 @@ public class LobbyLocal : MonoBehaviour
         for (int i = 1; i < bannersPanel.Count; i++)
         {
             var playerPanel = bannersPanel[i];
-            if (playerPanel.TryGetComponent(out CharacterSelector character)) characters.Remove(character);
+            if (playerPanel.TryGetComponent(out BannerLocal character)) characters.Remove(character);
             Destroy(playerPanel);
         }
         bannersPanel.RemoveRange(1, bannersPanel.Count - 1);
@@ -293,6 +280,16 @@ public class LobbyLocal : MonoBehaviour
     #endregion
 
     #region Start Game
+
+    private void EnableStartGame()
+    {
+        if (!gameData.DataExists()) return;
+        if (gameData.playersData.Count == characters.Count)
+        {
+            startButton.interactable = true;
+            if (playerInputManager != null) playerInputManager.DisableJoining();
+        }
+    }
 
     public void StartGame()
     {

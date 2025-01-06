@@ -15,8 +15,6 @@ public class OptionMenu : MonoBehaviour
     [SerializeField] private GameObject inactiveFullscreen;
 
     [Header("Resolution")]
-    [SerializeField] private Button NextResolutionButton;
-    [SerializeField] private Button PreviousResolutionButton;
     [SerializeField] private TextMeshProUGUI resolutionText;
     [SerializeField] private Resolution[] resolutions;
     private int resolutionIndex;
@@ -24,24 +22,6 @@ public class OptionMenu : MonoBehaviour
     [Header("Quality")]
     [SerializeField] private TMP_Dropdown qualityDropdown;
     private int qualityIndex;
-
-    [Header("Return")]
-    [SerializeField] private GameObject returnButton;
-
-    #region Initialization
-
-    private void Awake()
-    {
-        GameObject[] buttons = new GameObject[] { activeFullscreen, inactiveFullscreen, returnButton, NextResolutionButton.gameObject, PreviousResolutionButton.gameObject };
-        MenuAnimation.Instance.SubscribeButtonsToEvents(buttons);
-    }
-
-    public void ShowPanel(bool active)
-    {
-        gameObject.SetActive(active);
-    }
-
-    #endregion
 
     #region Volume
 
