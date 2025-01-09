@@ -6,13 +6,15 @@ using UnityEngine.UI;
 
 public class CreateContent : MonoBehaviour
 {
+    [Header("Game Data")]
+    [SerializeField] private Content content;
+
+    [Header("Create Content Panel")]
     [SerializeField] private Transform container;
     [SerializeField] private GameObject questionPanelPrefab;
     [SerializeField] private List<CreateQuestion> questions = new List<CreateQuestion>();
 
-    [Header("Content")]
-    [SerializeField] private Content content;
-    [SerializeField] private GameObject confirmPanel;
+    [Header("Confirm Panel")]
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private TextMeshProUGUI nameError;
     [SerializeField] private Button confirmButton;
@@ -67,9 +69,9 @@ public class CreateContent : MonoBehaviour
         questions.Clear();
     }
 
-    public void ActiveConfirmPanel(bool active)
+    public void OpenCreatePopup()
     {
-        confirmPanel.SetActive(active);
+        MenuManager.Instance.OpenConfirmCreatePopup(true);
         nameError.gameObject.SetActive(false);
     }
 
@@ -80,7 +82,6 @@ public class CreateContent : MonoBehaviour
         nameInput.text = name;
         nameInput.interactable = false;
         confirmButton.interactable = true;
-        gameObject.SetActive(true);
         StartCoroutine(LoadQuestions());
     }
 
@@ -116,6 +117,7 @@ public class CreateContent : MonoBehaviour
 
     public void CreateContentBundle()
     {
+        confirmButton.interactable = false;
         QuestionList questionList = new QuestionList();
 
         foreach (var question in questions)
@@ -129,7 +131,6 @@ public class CreateContent : MonoBehaviour
             }
 
             questionList.questions.Add(questionData);
-            Debug.Log("Question added:" + questionData.question);
         }
 
         if (update)
@@ -143,7 +144,9 @@ public class CreateContent : MonoBehaviour
             MenuManager.Instance.OpenMessagePopup("Contenido creado con éxito.");
         }
 
-        ActiveConfirmPanel(false);
+        MenuManager.Instance.OpenConfirmCreatePopup(false);
+        MenuManager.Instance.OpenContentMenu();
+        confirmButton.interactable = true;
     }
 
 }

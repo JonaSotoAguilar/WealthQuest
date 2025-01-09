@@ -11,15 +11,15 @@ public class GameData : ScriptableObject
     [Header("Initial Info")]
     public int initialPlayerIndex;
     public int yearsToPlay;
-
-    [Header("Status")]
-    public TimeSpan timePlayed;
-    public int currentYear;
-    public int turnPlayer;
-    public List<PlayerData> playersData;
     public int mode;
 
-    [Header("Cards & Questions")]
+    [Space, Header("Status")]
+    public int currentYear;
+    public int turnPlayer;
+    public string timePlayed;
+    public List<PlayerData> playersData;
+
+    [Space, Header("Content")]
     public string content;
     public List<QuestionData> allQuestionList;
     public List<QuestionData> questionList;
@@ -49,7 +49,7 @@ public class GameData : ScriptableObject
         initialPlayerIndex = 0;
         yearsToPlay = 2;
 
-        timePlayed = new TimeSpan();
+        timePlayed = "00:00:00";
         currentYear = 1;
         turnPlayer = 0;
         playersData = new List<PlayerData>();

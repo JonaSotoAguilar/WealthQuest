@@ -17,7 +17,7 @@ public class GameLocalManager : MonoBehaviour
     [Header("Status")]
     [SerializeField] private GameData gameData;
     private GameStatus status = GameStatus.None;
-    private DateTime initTime;
+    private DateTime currentTime;
 
     // Players
     private List<PlayerLocalManager> playersLocal = new List<PlayerLocalManager>();
@@ -73,7 +73,7 @@ public class GameLocalManager : MonoBehaviour
         instance._camera.CurrentCamera(instance.currPlayer.transform);
 
         // 5. Start game
-        instance.initTime = DateTime.Now;
+        instance.currentTime = DateTime.Now;
         instance.StartTurn();
     }
 
@@ -120,7 +120,7 @@ public class GameLocalManager : MonoBehaviour
 
         if (instance.status == GameStatus.Finish) return;
         instance.NextPlayer();
-        instance.SaveGame(2);
+        instance.SaveGame();
         instance._camera.CurrentCamera(instance.currPlayer.transform);
         instance.StartTurn();
     }
@@ -190,15 +190,23 @@ public class GameLocalManager : MonoBehaviour
 
     #region Game Data
 
-    private void SaveGame(int slot)
+    private void SaveGame()
     {
+        int slot = gameData.mode == 0 ? 1 : 2;
         StartCoroutine(SaveSystem.SaveGame(Data, slot));
     }
 
     private void UpdateTime()
     {
+        // Calcular tiempo transcurrido
         DateTime timeNow = DateTime.Now;
-        gameData.timePlayed = timeNow - initTime;
+        TimeSpan currentSpan = timeNow - currentTime;
+        currentTime = timeNow;
+
+        // Actualizar tiempo jugado
+        TimeSpan totalSpan = TimeSpan.Parse(gameData.timePlayed);
+        TimeSpan timeSpan = totalSpan + currentSpan;
+        gameData.timePlayed = timeSpan.ToString(@"hh\:mm\:ss");
     }
 
     private void UpdateYear(int newYear)

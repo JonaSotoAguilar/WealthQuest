@@ -44,25 +44,7 @@ public class BannerNetwork : NetworkBehaviour
         string uid = ProfileUser.uid;
         string name = ProfileUser.username;
 
-        // Verificar si es una partida Cargada o Nueva
-        if (data.DataExists())
-        {
-            foreach (PlayerData player in data.playersData)
-            {
-                if (player.UID == uid)
-                {
-                    CmdSetProfilePlayer(uid, name, data.GetPlayerData(uid).CharacterID);
-                    return;
-                }
-            }
-
-            // Si no se encuentra el usuario en la partida, se desconecta
-            WQRelayManager.Instance.StopClient();
-        }
-        else
-        {
-            CmdSetProfilePlayer(uid, name, 0);
-        }
+        CmdSetProfilePlayer(uid, name, 0);
     }
 
     [Command]

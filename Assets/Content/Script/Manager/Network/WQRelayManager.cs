@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-
 using Mirror;
-
 using UnityEngine;
 using Unity.Services.Relay.Models;
 using Utp;
@@ -10,7 +8,6 @@ using System.Threading.Tasks;
 using Unity.Services.Core;
 using Unity.Services.Authentication;
 using UnityEngine.SceneManagement;
-using Telepathy;
 using System.Collections;
 
 public class WQRelayManager : NetworkManager
@@ -31,15 +28,16 @@ public class WQRelayManager : NetworkManager
     [SerializeField] private GameData data;
     [SerializeField] private CharactersDatabase charactersDB;
 
-    [Header("Lobby Settings")]
-    [SerializeField] private GameObject bannerPrefab;
-    public int connBanners = 0;
-
     [Header("Game Settings")]
     [SerializeField] private GameObject playerGamePrefab;
     public int connPlayers = 0;
 
-    // Variables for Players
+    [Header("Lobby Settings")]
+    [SerializeField] private GameObject bannerPrefab;
+    public int connBanners = 0;
+    //public bool newGame = true;
+    public int connBannersDisconnected = 0;
+    private List<BannerNetwork> bannersDisconnected = new();
     public Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = new();
     private Dictionary<int, int> positions = new Dictionary<int, int>(){
         {0, -510},
@@ -80,6 +78,7 @@ public class WQRelayManager : NetworkManager
     {
         base.OnStartServer();
         Debug.Log("Server started.");
+        DefaultServer();
     }
 
     // Se llama en el servidor después de que se completa la carga de una escena con ServerChangeScene().
@@ -107,6 +106,7 @@ public class WQRelayManager : NetworkManager
     public override void OnServerConnect(NetworkConnectionToClient conn)
     {
         base.OnServerConnect(conn);
+        Debug.Log("Server connected.");
     }
 
     // Se llama al servidor cuando un cliente está listo (= carga la escena)
@@ -117,13 +117,11 @@ public class WQRelayManager : NetworkManager
 
         if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
         {
-            Debug.Log("OnServerReady: Server Client ready in Game.");
             SetupPlayer(conn);
             connPlayers++;
         }
         else if (SceneManager.GetActiveScene().name.Equals(SCENE_MENU))
         {
-            Debug.Log("OnServerReady: Server Client ready in Menu.");
             SetupBanner(conn);
             connBanners++;
         }
@@ -134,23 +132,6 @@ public class WQRelayManager : NetworkManager
     {
         base.OnServerAddPlayer(conn);
         Debug.Log("Server added player.");
-
-        // if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
-        // {
-        //     Debug.Log("OnServerAddPlayer: Server added player in Game.");
-        //     SetupPlayer(conn);
-        // }
-        // else if (SceneManager.GetActiveScene().name.Equals(SCENE_MENU))
-        // {
-        //     Debug.Log("OnServerAddPlayer: Server added player in Menu.");
-        //     SetupBanner(conn);
-        //     connBanners++;
-        //     if (data.DataExists() && connBanners == data.playersData.Count)
-        //     {
-        //         LobbyOnline lobby = FindAnyObjectByType<LobbyOnline>();
-        //         lobby.EnableStartButton();
-        //     }
-        // }
     }
 
     // Server: Client Disconnect
@@ -158,11 +139,20 @@ public class WQRelayManager : NetworkManager
     public override void OnServerDisconnect(NetworkConnectionToClient conn)
     {
         base.OnServerDisconnect(conn);
+        Debug.Log("Server disconnected.");
 
         if (SceneManager.GetActiveScene().name.Equals(SCENE_MENU))
         {
             RemoveBanner(conn);
             connBanners--;
+        }
+        else if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
+        {
+            // FIXME: Popup jugador desconectado
+
+            //FIXME: Pausar o terminar el juego
+            connPlayers--;
+            //StopHost();
         }
     }
 
@@ -205,6 +195,22 @@ public class WQRelayManager : NetworkManager
     {
         base.OnClientDisconnect();
         Debug.Log("Client disconnected.");
+
+        if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.LoadScene(SCENE_MENU);
+        }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == SCENE_MENU)
+        {
+            Debug.Log("Client disconnected in Menu.");
+            MenuManager.Instance.OpenMessagePopup("Se ha perdido la conexión con el servidor.");
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
     }
 
     #endregion
@@ -217,7 +223,6 @@ public class WQRelayManager : NetworkManager
         BannerNetwork bannerNetwork = banner.GetComponent<BannerNetwork>();
         bannerNetwork.position = new Vector2(positions[connBanners], 0);
         clientPanels[conn] = bannerNetwork;
-
         NetworkServer.AddPlayerForConnection(conn, banner);
     }
 
@@ -243,6 +248,32 @@ public class WQRelayManager : NetworkManager
 
     #endregion
 
+    #region Load Game Lobby
+
+    private void LoadBanner(NetworkConnectionToClient conn)
+    {
+        // FIXME: Revisar si el uid coincide con el del jugador
+
+
+        // Bloquear botones de cambio de personaje
+
+        // Asignar el banner al jugador
+        clientPanels[conn] = bannersDisconnected[connBanners];
+        NetworkServer.AddPlayerForConnection(conn, bannersDisconnected[connBanners].gameObject);
+    }
+
+    public void SetupBannerDisconnected()
+    {
+        GameObject banner = Instantiate(bannerPrefab);
+        BannerNetwork bannerNetwork = banner.GetComponent<BannerNetwork>();
+        bannerNetwork.position = new Vector2(positions[connBannersDisconnected], 0);
+        connBannersDisconnected++;
+    }
+
+    // FIXME: disconnected banner 
+
+    #endregion
+
     #region Game Spawner
 
     private void SetupPlayer(NetworkConnectionToClient conn)
@@ -256,22 +287,22 @@ public class WQRelayManager : NetworkManager
         playerManager.Data.SetPlayerData(playerData);
         playerManager.Data.Initialize();
 
-        int characterID = playerData.CharacterID;
-        if (characterID > 0)
-        {
-            GameObject character = Instantiate(charactersDB.GetModel(characterID), playerManager.transform);
-            Animator animator = character.GetComponent<Animator>();
-
-            NetworkAnimator networkAnimator = playerManager.GetComponent<NetworkAnimator>();
-            networkAnimator.animator = animator;
-            playerManager.Animator = animator;
-            playerManager.Movement.Animator = animator;
-
-            GameObject characterObject = playerManager.transform.Find("Character").gameObject;
-            Destroy(characterObject);
-        }
-
         NetworkServer.AddPlayerForConnection(conn, player);
+    }
+
+    public void UpdateCharacter(PlayerNetData player, int characterID)
+    {
+        PlayerNetManager playerManager = player.gameObject.GetComponent<PlayerNetManager>();
+        GameObject character = Instantiate(charactersDB.GetModel(characterID), player.transform);
+        Animator animator = character.GetComponent<Animator>();
+
+        NetworkAnimator networkAnimator = playerManager.GetComponent<NetworkAnimator>();
+        networkAnimator.animator = animator;
+        playerManager.Animator = animator;
+        playerManager.Movement.Animator = animator;
+
+        GameObject characterObject = playerManager.transform.Find("Character").gameObject;
+        Destroy(characterObject);
     }
 
     private IEnumerator InitializeGame()
@@ -283,6 +314,16 @@ public class WQRelayManager : NetworkManager
     #endregion
 
     #region Relay Methods
+
+    private void DefaultServer()
+    {
+        //newGame = true;
+        connBanners = 0;
+        connPlayers = 0;
+        connBannersDisconnected = 0;
+        bannersDisconnected.Clear();
+        clientPanels.Clear();
+    }
 
     private async Task SetupRelay()
     {
@@ -355,27 +396,27 @@ public class WQRelayManager : NetworkManager
         utpTransport.GetRelayRegions(onSuccess, onFailure);
     }
 
-public async Task<bool> StartRelayHostAsync(int maxPlayers, string regionId = null)
-{
-    TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-
-    utpTransport.useRelay = true;
-    utpTransport.AllocateRelayServer(maxPlayers, regionId,
-    (string joinCode) =>
+    public async Task<bool> StartRelayHostAsync(int maxPlayers, string regionId = null)
     {
-        relayJoinCode = joinCode;
-        Debug.Log($"Relay join code: {joinCode}");
-        StartHost();
-        tcs.SetResult(true);
-    },
-    () =>
-    {
-        UtpLog.Error("Failed to start a Relay host.");
-        tcs.SetResult(false);
-    });
+        TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
 
-    return await tcs.Task;
-}
+        utpTransport.useRelay = true;
+        utpTransport.AllocateRelayServer(maxPlayers, regionId,
+        (string joinCode) =>
+        {
+            relayJoinCode = joinCode;
+            Debug.Log($"Relay join code: {joinCode}");
+            StartHost();
+            tcs.SetResult(true);
+        },
+        () =>
+        {
+            UtpLog.Error("Failed to start a Relay host.");
+            tcs.SetResult(false);
+        });
+
+        return await tcs.Task;
+    }
 
     public void JoinStandardServer()
     {
@@ -403,7 +444,7 @@ public async Task<bool> StartRelayHostAsync(int maxPlayers, string regionId = nu
         },
         () =>
         {
-            UtpLog.Error("Failed to join Relay server.");
+            Debug.Log("Failed to join Relay server.");
             tcs.SetResult(false);
         });
 
@@ -411,4 +452,5 @@ public async Task<bool> StartRelayHostAsync(int maxPlayers, string regionId = nu
     }
 
     #endregion
+
 }

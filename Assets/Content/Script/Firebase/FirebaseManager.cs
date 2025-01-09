@@ -7,7 +7,7 @@ using System;
 using Firebase.Firestore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mirror.Examples.Basic;
+using UnityEngine.SceneManagement;
 
 public class FirebaseManager : MonoBehaviour
 {
@@ -20,31 +20,13 @@ public class FirebaseManager : MonoBehaviour
     private FirebaseUser user;
     private FirebaseFirestore firestore;
     private Coroutine syncProfileCoroutine;
-
-    // Login Variables
-    [Space]
-    [Header("Login")]
-    [SerializeField] private TMP_InputField emailLoginField;
-    [SerializeField] private TMP_InputField passwordLoginField;
-
-    // Registration Variables
-    [Space]
-    [Header("Registration")]
-    [SerializeField] private TMP_InputField nameRegisterField;
-    [SerializeField] private TMP_InputField emailRegisterField;
-    [SerializeField] private TMP_InputField passwordRegisterField;
-    [SerializeField] private TMP_InputField confirmPasswordRegisterField;
-
-    [Space]
-    [Header("Content")]
-    [SerializeField] private Content content;
+    public bool logged = false;
 
     #region Initialization
 
     private void Awake()
     {
         CreateInstance();
-        content.InitializateLocalContent();
         StartCoroutine(CheckAndFixDependenciesAsync());
     }
 
@@ -91,7 +73,7 @@ public class FirebaseManager : MonoBehaviour
 
     private IEnumerator CheckForAutoLogin()
     {
-        //Logout();
+        //Logout(); // Uncomment to test login
         if (user != null)
         {
             var reloadUser = user.ReloadAsync();
@@ -102,21 +84,20 @@ public class FirebaseManager : MonoBehaviour
         }
         else
         {
-            LoginManager.Instance.OpenLoginPanel();
+            MenuManager.Instance.OpenLoginMenu();
         }
     }
 
     private void AutoLogin()
     {
-        //FIXME: Revisar si se podra crear perfil solo en local
         if (user != null)
         {
             ProfileUser.LoadProfile(user.UserId);
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+            MenuManager.Instance.OpenStartMenu();
         }
         else
         {
-            LoginManager.Instance.OpenLoginPanel();
+            MenuManager.Instance.OpenLoginMenu();
         }
     }
 
@@ -146,12 +127,15 @@ public class FirebaseManager : MonoBehaviour
 
     public void Login()
     {
-        StartCoroutine(LoginAsync(emailLoginField.text, passwordLoginField.text));
+
+        StartCoroutine(LoginAsync());
     }
 
-    private IEnumerator LoginAsync(string email, string password)
+    private IEnumerator LoginAsync()
     {
         LoginManager.Instance.loginButton.interactable = false;
+        string email = LoginManager.Instance.emailLoginField.text;
+        string password = LoginManager.Instance.passwordLoginField.text;
         var loginTask = auth.SignInWithEmailAndPasswordAsync(email, password);
 
         yield return new WaitUntil(() => loginTask.IsCompleted);
@@ -190,13 +174,13 @@ public class FirebaseManager : MonoBehaviour
             user = loginTask.Result.User;
             LoginManager.Instance.warningLoginText.text = "";
 
-            StartCoroutine(LoadProfile(user.UserId, async (success, profileServer) =>
+            StartCoroutine(LoadProfile(user.UserId, (success, profileServer) =>
             {
                 if (success)
                 {
-                    await ProfileUser.LoadFirebaseProfile(user.UserId, user.DisplayName, profileServer);
+                    ProfileUser.LoadFirebaseProfile(user.UserId, user.DisplayName, profileServer);
                     ProfileUser.LoadProfile(user.UserId);
-                    UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
+                    MenuManager.Instance.OpenStartMenu();
                 }
                 else
                 {
@@ -213,12 +197,16 @@ public class FirebaseManager : MonoBehaviour
 
     public void Register()
     {
-        StartCoroutine(RegisterAsync(nameRegisterField.text, emailRegisterField.text, passwordRegisterField.text, confirmPasswordRegisterField.text));
+        StartCoroutine(RegisterAsync());
     }
 
-    private IEnumerator RegisterAsync(string name, string email, string password, string confirmPassword)
+    private IEnumerator RegisterAsync()
     {
         LoginManager.Instance.registerButton.interactable = false;
+        string name = LoginManager.Instance.nameRegisterField.text;
+        string email = LoginManager.Instance.emailRegisterField.text;
+        string password = LoginManager.Instance.passwordRegisterField.text;
+
         var registerTask = auth.CreateUserWithEmailAndPasswordAsync(email, password);
 
         yield return new WaitUntil(() => registerTask.IsCompleted);
@@ -278,7 +266,7 @@ public class FirebaseManager : MonoBehaviour
                 CreateProfile(user.UserId);
 
                 LoginManager.Instance.warningRegisterText.text = "";
-                LoginManager.Instance.OpenLoginPanel();
+                MenuManager.Instance.OpenLoginMenu();
             }
         }
     }
@@ -291,6 +279,7 @@ public class FirebaseManager : MonoBehaviour
     {
         auth.SignOut();
         user = null;
+        logged = false;
         Debug.Log("User Signed Out");
     }
 
@@ -369,21 +358,28 @@ public class FirebaseManager : MonoBehaviour
 
                 if (ProfileUser.level > profileServer.Level)
                     updates.Add("Level", ProfileUser.level);
+                else if (ProfileUser.level < profileServer.Level)
+                    ProfileUser.UpdateLevel(profileServer.Level);
 
                 if (ProfileUser.xp > profileServer.Xp)
                     updates.Add("Xp", ProfileUser.xp);
+                else if (ProfileUser.xp < profileServer.Xp)
+                    ProfileUser.UpdateXp(profileServer.Xp);
 
                 if (ProfileUser.averageScore > profileServer.AverageScore)
                     updates.Add("AverageScore", ProfileUser.averageScore);
+                else if (ProfileUser.averageScore < profileServer.AverageScore)
+                    ProfileUser.UpdateAverageScoreUser(profileServer.AverageScore);
 
                 if (ProfileUser.bestScore > profileServer.BestScore)
                     updates.Add("BestScore", ProfileUser.bestScore);
+                else if (ProfileUser.bestScore < profileServer.BestScore)
+                    ProfileUser.UpdateBestScoreUser(profileServer.BestScore);
 
                 if (ProfileUser.playedGames > profileServer.PlayedGames)
                     updates.Add("PlayedGames", ProfileUser.playedGames);
-
-                if (ProfileUser.bGamesProfile != null && ProfileUser.bGamesProfile.id != profileServer.BGamesId)
-                    updates.Add("BGamesId", ProfileUser.bGamesProfile.id);
+                else if (ProfileUser.playedGames < profileServer.PlayedGames)
+                    ProfileUser.UpdatePlayedGames(profileServer.PlayedGames);
 
                 if (updates.Count == 0) return;
 
@@ -512,7 +508,6 @@ public class FirebaseManager : MonoBehaviour
         List<FinishGameData> localHistory = ProfileUser.history;
         int lastGameLocal = localHistory.Count;
         int lastGameFirebase = historyFirebase.Count;
-        Debug.Log($"Local: {lastGameLocal}, Firebase: {lastGameFirebase}");
 
         // Si los tamaños son iguales, no hay nada que actualizar
         if (lastGameLocal == lastGameFirebase) return;
@@ -522,30 +517,25 @@ public class FirebaseManager : MonoBehaviour
             // Historial remoto tiene más juegos, sincroniza al local
             int newGamesCount = lastGameFirebase - lastGameLocal;
             var newGames = historyFirebase.GetRange(lastGameLocal, newGamesCount);
-            Debug.Log($"New games: {newGames.Count}");
 
             foreach (var game in newGames)
             {
-                Debug.Log($"Game {game.gameID}: {game.date}");
                 ProfileUser.history.Add(game);
                 await SaveSystem.SaveHistory(game, 0); // Guardar en local
             }
             PlayerPrefs.SetInt("gameId", lastGameFirebase);
-            Debug.Log("GameId updated:" + lastGameFirebase);
         }
         else if (lastGameLocal > lastGameFirebase)
         {
             // Historial local tiene más juegos, sincroniza al remoto
             int newGamesCount = lastGameLocal - lastGameFirebase;
             var newGames = localHistory.GetRange(lastGameFirebase, newGamesCount);
-            Debug.Log($"New games: {newGames.Count}");
 
             foreach (var game in newGames)
             {
                 await SaveGameHistory(userId, game); // Guardar en Firebase
             }
             PlayerPrefs.SetInt("gameId", lastGameLocal);
-            Debug.Log("GameId updated:" + lastGameLocal);
         }
     }
 

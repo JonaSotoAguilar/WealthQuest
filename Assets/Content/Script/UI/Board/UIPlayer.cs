@@ -11,7 +11,9 @@ using UnityEngine.UI;
 public class UIPlayer : MonoBehaviour
 {
     private static CultureInfo chileanCulture = new CultureInfo("es-CL");
+    [Header("System")]
     [SerializeField] private MultiplayerEventSystem systemLocal;
+    [SerializeField] public CanvasGroup canvasGroupUI;
 
     [Header("Questions")]
     [SerializeField] private GameObject questionPanel;
@@ -81,6 +83,8 @@ public class UIPlayer : MonoBehaviour
 
         if (systemLocal != null) systemLocal.SetSelectedGameObject(optionButtons[0].gameObject);
         else EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
+
+        PauseMenu.SetCanvasGroup(canvasGroupUI);
     }
 
     void Answer(int index, QuestionData questionData)
@@ -104,6 +108,11 @@ public class UIPlayer : MonoBehaviour
 
     #region Attempts
 
+    public void UpdateAttempts(int attempts)
+    {
+        attemptsValue.text = attempts.ToString();
+    }
+
     public void ShowAttempts(bool show)
     {
         if (show)
@@ -125,8 +134,6 @@ public class UIPlayer : MonoBehaviour
     {
         OnAttemptFinished?.Invoke(false);
     }
-
-
 
     #endregion
 
@@ -196,6 +203,7 @@ public class UIPlayer : MonoBehaviour
             ResetAmount();
             ShowInvest(true);
         }
+        PauseMenu.SetCanvasGroup(canvasGroupUI);
     }
 
     public bool ActiveCards()

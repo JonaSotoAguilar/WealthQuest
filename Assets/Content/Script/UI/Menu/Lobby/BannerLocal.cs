@@ -45,8 +45,8 @@ public class BannerLocal : MonoBehaviour
         changeName.gameObject.SetActive(active);
         nextCharacter.gameObject.SetActive(active);
         previousCharacter.gameObject.SetActive(active);
-        deleteCharacter.SetActive(active);
         connectedText.gameObject.SetActive(!active);
+        if (deleteCharacter != null) deleteCharacter.SetActive(active);
     }
 
     #region Character Selection

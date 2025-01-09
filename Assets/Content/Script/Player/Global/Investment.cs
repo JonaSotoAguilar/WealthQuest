@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using Mirror;
+using UnityEngine;
 
 [System.Serializable]
 public class Investment
 {
-    private string nameInvestment;
-    private int turns;
-    private int capital;
-    private int nextDividend;
-    private List<float> pctChanges;
-    private List<float> pctDividend;
+    [SerializeField] private string nameInvestment;
+    [SerializeField] private int turns;
+    [SerializeField] private int capital;
+    [SerializeField] private int nextDividend;
+    [SerializeField] private List<float> pctChanges;
+    [SerializeField] private List<float> pctDividend;
 
     public string NameInvestment { get => nameInvestment; set => nameInvestment = value; }
     public int Turns { get => turns; set => turns = value; }

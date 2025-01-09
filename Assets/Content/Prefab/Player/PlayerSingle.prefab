@@ -3169,6 +3169,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70de82bd7b941be489266862654d9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerData:
+    uid: 
+    nickName: 
+    characterID: 0
+    finalScore: 0
+    position: 0
+    points: 0
+    level: 0
+    money: 0
+    salary: 0
+    invest: 0
+    debt: 0
+    income: 0
+    expense: 0
+    investments: []
+    expenses: []
   interest: 0.05
 --- !u!114 &784110613913328087
 MonoBehaviour:
@@ -3618,6 +3634,7 @@ GameObject:
   - component: {fileID: 7084525730741350789}
   - component: {fileID: 5664541011733755909}
   - component: {fileID: 3199816034673931371}
+  - component: {fileID: 273439506905562143}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -3723,6 +3740,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   systemLocal: {fileID: 0}
+  canvasGroupUI: {fileID: 273439506905562143}
   questionPanel: {fileID: 4654457015005589113}
   questionText: {fileID: 3487659721950645901}
   optionButtons:
@@ -3746,6 +3764,18 @@ MonoBehaviour:
   cancelButton: {fileID: 6075536853004393462}
   minInvestment: 100
   amountChange: 100
+--- !u!225 &273439506905562143
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8252874017373462417}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8602620867590486084
 GameObject:
   m_ObjectHideFlags: 0

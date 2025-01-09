@@ -17,11 +17,11 @@ public class PlayerData
     [SerializeField] private int salary;
     [SerializeField] private int invest;
     [SerializeField] private int debt;
-    [SerializeField] private List<Investment> investments = new List<Investment>();
-    [SerializeField] private List<Expense> expenses = new List<Expense>();
-
     [SerializeField] private int income;
     [SerializeField] private int expense;
+
+    [SerializeField] private List<Investment> investments = new List<Investment>();
+    [SerializeField] private List<Expense> expenses = new List<Expense>();
 
     // Propiedades sin cambios
     public string UID { get => uid; set => uid = value; }

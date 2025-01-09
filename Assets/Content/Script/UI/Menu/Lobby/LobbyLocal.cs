@@ -13,62 +13,42 @@ using UnityEngine.SceneManagement;
 public class LobbyLocal : MonoBehaviour
 {
     private const string SCENE_GAME = "LocalBoard";
+
+    [Header("Game Data")]
     [SerializeField] private GameData gameData;
-
-    [Header("Mode")]
-    [SerializeField] private TMP_Dropdown yearDropdown;
-    [SerializeField] private TextMeshProUGUI modeText;
-    private int mode = 0;
-
-    [Header("Content")]
     [SerializeField] private Content content;
+
+    [Space, Header("UI Elements")]
+    [SerializeField] private TextMeshProUGUI modeText;
+    [SerializeField] private TextMeshProUGUI readyText;
+    [SerializeField] private TMP_Dropdown yearDropdown;
     [SerializeField] private TMP_Dropdown contentDropdown;
 
-    [Header("Buttons")]
+    [Space, Header("Game Actions")]
     [SerializeField] private Button startButton;
 
-    [Header("Players Panel")]
+    [Space, Header("Banners")]
+    [SerializeField] private GameObject bannerPrefab;
     [SerializeField] private GameObject bannerDisconnectedPrefab;
     [SerializeField] private GameObject parentBannerPanel;
-
-    [Header("Players Input")]
-    [SerializeField] private PlayerInputManager playerInputManager;
-    [SerializeField] private PlayerInput userInput;
-
-    [Header("Characters")]
-    [SerializeField] private GameObject bannerPrefab;
     [SerializeField] private List<GameObject> bannersPanel;
     [SerializeField] private List<BannerLocal> characters;
 
-    #region Initializers
+    [Space, Header("Inputs")]
+    [SerializeField] private PlayerInputManager playerInputManager;
+    [SerializeField] private PlayerInput userInput;
 
-    public void SetMode(int mode)
-    {
-        this.mode = mode;
-        switch (mode)
-        {
-            case 0:
-                modeText.text = "Un Jugador";
-                break;
-            case 1:
-                modeText.text = "Pasar y Jugar";
-                break;
-            case 2:
-                modeText.text = "Multi Mando";
-                break;
-        }
-    }
+    // Variable control
+    private int mode = 0;
+    private bool newGame = true;
+
+    #region Initializers
 
     public void OnEnable()
     {
         PopulateContentDropdown();
-
-        if (mode == 0) SingleMode();
-        else if (mode == 1) PassMode();
-        else if (mode == 2) MultiMode();
-
-        if (!gameData.DataExists()) NewGameData();
-        else LoadGameData();
+        if (gameData.DataExists()) LoadGameData();
+        else NewGameData();
     }
 
     public void OnDisable()
@@ -77,8 +57,28 @@ public class LobbyLocal : MonoBehaviour
         if (mode == 2) playerInputManager.onPlayerJoined -= OnPlayerJoined;
     }
 
+    public void SetMode(int mode)
+    {
+        this.mode = mode;
+        switch (mode)
+        {
+            case 0:
+                SingleMode();
+                break;
+            case 1:
+                PassMode();
+                break;
+            case 2:
+                MultiMode();
+                break;
+        }
+    }
+
     private void SingleMode()
     {
+        readyText.text = "¡Empieza la partida cuando estés listo!";
+        modeText.text = "Un Jugador";
+        startButton.interactable = true;
         for (int i = 1; i < bannersPanel.Count; i++)
         {
             bannersPanel[i].SetActive(false);
@@ -87,6 +87,9 @@ public class LobbyLocal : MonoBehaviour
 
     private void PassMode()
     {
+        readyText.text = "¡Se requieren 2 jugadores para empezar!";
+        modeText.text = "Pasar y Jugar";
+        startButton.interactable = false;
         for (int i = 1; i < bannersPanel.Count; i++)
         {
             bannersPanel[i].SetActive(true);
@@ -94,15 +97,11 @@ public class LobbyLocal : MonoBehaviour
         }
     }
 
-    private void ActiveButtonAdd(int i)
-    {
-        var button = bannersPanel[i].transform.Find("AddPlayer").GetComponent<Button>();
-        button.gameObject.SetActive(true);
-        button.onClick.AddListener(AddBanner);
-    }
-
     private void MultiMode()
     {
+        readyText.text = "¡Se requieren 2 jugadores para empezar, conecta un mando!";
+        modeText.text = "Multi Mando";
+        startButton.interactable = false;
         playerInputManager.EnableJoining();
         playerInputManager.onPlayerJoined += OnPlayerJoined;
         for (int i = 1; i < bannersPanel.Count; i++)
@@ -113,24 +112,36 @@ public class LobbyLocal : MonoBehaviour
         }
     }
 
-    public void NewGameData()
+    private void ActiveButtonAdd(int i)
     {
+        var button = bannersPanel[i].transform.Find("AddPlayer").GetComponent<Button>();
+        button.gameObject.SetActive(true);
+        button.onClick.AddListener(AddBanner);
+    }
+
+    #endregion
+
+    #region Game Data
+
+    private void NewGameData()
+    {
+        newGame = true;
         yearDropdown.value = 0;
         yearDropdown.interactable = true;
-        startButton.interactable = true;
         characters[0].ActiveChanges(true);
         characters[0].UserPlayer();
     }
 
-    public void LoadGameData()
+    private void LoadGameData()
     {
+        newGame = false;
         // Bloquear seleccion de tema
         contentDropdown.value = content.LocalTopicList.IndexOf(gameData.content);
         contentDropdown.interactable = false;
         // Bloquear seleccion de años
         yearDropdown.value = (gameData.yearsToPlay - 10) / 5;
         yearDropdown.interactable = false;
-        // Cargar jugadores como desconectados 
+        // Cargar jugadores 
         if (mode != 0) CreatePlayers();
     }
 
@@ -146,10 +157,14 @@ public class LobbyLocal : MonoBehaviour
         if (mode == 1)
         {
             startButton.interactable = true;
+            readyText.text = "¡Empieza la partida cuando estén todos listos!";
             for (int i = 1; i < maxPlayers; i++)
                 AddBanner();
         }
-        else if (mode == 2) startButton.interactable = false;
+        else
+        {
+            readyText.text = "¡Esperando a que los jugadores conecten sus mandos!";
+        }
     }
 
     private void MainPlayer()
@@ -182,7 +197,37 @@ public class LobbyLocal : MonoBehaviour
 
     #endregion
 
-    #region Multiplayer
+    #region Multiplayer 
+
+    private void AddBanner()
+    {
+        if (characters.Count >= 4) return;
+        Instantiate(bannerPrefab, parentBannerPanel.transform);
+    }
+
+    private void OnPlayerJoined(PlayerInput playerInput)
+    {
+        int index = playerInput.playerIndex;
+        if (index == 0 || index >= bannersPanel.Count) return;
+        playerInput.actions.FindActionMap("Player").Disable();
+        playerInput.SwitchCurrentActionMap("UI");
+        CreateBanner(playerInput, index);
+    }
+
+    private void CreateBanner(PlayerInput playerInput, int index)
+    {
+        Transform parent = parentBannerPanel.transform;
+        int siblingIndex = bannersPanel[index].transform.GetSiblingIndex();
+        Destroy(bannersPanel[index]);
+        GameObject newPanel = playerInput.gameObject;
+        newPanel.name = "PlayerConnected_" + (index + 1);
+        newPanel.transform.SetParent(parent);
+        newPanel.transform.SetSiblingIndex(siblingIndex);
+        bannersPanel[index] = newPanel;
+        var button = newPanel.transform.Find("DeletePlayer").GetComponent<Button>();
+        button.onClick.AddListener(() => DeletePlayer(newPanel));
+        CreateCharacter(index, newPanel);
+    }
 
     private void CreateCharacter(int index, GameObject newPanel)
     {
@@ -220,45 +265,6 @@ public class LobbyLocal : MonoBehaviour
         }
     }
 
-    #endregion
-
-    #region Multiplayer without Inputs
-
-    private void AddBanner()
-    {
-        if (characters.Count == 4) return;
-        Instantiate(bannerPrefab, parentBannerPanel.transform);
-    }
-
-    #endregion
-
-    #region Multiplayer with Inputs
-
-    private void OnPlayerJoined(PlayerInput playerInput)
-    {
-        Debug.Log("Player Joined");
-        int index = playerInput.playerIndex;
-        if (index == 0 || index >= bannersPanel.Count) return;
-        playerInput.actions.FindActionMap("Player").Disable();
-        playerInput.SwitchCurrentActionMap("UI");
-        CreateBanner(playerInput, index);
-    }
-
-    private void CreateBanner(PlayerInput playerInput, int index)
-    {
-        Transform parent = parentBannerPanel.transform;
-        int siblingIndex = bannersPanel[index].transform.GetSiblingIndex();
-        Destroy(bannersPanel[index]);
-        GameObject newPanel = playerInput.gameObject;
-        newPanel.name = "PlayerConnected_" + (index + 1);
-        newPanel.transform.SetParent(parent);
-        newPanel.transform.SetSiblingIndex(siblingIndex);
-        bannersPanel[index] = newPanel;
-        var button = newPanel.transform.Find("DeletePlayer").GetComponent<Button>();
-        button.onClick.AddListener(() => DeletePlayer(newPanel));
-        CreateCharacter(index, newPanel);
-    }
-
     public void DisconnectPlayers()
     {
         for (int i = 1; i < bannersPanel.Count; i++)
@@ -283,11 +289,16 @@ public class LobbyLocal : MonoBehaviour
 
     private void EnableStartGame()
     {
-        if (!gameData.DataExists()) return;
-        if (gameData.playersData.Count == characters.Count)
+        if (!newGame && mode == 2 && gameData.playersData.Count == characters.Count)
         {
             startButton.interactable = true;
+            readyText.text = "¡Empieza la partida cuando estén todos listos!";
             if (playerInputManager != null) playerInputManager.DisableJoining();
+        }
+        else if (newGame && characters.Count == 2)
+        {
+            startButton.interactable = true;
+            readyText.text = "¡Empieza la partida cuando estén todos listos!";
         }
     }
 
@@ -299,7 +310,7 @@ public class LobbyLocal : MonoBehaviour
     private IEnumerator InitializeGame()
     {
         if (mode == 2) SavePlayerInputs();
-        if (!gameData.DataExists())
+        if (newGame)
         {
             yield return gameData.LoadContent(contentDropdown.options[contentDropdown.value].text);
             CreateNewGameData();

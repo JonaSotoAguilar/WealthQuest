@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.UI;
 
 public class PlayerLocalUI : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class PlayerLocalUI : MonoBehaviour
     private Coroutine questionTimerCoroutine;
 
     bool useBGames = false;
+
+    public UIPlayer UI { get => ui; }
 
     // Cards
     private List<Card> selectedCards = new List<Card>();

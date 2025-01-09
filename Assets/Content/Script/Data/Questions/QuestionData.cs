@@ -8,10 +8,10 @@ public class QuestionData
     public string[] answers;
     public int indexCorrectAnswer;
 
-    // Topic
+    // Content
     public string topic;
     public string subTopic;
-    public int level;
+    public int level; // Difficulty and points
 
     public QuestionData() { }
 

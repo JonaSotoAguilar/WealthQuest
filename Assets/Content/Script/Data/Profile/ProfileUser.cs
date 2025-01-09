@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -15,11 +17,12 @@ public static class ProfileUser
 
     // BGames
     public static BGamesProfile bGamesProfile;
+    private static CancellationTokenSource cancellationTokenSource;
 
     // History
     public static List<FinishGameData> history = new List<FinishGameData>();
 
-    #region Initialization
+    #region Load Profile
 
     public static void LoadProfile(string userId)
     {
@@ -28,14 +31,12 @@ public static class ProfileUser
         // 2. Sincronizar con perfil de Firebase
         FirebaseManager.Instance.UpdateProfile(userId);
         // 3. Cargar perfil de BGames
-        _ = LoadBGamesProfile(PlayerPrefs.GetInt("bGamesId", -1));
+        _ = LoadBGamesProfile();
         // 4. Cargar historial
         LoadHistory();
+        // 5. Logeado
+        FirebaseManager.Instance.logged = true;
     }
-
-    #endregion
-
-    #region Load Profile
 
     public static void LoadLocalProfile(string userId)
     {
@@ -46,10 +47,9 @@ public static class ProfileUser
         averageScore = PlayerPrefs.GetInt("averageScoreUser");
         bestScore = PlayerPrefs.GetInt("bestScoreUser");
         playedGames = PlayerPrefs.GetInt("playedGames");
-
     }
 
-    public static async Task LoadFirebaseProfile(string userId, string displayName, ProfileData data)
+    public static void LoadFirebaseProfile(string userId, string displayName, ProfileData data)
     {
         uid = userId;
         username = displayName;
@@ -58,10 +58,8 @@ public static class ProfileUser
         averageScore = data.AverageScore;
         bestScore = data.BestScore;
         playedGames = data.PlayedGames;
-        bGamesProfile = null;
+        LogoutBGames();
         SaveProfile();
-
-        await LoadBGamesProfile(data.BGamesId);
     }
 
     private static void SaveProfile()
@@ -75,12 +73,21 @@ public static class ProfileUser
         PlayerPrefs.Save();
     }
 
-    public static async Task LoadBGamesProfile(int bGamesId)
+    #endregion
+
+    #region BGames
+
+    public static int GetBGamesID()
     {
+        return PlayerPrefs.GetInt("bGamesId", -1);
+    }
+
+    public static async Task LoadBGamesProfile()
+    {
+        int bGamesId = GetBGamesID();
         if (bGamesId == -1) return;
-        bool success = await HttpService.Authenticator(bGamesId);
-        if (success) Debug.Log("Perfil de BGames cargado exitosamente.");
-        else Debug.Log("Error al cargar perfil de bGames.");
+        await HttpService.Authenticator(bGamesId);
+        //StartPeriodicUpdates(TimeSpan.FromMinutes(5));
     }
 
     public static void LoadBGamesPlayer(BGamesProfile bgames)
@@ -89,10 +96,59 @@ public static class ProfileUser
         bGamesProfile = bgames;
     }
 
+    public static void LoginBGames(BGamesProfile bgames)
+    {
+        if (bgames == null) return;
+        bGamesProfile = bgames;
+        PlayerPrefs.SetInt("bGamesId", bgames.id);
+        PlayerPrefs.Save();
+        //StartPeriodicUpdates(TimeSpan.FromMinutes(5));
+    }
+
     public static void LogoutBGames()
     {
         PlayerPrefs.DeleteKey("bGamesId");
+        //StopProfileUpdates();
         bGamesProfile = null;
+    }
+
+    private static void StartPeriodicUpdates(TimeSpan interval)
+    {
+        cancellationTokenSource?.Cancel();
+        cancellationTokenSource = new CancellationTokenSource();
+        CancellationToken token = cancellationTokenSource.Token;
+
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    // Lógica de actualización periódica
+                    await HttpService.Authenticator(GetBGamesID());
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log($"Error en la actualización periódica: {ex.Message}");
+                }
+
+                // Esperar al siguiente intervalo
+                try
+                {
+                    await Task.Delay(interval, token);
+                }
+                catch (TaskCanceledException)
+                {
+                    // Se canceló la tarea
+                    break;
+                }
+            }
+        }, token);
+    }
+
+    public static void StopProfileUpdates()
+    {
+        cancellationTokenSource?.Cancel();
     }
 
     #endregion
@@ -107,43 +163,32 @@ public static class ProfileUser
         FirebaseManager.Instance.UpdateProfile(uid);
     }
 
-    public static void SaveBGamesPlayer(BGamesProfile bgames)
-    {
-        if (bgames == null) return;
-        bGamesProfile = bgames;
-        PlayerPrefs.SetInt("bGamesId", bgames.id);
-        PlayerPrefs.Save();
-        FirebaseManager.Instance.UpdateProfile(uid);
-    }
-
     public static void UpdateStats(FinishGameData data)
     {
-        SaveXPUser(xp + data.score);
+        AddXPUser(xp + data.score);
 
         if (playedGames == 0)
         {
-            SaveAverageScoreUser(data.score);
+            UpdateAverageScoreUser(data.score);
         }
         else
         {
-            SaveAverageScoreUser((averageScore * playedGames + data.score) / (playedGames + 1));
+            UpdateAverageScoreUser((averageScore * playedGames + data.score) / (playedGames + 1));
         }
 
-        SavePlayedGames(playedGames + 1);
+        UpdatePlayedGames(playedGames + 1);
 
         if (bestScore < data.score)
         {
-            SaveBestScoreUser(data.score);
+            UpdateBestScoreUser(data.score);
         }
         FirebaseManager.Instance.UpdateProfile(uid);
     }
 
-    private static void SaveXPUser(int score)
+    private static void AddXPUser(int score)
     {
-        xp = xp + score;
+        UpdateXp(xp + score);
         NextLevel(xp);
-        PlayerPrefs.SetInt("xpUser", xp);
-        PlayerPrefs.Save();
     }
 
     private static void NextLevel(int xp)
@@ -162,21 +207,35 @@ public static class ProfileUser
         return 100 * (level + 1) * (level + 1);
     }
 
-    private static void SaveAverageScoreUser(int average)
+    public static void UpdateXp(int newXP)
+    {
+        xp = newXP;
+        PlayerPrefs.SetInt("xpUser", xp);
+        PlayerPrefs.Save();
+    }
+
+    public static void UpdateLevel(int newLevel)
+    {
+        level = newLevel;
+        PlayerPrefs.SetInt("levelUser", level);
+        PlayerPrefs.Save();
+    }
+
+    public static void UpdateAverageScoreUser(int average)
     {
         averageScore = average;
         PlayerPrefs.SetInt("averageScoreUser", averageScore);
         PlayerPrefs.Save();
     }
 
-    private static void SaveBestScoreUser(int newBestScore)
+    public static void UpdateBestScoreUser(int newBestScore)
     {
         bestScore = newBestScore;
         PlayerPrefs.SetInt("bestScoreUser", bestScore);
         PlayerPrefs.Save();
     }
 
-    private static void SavePlayedGames(int played)
+    public static void UpdatePlayedGames(int played)
     {
         playedGames = played;
         PlayerPrefs.SetInt("playedGames", playedGames);

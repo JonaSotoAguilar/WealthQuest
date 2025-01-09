@@ -33,7 +33,6 @@ public static class SaveSystem
     public static IEnumerator SaveGame(GameData data, int slotData)
     {
         string json = JsonUtility.ToJson(data);
-        Debug.Log(json);
         byte[] encryptedData = EncryptStringToBytes_Aes(json);
         if (!Directory.Exists(saveDirectory)) Directory.CreateDirectory(saveDirectory);
 

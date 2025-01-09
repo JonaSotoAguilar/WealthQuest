@@ -12,10 +12,11 @@ public class Spawner : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject playerSinglePrefab;
     [SerializeField] private GameObject playerMultiPrefab;
-    [SerializeField] private GameObject eventSystem;
+
 
     [Header("Mode")]
-    [SerializeField] private Mode mode;
+    [SerializeField] private GameObject eventSystem;
+    private Mode mode;
 
     private void Start()
     {
@@ -23,18 +24,19 @@ public class Spawner : MonoBehaviour
         switch (mode)
         {
             case Mode.Single:
-                eventSystem.SetActive(true);
                 SpawnSingle();
+                eventSystem.SetActive(true);
                 break;
             case Mode.LocalPass:
-                eventSystem.SetActive(true);
                 SpawnLocalPass();
+                eventSystem.SetActive(true);
                 break;
             case Mode.LocalMulti:
-                eventSystem.SetActive(false);
                 SpawnLocalMulti();
+                eventSystem.SetActive(false);
                 break;
         }
+
         GameLocalManager.InitializeGame();
         Destroy(gameObject);
     }
@@ -92,7 +94,8 @@ public class Spawner : MonoBehaviour
         GameUIManager.InitializeHUD(playerManager.Data.UID, true);
     }
 
-    private GameObject SpawnPrefab(){
+    private GameObject SpawnPrefab()
+    {
         GameObject prefab = null;
         switch (mode)
         {

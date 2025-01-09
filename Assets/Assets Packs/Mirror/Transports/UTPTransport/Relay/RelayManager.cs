@@ -60,7 +60,7 @@ namespace Utp
 			{
 				joinAllocation.Exception.Flatten().Handle((Exception err) =>
 				{
-					UtpLog.Error($"Unable to get Relay allocation from join code, encountered an error: {err.Message}.");
+					Debug.Log($"Unable to get Relay allocation from join code, encountered an error: {err.Message}.");
 
 					return true;
 				});

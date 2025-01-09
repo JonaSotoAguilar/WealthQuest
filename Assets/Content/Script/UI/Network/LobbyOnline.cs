@@ -20,75 +20,50 @@ public class LobbyOnline : NetworkBehaviour
 
     [Header("Game Actions")]
     [SerializeField] private TMP_Dropdown contentDropdown;
-    [SerializeField] private Button startGame;
+    [SerializeField] private Button readyButton;
 
-    // Variables for Content
+    // Code
+    [SyncVar(hook = nameof(OnChangeCode))] private string code;
+
+    // Content
     private readonly SyncList<string> contents = new SyncList<string>();
     [SyncVar(hook = nameof(OnChangeContent))] private int selectedContent = 0;
+
+    // Variables for Year
     [SyncVar(hook = nameof(OnChangeYear))] private int selectedYear = 0;
-    [SyncVar(hook = nameof(OnChangeCode))] private string code;
+
+    // Variables control
+    [SyncVar] private bool newGame = true;
+    [SyncVar] private int readyPlayers = 0;
+    private bool readyLocal = false;
 
     #region Initialization
 
     //FIXME: Reviusar Load Game y reconexion
 
-    private void Start()
-    {
-        if (isClient && isServer)
-        {
-            startGame.onClick.AddListener(StartGameScene);
-            yearDropdown.onValueChanged.AddListener(OnDropdownYearValueChanged);
-            contentDropdown.onValueChanged.AddListener(OnDropdownContentChanged);
-        }
-    }
-
-    public void ShowPanel(bool visible)
-    {
-        gameObject.SetActive(visible);
-    }
-
     public override void OnStartServer()
     {
         base.OnStartServer();
+
+        yearDropdown.onValueChanged.AddListener(OnDropdownYearValueChanged);
+        contentDropdown.onValueChanged.AddListener(OnDropdownContentChanged);
 
         lobbyPanel.SetActive(true);
         code = WQRelayManager.Instance.relayJoinCode;
         YearDropdown();
         PopulateBundleDropdown();
-    }
 
-    private void YearDropdown()
-    {
-        yearDropdown.value = 0;
-        yearDropdown.interactable = true;
+        // New game o load game
+        if (data.DataExists()) LoadGameData();
+        else NewGameData();
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-
         lobbyPanel.SetActive(true);
-        if (isClient && isServer) contentDropdown.interactable = true;
-        else contentDropdown.interactable = false;
-        SetupStartButton();
-
-        // Sincronizar contenido del Dropdown
-        contentDropdown.ClearOptions();
-        foreach (var content in contents)
-        {
-            contentDropdown.options.Add(new TMP_Dropdown.OptionData(content));
-        }
-
-        // Asegurar que el valor inicial sea correcto
-        if (contents.Count > 0)
-        {
-            contentDropdown.value = selectedContent;
-            contentDropdown.captionText.text = contentDropdown.options[selectedContent].text;
-        }
-        else
-        {
-            Debug.LogWarning("No hay opciones disponibles en el Dropdown.");
-        }
+        SetupContentClient();
+        SetupButtons();
     }
 
     public override void OnStopClient()
@@ -103,9 +78,21 @@ public class LobbyOnline : NetworkBehaviour
 
         if (gameObject.activeInHierarchy)
         {
-            MenuManager.Instance.CloseExitOnlineLobbyPopup();
+            MenuManager.Instance.OpenPopupExitOnlineLobby(false);
             MenuManager.Instance.OpenPlayMenu();
         }
+    }
+
+    public void ConfirmReturn()
+    {
+        if (readyLocal) CmdDisconnectPlayer();
+        MenuManager.Instance.OpenPopupExitOnlineLobby(true);
+    }
+
+    public void CancelReturn()
+    {
+        if (readyLocal) ReadyPlayer();
+        MenuManager.Instance.OpenPopupExitOnlineLobby(false);
     }
 
     public void Return()
@@ -118,6 +105,43 @@ public class LobbyOnline : NetworkBehaviour
         {
             WQRelayManager.Instance.StopClient();
         }
+    }
+
+    #endregion
+
+    #region Game data
+
+    [Server]
+    private void NewGameData()
+    {
+        newGame = true;
+        selectedContent = 0;
+        selectedYear = 0;
+    }
+
+    [Server]
+    private void LoadGameData()
+    {
+        newGame = false;
+        selectedContent = content.LocalTopicList.IndexOf(data.content);
+        selectedYear = (data.yearsToPlay - 10) / 5;
+        // FIXME: Cargar banners jugadores como desconectados
+    }
+
+    private void SetupButtons()
+    {
+        if (isClient && isServer)
+        {
+            contentDropdown.interactable = newGame;
+            yearDropdown.interactable = newGame;
+        }
+        else if (isClient)
+        {
+            contentDropdown.interactable = false;
+            yearDropdown.interactable = false;
+        }
+        readyButton.gameObject.SetActive(true);
+        readyButton.interactable = true;
     }
 
     #endregion
@@ -160,16 +184,6 @@ public class LobbyOnline : NetworkBehaviour
 
         contents.Clear();
         contents.AddRange(options);
-
-        // Seleccionar un tema predeterminado
-        if (data.DataExists() && content.LocalTopicList.Contains(data.content))
-        {
-            selectedContent = content.LocalTopicList.IndexOf(data.content);
-        }
-        else
-        {
-            selectedContent = 0;
-        }
     }
 
     public void OnDropdownContentChanged(int topic)
@@ -197,9 +211,29 @@ public class LobbyOnline : NetworkBehaviour
         }
     }
 
+    private void SetupContentClient()
+    {
+        contentDropdown.ClearOptions();
+        foreach (var content in contents)
+            contentDropdown.options.Add(new TMP_Dropdown.OptionData(content));
+
+        if (contents.Count > 0)
+        {
+            contentDropdown.value = selectedContent;
+            contentDropdown.captionText.text = contentDropdown.options[selectedContent].text;
+        }
+    }
+
     #endregion
 
     #region Year
+
+    [Server]
+    private void YearDropdown()
+    {
+        yearDropdown.value = 0;
+        yearDropdown.interactable = true;
+    }
 
     public void OnDropdownYearValueChanged(int year)
     {
@@ -214,29 +248,54 @@ public class LobbyOnline : NetworkBehaviour
 
     private void OnChangeYear(int oldYear, int newYear)
     {
-        Debug.Log("New Year: " + newYear);
         yearDropdown.value = newYear;
+    }
+
+    #endregion
+
+    #region Start Button
+
+    public void ReadyPlayer()
+    {
+        readyLocal = true;
+        readyButton.interactable = false;
+        CmdReadyPlayer();
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdReadyPlayer()
+    {
+        readyPlayers++;
+        Debug.Log("Player ready:" + readyPlayers);
+        if (readyPlayers <= 1) return;
+        if (newGame && readyPlayers == WQRelayManager.Instance.connBanners)
+            StartGameScene();
+        else if (readyPlayers == data.playersData.Count)
+            StartGameScene();
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdDisconnectPlayer()
+    {
+        readyPlayers--;
+        Debug.Log("Player disconnected:" + readyPlayers);
     }
 
     #endregion
 
     #region Start Game
 
-    private void SetupStartButton()
-    {
-        if (isClient && isServer && !data.DataExists()) startGame.interactable = true;
-        else startGame.interactable = false;
-    }
-
-    public void EnableStartButton()
-    {
-        if (isClient && isServer) startGame.interactable = true;
-    }
-
     public void StartGameScene()
     {
+        RpcDesactiveReturn();
         string content = contentDropdown.options[selectedContent].text;
         CmdSavePlayersData(content);
+    }
+
+    [ClientRpc]
+    private void RpcDesactiveReturn()
+    {
+        readyButton.interactable = false;
     }
 
     [Command(requiresAuthority = false)]
@@ -249,6 +308,8 @@ public class LobbyOnline : NetworkBehaviour
     public IEnumerator LoadBoard(string content)
     {
         yield return data.LoadContent(content);
+
+        //FIXME: Revisar NewGame y LoadGame
         if (!data.DataExists())
         {
             CreateNewGameData();
@@ -271,6 +332,6 @@ public class LobbyOnline : NetworkBehaviour
         data.yearsToPlay = years;
     }
 
-
     #endregion
+
 }

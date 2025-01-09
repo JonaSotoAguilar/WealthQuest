@@ -22,10 +22,8 @@ public class ProfileMenu : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playedGames;
 
     [Header("Config")]
-    [SerializeField] private Button returnButton;
     [SerializeField] private Button configButton;
     [SerializeField] private GameObject configPanel;
-    [SerializeField] private Button changeName;
     [SerializeField] private Button loginButton;
     [SerializeField] private Button logoutButton;
 
@@ -38,19 +36,16 @@ public class ProfileMenu : MonoBehaviour
     [SerializeField] private GameObject disconnected;
 
     [Header("bGames Menu")]
-    [SerializeField] private GameObject bGamesMenu;
     [SerializeField] private TMP_InputField bGamesNick;
     [SerializeField] private TMP_InputField bGamesPass;
     [SerializeField] private GameObject invalidMessage;
     [SerializeField] private Button bGamesLogin;
 
     [Header("Change Name")]
-    [SerializeField] private GameObject changeNamePanel;
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private Button changeNameButton;
 
-    #region Initialize
-
+    #region Initialization
 
     private void OnEnable()
     {
@@ -113,24 +108,25 @@ public class ProfileMenu : MonoBehaviour
     {
         connected.SetActive(false);
         disconnected.SetActive(true);
-        loginButton.gameObject.SetActive(true);
-        logoutButton.gameObject.SetActive(false);
-        bGamesUsername.text = "Desconectado";
         bGamesPoints.text = "";
+
+        if (ProfileUser.GetBGamesID() != -1)
+        {
+            bGamesUsername.text = "Sin conexión";
+            loginButton.gameObject.SetActive(false);
+            logoutButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            bGamesUsername.text = "Desconectado";
+            loginButton.gameObject.SetActive(true);
+            logoutButton.gameObject.SetActive(false);
+        }
     }
 
     #endregion
 
     #region Config
-
-    private void ActiveButtons(bool active)
-    {
-        returnButton.interactable = active;
-        configButton.interactable = active;
-        changeName.interactable = active;
-        loginButton.interactable = active;
-        logoutButton.interactable = active;
-    }
 
     public void ShowConfigPanel()
     {
@@ -212,24 +208,17 @@ public class ProfileMenu : MonoBehaviour
 
     public void ShowBGamesMenu(bool show)
     {
-        bGamesMenu.SetActive(show);
-        if (show)
-        {
-            bGamesNick.text = "";
-            bGamesPass.text = "";
-            invalidMessage.SetActive(false);
-            ActiveButtons(false);
-        }
-        else
-        {
-            ActiveButtons(true);
-        }
+        bGamesNick.text = "";
+        bGamesPass.text = "";
+        invalidMessage.SetActive(false);
+        MenuManager.Instance.OpenBGamesLoginPopup(show);
     }
 
     public void LogoutBGames()
     {
         ProfileUser.LogoutBGames();
         WithoutBGames();
+        MenuManager.Instance.OpenBGamesLogoutPopup(false);
     }
 
     public void LoginBGames()
@@ -265,18 +254,10 @@ public class ProfileMenu : MonoBehaviour
 
     public void ShowChangeName(bool show)
     {
-        changeNamePanel.SetActive(show);
-        if (show)
-        {
-            nameInput.text = ProfileUser.username;
-            nameInput.Select();
-            nameInput.ActivateInputField();
-            ActiveButtons(false);
-        }
-        else
-        {
-            ActiveButtons(true);
-        }
+        nameInput.text = ProfileUser.username;
+        nameInput.Select();
+        nameInput.ActivateInputField();
+        MenuManager.Instance.OpenChangeNamePopup(show);
     }
 
     public void ChangeName()

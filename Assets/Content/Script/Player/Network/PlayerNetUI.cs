@@ -12,7 +12,7 @@ public class PlayerNetUI : NetworkBehaviour
     private List<QuestionData> questions = new List<QuestionData>();
     private int levelQuestion = 0;
     private string topicQuestion;
-    [SyncVar] private int attempts = 2;
+    [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
     private bool useBGames = false;
     [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 15f;
 
@@ -126,11 +126,8 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void StartQuestionTimer()
     {
-        if (timeRemaining > 0)
-        {
-            StopCoroutine(nameof(QuestionTimer));
-        }
-        timeRemaining = 15f; // Reinicia el tiempo
+        if (timeRemaining > 0) StopCoroutine(nameof(QuestionTimer));
+        timeRemaining = 15f;
         StartCoroutine(nameof(QuestionTimer));
     }
 
@@ -154,6 +151,11 @@ public class PlayerNetUI : NetworkBehaviour
     #endregion
 
     #region Attempts
+
+    private void OnAttemptUpdated(int oldAttempts, int newAttempts)
+    {
+        ui.UpdateAttempts(newAttempts);
+    }
 
     [Server]
     private bool CanPlayBGames()
@@ -328,4 +330,5 @@ public class PlayerNetUI : NetworkBehaviour
     }
 
     #endregion
+
 }

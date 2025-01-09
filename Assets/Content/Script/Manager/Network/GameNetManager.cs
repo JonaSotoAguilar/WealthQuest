@@ -18,7 +18,7 @@ public class GameNetManager : NetworkBehaviour
     [Header("Status")]
     [SerializeField] private GameData gameData;
     private GameStatus status = GameStatus.None;
-    private DateTime initTime;
+    private DateTime currentTime;
 
     // Players
     private List<PlayerNetManager> playersNet = new List<PlayerNetManager>();
@@ -27,7 +27,7 @@ public class GameNetManager : NetworkBehaviour
 
     // SyncVars
     [SyncVar] private string content = "Default";
-    [SyncVar] private TimeSpan timePlayed = new TimeSpan();
+    [SyncVar] private string timePlayed = "00:00:00";
     [SyncVar(hook = nameof(OnChangeYear))] private int currentYear = 0;
 
     # region Getters
@@ -67,7 +67,7 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     public static void InitializeGame()
     {
-        instance.RpcStartIntroCinematic();
+        instance.StartIntroCinematic();
     }
 
     [Server]
@@ -89,7 +89,7 @@ public class GameNetManager : NetworkBehaviour
 
         // 5. Start game
         instance.content = instance.gameData.content;
-        instance.initTime = DateTime.Now;
+        instance.currentTime = DateTime.Now;
         instance.StartTurn();
     }
 
@@ -134,7 +134,7 @@ public class GameNetManager : NetworkBehaviour
 
         if (instance.status == GameStatus.Finish) return;
         instance.NextPlayer();
-        instance.SaveGame(3);
+        instance.SaveGame();
         instance._camera.CurrentCamera(instance.currPlayer.transform);
         instance.StartTurn();
     }
@@ -231,17 +231,24 @@ public class GameNetManager : NetworkBehaviour
     #region Game Data
 
     [Server]
-    private void SaveGame(int slot)
+    private void SaveGame()
     {
-        StartCoroutine(SaveSystem.SaveGame(Data, slot));
+        StartCoroutine(SaveSystem.SaveGame(Data, 3));
     }
 
     [Server]
     private void UpdateTime()
     {
+        // Calcular tiempo transcurrido
         DateTime timeNow = DateTime.Now;
-        gameData.timePlayed = timeNow - initTime;
-        timePlayed = gameData.timePlayed;
+        TimeSpan currentSpan = timeNow - currentTime;
+        currentTime = timeNow;
+
+        // Actualizar tiempo jugado
+        TimeSpan totalSpan = TimeSpan.Parse(gameData.timePlayed);
+        TimeSpan timeSpan = totalSpan + currentSpan;
+        timePlayed = timeSpan.ToString(@"hh\:mm\:ss");
+        gameData.timePlayed = timePlayed;
     }
 
     [Server]
@@ -253,7 +260,7 @@ public class GameNetManager : NetworkBehaviour
 
     private void OnChangeYear(int oldYear, int newYear)
     {
-        GameUIManager.ChangeYear(gameData.currentYear);
+        GameUIManager.ChangeYear(newYear);
     }
 
     [Server]
@@ -267,16 +274,13 @@ public class GameNetManager : NetworkBehaviour
 
     #region Cinematic
 
-    [ClientRpc]
-    private void RpcStartIntroCinematic()
+    [Server]
+    private void StartIntroCinematic()
     {
         if (cinematicDirector != null)
         {
             cinematicDirector.Play();
-
-            // Registrar un evento para cuando termine
-            if (isClient && isServer)
-                cinematicDirector.stopped += OnIntroCinematicEnd;
+            cinematicDirector.stopped += OnIntroCinematicEnd;
         }
         else
         {
@@ -288,14 +292,10 @@ public class GameNetManager : NetworkBehaviour
     {
         if (director == cinematicDirector)
         {
-            // Desregistrar el evento
             cinematicDirector.stopped -= OnIntroCinematicEnd;
-
-            // Continuar con el flujo del juego
             StartGame();
         }
     }
-
 
     #endregion
 

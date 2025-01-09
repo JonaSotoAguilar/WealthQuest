@@ -1736,6 +1736,7 @@ GameObject:
   - component: {fileID: 1088688224335080978}
   - component: {fileID: 120457674535098066}
   - component: {fileID: 3749700747621195867}
+  - component: {fileID: 6699822765789119653}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -1841,6 +1842,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   systemLocal: {fileID: 0}
+  canvasGroupUI: {fileID: 6699822765789119653}
   questionPanel: {fileID: 5553886818483569940}
   questionText: {fileID: 3401203700749493317}
   optionButtons:
@@ -1864,6 +1866,18 @@ MonoBehaviour:
   cancelButton: {fileID: 5389047481059196496}
   minInvestment: 100
   amountChange: 100
+--- !u!225 &6699822765789119653
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4896418692535760012}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &4949004779856343343
 GameObject:
   m_ObjectHideFlags: 0

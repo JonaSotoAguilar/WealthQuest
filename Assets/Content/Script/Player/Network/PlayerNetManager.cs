@@ -25,6 +25,7 @@ public class PlayerNetManager : NetworkBehaviour
     #region Getters
 
     public PlayerNetData Data { get => data; }
+    public PlayerNetUI UI { get => ui; }
     public PlayerMovement Movement { get => movement; }
     public Animator Animator { get => animator; set => animator = value; }
 
@@ -40,22 +41,14 @@ public class PlayerNetManager : NetworkBehaviour
         if (isOwned)
         {
             throwAction = inputActions.FindAction("Throw");
-
-            if (throwAction != null)
-            {
-                throwAction.performed += ctx => Throw();
-                throwAction.Enable();
-            }
+            throwAction.performed += ctx => Throw();
+            throwAction.Enable();
         }
     }
 
     private void OnDestroy()
     {
-        if (throwAction != null)
-        {
-            throwAction.performed -= ctx => Throw();
-            throwAction.Disable();
-        }
+        throwAction.performed -= ctx => Throw();
     }
 
     public override void OnStartServer()
@@ -152,6 +145,5 @@ public class PlayerNetManager : NetworkBehaviour
     }
 
     #endregion
-
 
 }

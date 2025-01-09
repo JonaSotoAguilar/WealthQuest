@@ -10,7 +10,7 @@ public class PlayerNetData : NetworkBehaviour
     // User Data
     [SyncVar] private string uid = "";
     [SyncVar] private string nickName = "";
-    [SyncVar] private int characterID = 0;
+    [SyncVar(hook = nameof(OnCharacterIDChanged))] private int characterID = 0;
     [SyncVar] private int finalScore = 0;
 
     // Game Data
@@ -352,6 +352,12 @@ public class PlayerNetData : NetworkBehaviour
     {
         HUD hud = GameUIManager.GetHUD(uid);
         if (hud != null) hud.UpdateExpense(newExpense);
+    }
+
+    private void OnCharacterIDChanged(int oldID, int newID)
+    {
+        if (newID == 0) return;
+        WQRelayManager.Instance.UpdateCharacter(this, newID);
     }
 
     #endregion

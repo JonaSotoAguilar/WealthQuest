@@ -6,25 +6,20 @@ public class LoginManager : MonoBehaviour
 {
     public static LoginManager Instance;
 
-    [Space]
-    [Header("Login")]
-    [SerializeField] private TMP_InputField emailLoginField;
-    [SerializeField] private TMP_InputField passwordLoginField;
+    [Space, Header("Login")]
+    public TMP_InputField emailLoginField;
+    public TMP_InputField passwordLoginField;
     public Button loginButton;
     public TextMeshProUGUI warningLoginText;
 
     // Registration Variables
-    [Space]
-    [Header("Registration")]
-    [SerializeField] private TMP_InputField nameRegisterField;
-    [SerializeField] private TMP_InputField emailRegisterField;
-    [SerializeField] private TMP_InputField passwordRegisterField;
-    [SerializeField] private TMP_InputField confirmPasswordRegisterField;
+    [Space, Header("Registration")]
+    public TMP_InputField nameRegisterField;
+    public TMP_InputField emailRegisterField;
+    public TMP_InputField passwordRegisterField;
+    public TMP_InputField confirmPasswordRegisterField;
     public Button registerButton;
     public TextMeshProUGUI warningRegisterText;
-
-    [SerializeField] private GameObject loginPanel;
-    [SerializeField] private GameObject registrationPanel;
 
     private void Awake()
     {
@@ -108,28 +103,14 @@ public class LoginManager : MonoBehaviour
         return System.Text.RegularExpressions.Regex.IsMatch(email, emailPattern);
     }
 
-    public void OpenLoginPanel()
-    {
-        ResetLoginFields();
-        loginPanel.SetActive(true);
-        registrationPanel.SetActive(false);
-    }
-
-    private void ResetLoginFields()
+    public void ResetLoginFields()
     {
         emailLoginField.text = "";
         passwordLoginField.text = "";
         warningLoginText.text = "";
     }
 
-    public void OpenRegistrationPanel()
-    {
-        ResetRegistrationFields();
-        registrationPanel.SetActive(true);
-        loginPanel.SetActive(false);
-    }
-
-    private void ResetRegistrationFields()
+    public void ResetRegistrationFields()
     {
         nameRegisterField.text = "";
         emailRegisterField.text = "";

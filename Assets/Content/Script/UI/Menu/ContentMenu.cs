@@ -109,7 +109,7 @@ public class ContentMenu : MonoBehaviour
         });
         changeButton.GetComponent<Button>().onClick.AddListener(() =>
         {
-            gameObject.SetActive(false);
+            MenuManager.Instance.OpenCreateContentMenu();
             createContent.ChangeContent(name, version);
         });
         exportButton.GetComponent<Button>().onClick.AddListener(() =>

@@ -8,6 +8,10 @@ public class MenuManager : MonoBehaviour
 {
     public static MenuManager Instance { get; private set; }
 
+    [Header("Login Menus")]
+    [SerializeField] private GameObject loginMenu;
+    [SerializeField] private GameObject registerMenu;
+
     [Header("Main Menus")]
     [SerializeField] private GameObject startMenu;
     [SerializeField] private GameObject optionMenu;
@@ -29,7 +33,15 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private LoadPopup loadPopup;
     [SerializeField] private GameObject confirmNewGamePopup;
 
-    [Header("Popup Message")]
+    [Header("Content Popup")]
+    [SerializeField] private GameObject confirmCreatePopup;
+
+    [Header("Profile Popup")]
+    [SerializeField] private GameObject bGamesLoginPopup;
+    [SerializeField] private GameObject bGamesLogoutPopup;
+    [SerializeField] private GameObject changeNamePopup;
+
+    [Header("Message Popup")]
     [SerializeField] private GameObject messagePopup;
     [SerializeField] private TextMeshProUGUI messageText;
 
@@ -45,8 +57,10 @@ public class MenuManager : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("Menu Manager Awake");
         CreateInstance();
-        activeMenu = startMenu;
+        activeMenu = loginMenu;
+        if (FirebaseManager.Instance.logged) OpenStartMenu();
     }
 
     private void CreateInstance()
@@ -63,6 +77,26 @@ public class MenuManager : MonoBehaviour
     public void ExitGame()
     {
         Application.Quit();
+    }
+
+    #endregion
+
+    #region Login Menus
+
+    public void OpenLoginMenu()
+    {
+        LoginManager.Instance.ResetLoginFields();
+        activeMenu.SetActive(false);
+        loginMenu.SetActive(true);
+        activeMenu = loginMenu;
+    }
+
+    public void OpenRegistrationMenu()
+    {
+        LoginManager.Instance.ResetRegistrationFields();
+        activeMenu.SetActive(false);
+        registerMenu.SetActive(true);
+        activeMenu = registerMenu;
     }
 
     #endregion
@@ -150,7 +184,43 @@ public class MenuManager : MonoBehaviour
 
     #endregion
 
-    #region Popup Load
+    #region Profile Popup
+
+    public void OpenBGamesLoginPopup(bool active)
+    {
+        CanvasGroup canvasGroup = profileMenu.GetComponent<CanvasGroup>();
+        GroupActive(canvasGroup, !active);
+        bGamesLoginPopup.SetActive(active);
+    }
+
+    public void OpenBGamesLogoutPopup(bool active)
+    {
+        CanvasGroup canvasGroup = profileMenu.GetComponent<CanvasGroup>();
+        GroupActive(canvasGroup, !active);
+        bGamesLogoutPopup.SetActive(active);
+    }
+
+    public void OpenChangeNamePopup(bool active)
+    {
+        CanvasGroup canvasGroup = profileMenu.GetComponent<CanvasGroup>();
+        GroupActive(canvasGroup, !active);
+        changeNamePopup.SetActive(active);
+    }
+
+    #endregion
+
+    #region Content Popup
+
+    public void OpenConfirmCreatePopup(bool active)
+    {
+        CanvasGroup canvasGroup = createContentMenu.GetComponent<CanvasGroup>();
+        GroupActive(canvasGroup, !active);
+        confirmCreatePopup.SetActive(active);
+    }
+
+    #endregion
+
+    #region Load Popup
 
     public void OpenLoadMenu()
     {
@@ -191,7 +261,7 @@ public class MenuManager : MonoBehaviour
 
     #endregion
 
-    #region Popup Mesagge
+    #region Mesagge Popup
 
     public void OpenMessagePopup(string message)
     {
@@ -224,34 +294,20 @@ public class MenuManager : MonoBehaviour
 
     #endregion
 
-    #region Popup Exit
+    #region Exit Popup
 
-    public void OpenExitGamePopup()
+    public void OpenExitGamePopup(bool active)
     {
         CanvasGroup canvasGroup = startMenu.GetComponent<CanvasGroup>();
-        GroupActive(canvasGroup, false);
-        exitGamePopup.SetActive(true);
+        GroupActive(canvasGroup, !active);
+        exitGamePopup.SetActive(active);
     }
 
-    public void CloseExitGamePopup()
-    {
-        CanvasGroup canvasGroup = startMenu.GetComponent<CanvasGroup>();
-        GroupActive(canvasGroup, true);
-        exitGamePopup.SetActive(false);
-    }
-
-    public void OpenPopupExitOnlineLobby()
+    public void OpenPopupExitOnlineLobby(bool active)
     {
         CanvasGroup canvasGroup = lobbyOnlineMenu.GetComponent<CanvasGroup>();
-        GroupActive(canvasGroup, false);
-        exitOnlineLobbyPopup.SetActive(true);
-    }
-
-    public void CloseExitOnlineLobbyPopup()
-    {
-        CanvasGroup canvasGroup = lobbyOnlineMenu.GetComponent<CanvasGroup>();
-        GroupActive(canvasGroup, true);
-        exitOnlineLobbyPopup.SetActive(false);
+        GroupActive(canvasGroup, !active);
+        exitOnlineLobbyPopup.SetActive(active);
     }
 
     #endregion

@@ -22,6 +22,7 @@ public class PlayerLocalManager : MonoBehaviour
     #region Getters
 
     public PlayerLocalData Data { get => data; }
+    public PlayerLocalUI UI { get => ui; }
     public PlayerMovement Movement { get => movement; }
     public Animator Animator { get => animator; set => animator = value; }
 
@@ -43,12 +44,8 @@ public class PlayerLocalManager : MonoBehaviour
     private void SetActions()
     {
         throwAction = inputActions?.FindAction("Throw");
-
-        if (throwAction != null)
-        {
-            throwAction.performed += ctx => OnThrowAction();
-            throwAction.Enable();
-        }
+        throwAction.performed += ctx => OnThrowAction();
+        throwAction.Enable();
     }
 
     private void OnDestroy()
@@ -56,7 +53,6 @@ public class PlayerLocalManager : MonoBehaviour
         if (throwAction != null)
         {
             throwAction.performed -= ctx => OnThrowAction();
-            throwAction.Disable();
         }
     }
 
@@ -73,13 +69,12 @@ public class PlayerLocalManager : MonoBehaviour
         ui.CreateQuestion();
     }
 
-    private void Throw(CallbackContext context)
+    public void Throw(CallbackContext context)
     {
         if (context.phase != InputActionPhase.Performed) return;
         OnThrowAction();
     }
-
-    public void OnThrowAction()
+    private void OnThrowAction()
     {
         if (!rollDice) return;
         DiceRoll(false);

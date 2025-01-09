@@ -5,8 +5,6 @@ using UnityEngine.UI;
 public class OptionMenu : MonoBehaviour
 {
     [Header("Audio")]
-    [SerializeField] private AudioSource musicSource;
-    [SerializeField] private AudioSource sfxSource;
     [SerializeField] private Slider musicSlider;
     [SerializeField] private Slider sfxSlider;
 
@@ -23,15 +21,29 @@ public class OptionMenu : MonoBehaviour
     [SerializeField] private TMP_Dropdown qualityDropdown;
     private int qualityIndex;
 
+    #region Initialization
+
+    private void Awake()
+    {
+        LoadSettings();
+    }
+
+    public void LoadSettings()
+    {
+        LoadVolume();
+        LoadQuality();
+        LoadResolution();
+        GetScreen();
+    }
+
+    #endregion
+
     #region Volume
 
     public void LoadVolume()
     {
         float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.75f);
         float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.75f);
-
-        musicSource.volume = musicVolume;
-        sfxSource.volume = sfxVolume;
 
         musicSlider.value = musicVolume;
         musicSlider.onValueChanged.AddListener(SetMusicVolume);
@@ -42,7 +54,7 @@ public class OptionMenu : MonoBehaviour
 
     public void SetMusicVolume(float volume)
     {
-        musicSource.volume = volume;
+        AudioManager.SetupVolumeMusicMenu(volume);
 
         PlayerPrefs.SetFloat("MusicVolume", volume);
         PlayerPrefs.Save();
@@ -50,7 +62,7 @@ public class OptionMenu : MonoBehaviour
 
     public void SetSFXVolume(float volume)
     {
-        sfxSource.volume = volume;
+        AudioManager.SetupVolumeSFXMenu(volume);
 
         PlayerPrefs.SetFloat("SFXVolume", volume);
         PlayerPrefs.Save();
@@ -62,8 +74,7 @@ public class OptionMenu : MonoBehaviour
 
     private void GetScreen()
     {
-        bool isFullscreen = false;
-        if (Screen.fullScreen) isFullscreen = true;
+        bool isFullscreen = Screen.fullScreen;
         SetFullscreen(isFullscreen);
     }
 

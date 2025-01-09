@@ -1,10 +1,11 @@
 using Mirror;
+using UnityEngine;
 
 [System.Serializable]
 public class Expense
 {
-    private int turns;
-    private int amount;
+    [SerializeField] private int turns;
+    [SerializeField] private int amount;
 
     public int Turns { get => turns; set => turns = value; }
     public int Amount { get => amount; set => amount = value; }

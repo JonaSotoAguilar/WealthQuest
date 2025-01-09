@@ -21,11 +21,11 @@ public class FinishGameData
 
     public FinishGameData() { }
 
-    public FinishGameData(int currentYear, TimeSpan timePlayed, string content, int finalScore)
+    public FinishGameData(int currentYear, string timePlayed, string content, int finalScore)
     {
         gameID = PlayerPrefs.GetInt("gameId", 0) + 1;
         years = currentYear;
-        this.timePlayed = timePlayed.ToString(@"hh\:mm\:ss");
+        this.timePlayed = timePlayed;
         date = DateTime.Now.ToString("dd/MM/yyyy");
         this.content = content;
         this.score = finalScore;

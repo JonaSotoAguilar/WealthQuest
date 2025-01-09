@@ -47,7 +47,7 @@ public static class HttpService
                 int points = await GetPlayerPoints(playerId);
                 profile.points = points;
 
-                ProfileUser.SaveBGamesPlayer(profile);
+                ProfileUser.LoginBGames(profile);
                 Debug.Log($"Jugador encontrado: ID: {profile.id}, Name: {profile.name}, Points: {profile.points}");
                 return true;
             }
@@ -80,7 +80,6 @@ public static class HttpService
 
                 // Guardar el perfil actualizado
                 ProfileUser.LoadBGamesPlayer(profile);
-                Debug.Log($"Jugador autenticado: ID: {profile.id}, Name: {profile.name}, Points: {profile.points}");
                 return true;
             }
             else
@@ -202,7 +201,6 @@ public static class HttpService
                     BGamesAttributes cognitiveAttribute = attributes.Find(attr => attr.name == "Cognitivo");
                     if (cognitiveAttribute != null)
                     {
-                        Debug.Log($"Atributo Cognitivo encontrado con valor: {cognitiveAttribute.data}");
                         return cognitiveAttribute.data;
                     }
                     else
