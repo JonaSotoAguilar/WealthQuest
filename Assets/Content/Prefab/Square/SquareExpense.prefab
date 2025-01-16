@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 9077736000510849499}
   - component: {fileID: 1278638113310023825}
   - component: {fileID: 4975141792843057098}
-  - component: {fileID: 131418015329800574}
+  - component: {fileID: 7006310457005015874}
   m_Layer: 3
   m_Name: SquareExpense
   m_TagString: Untagged
@@ -110,7 +110,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.2, z: 1}
   m_Center: {x: 0, y: 0.1, z: 0}
---- !u!114 &131418015329800574
+--- !u!114 &7006310457005015874
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -119,11 +119,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1239634632422015884}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1065b7ab9f3793843b18d1f410a3e0ce, type: 3}
+  m_Script: {fileID: 11500000, guid: 8f7b957748278be40a34348bfc09ffe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
-  players: []
+  type: 1
 --- !u!1 &1800359906787281638
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   title: Aumento en el turismo trae beneficios
   image: {fileID: 21300000, guid: cb51e3cd1445dcd4794da514e8a6f169, type: 3}
-  amount: 1
+  amount: 600

@@ -4,29 +4,15 @@ using UnityEngine.EventSystems;
 [DisallowMultipleComponent]
 public class ButtonAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, ISubmitHandler, IPointerClickHandler
 {
-    // Event System
-    private EventSystem eventSystem;
-
-    // Enum for selecting color types
-    public enum ColorType
-    {
-        None,
-        Orange
-    }
-
-    private void Awake()
-    {
-        eventSystem = EventSystem.current;
-    }
-
+    
     public void OnPointerEnter(PointerEventData eventData)
     {
-        eventSystem.SetSelectedGameObject(gameObject);
+        OnSelect(eventData);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-
+        OnDeselect(eventData);
     }
 
     public void OnSelect(BaseEventData eventData)

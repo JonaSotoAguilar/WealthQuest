@@ -98,8 +98,8 @@ GameObject:
   - component: {fileID: 4479000543768042793}
   - component: {fileID: 4957417358053548752}
   - component: {fileID: 3182736331935818605}
-  - component: {fileID: 7536672631485155275}
   - component: {fileID: 8491592528188919595}
+  - component: {fileID: 8284297826535921192}
   m_Layer: 3
   m_Name: SquareEvent
   m_TagString: Untagged
@@ -176,20 +176,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &7536672631485155275
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3399206091715100420}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be39abe403afc29499e203a527186f69, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
-  players: []
 --- !u!65 &8491592528188919595
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -211,3 +197,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.2, z: 1}
   m_Center: {x: -0.007371664, y: 0.1, z: 0}
+--- !u!114 &8284297826535921192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3399206091715100420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f7b957748278be40a34348bfc09ffe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
+  type: 0

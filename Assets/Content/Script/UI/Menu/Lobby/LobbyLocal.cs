@@ -16,7 +16,6 @@ public class LobbyLocal : MonoBehaviour
 
     [Header("Game Data")]
     [SerializeField] private GameData gameData;
-    [SerializeField] private Content content;
 
     [Space, Header("UI Elements")]
     [SerializeField] private TextMeshProUGUI modeText;
@@ -136,7 +135,7 @@ public class LobbyLocal : MonoBehaviour
     {
         newGame = false;
         // Bloquear seleccion de tema
-        contentDropdown.value = content.LocalTopicList.IndexOf(gameData.content);
+        contentDropdown.value = ContentData.localContentList.IndexOf(gameData.content);
         contentDropdown.interactable = false;
         // Bloquear seleccion de años
         yearDropdown.value = (gameData.yearsToPlay - 10) / 5;
@@ -183,9 +182,9 @@ public class LobbyLocal : MonoBehaviour
         contentDropdown.ClearOptions();
         List<string> options = new List<string>();
 
-        foreach (var topic in content.LocalTopicList)
+        foreach (var content in ContentData.localContentList)
         {
-            string baseName = SaveSystem.ExtractName(topic);
+            string baseName = SaveService.ExtractNameContent(content);
             options.Add(baseName);
         }
 
@@ -304,15 +303,10 @@ public class LobbyLocal : MonoBehaviour
 
     public void StartGame()
     {
-        StartCoroutine(InitializeGame());
-    }
-
-    private IEnumerator InitializeGame()
-    {
         if (mode == 2) SavePlayerInputs();
         if (newGame)
         {
-            yield return gameData.LoadContent(contentDropdown.options[contentDropdown.value].text);
+            gameData.LoadContent(contentDropdown.options[contentDropdown.value].text);
             CreateNewGameData();
         }
         SceneManager.LoadScene(SCENE_GAME);

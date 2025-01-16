@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 976849536769800497}
   - component: {fileID: 6436360020062590694}
   - component: {fileID: 4364212822533310562}
-  - component: {fileID: 5658961389972891703}
+  - component: {fileID: 1130046733202580020}
   m_Layer: 3
   m_Name: SquareInvest
   m_TagString: Untagged
@@ -110,7 +110,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.2, z: 1}
   m_Center: {x: 0, y: 0.1, z: 0}
---- !u!114 &5658961389972891703
+--- !u!114 &1130046733202580020
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -119,11 +119,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2171052830272604651}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9aa59fe9e27d1664e9f8bd64c4e0e339, type: 3}
+  m_Script: {fileID: 11500000, guid: 8f7b957748278be40a34348bfc09ffe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
-  players: []
+  type: 3
 --- !u!1 &6118640980983623356
 GameObject:
   m_ObjectHideFlags: 0

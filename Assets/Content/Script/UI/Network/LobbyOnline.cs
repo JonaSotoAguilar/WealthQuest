@@ -11,7 +11,6 @@ public class LobbyOnline : NetworkBehaviour
 
     [Header("Game Data")]
     [SerializeField] private GameData data;
-    [SerializeField] private Content content;
 
     [Header("UI Elements")]
     [SerializeField] private TMP_Dropdown yearDropdown;
@@ -21,6 +20,7 @@ public class LobbyOnline : NetworkBehaviour
     [Header("Game Actions")]
     [SerializeField] private TMP_Dropdown contentDropdown;
     [SerializeField] private Button readyButton;
+    [SerializeField] private Button returnButton;
 
     // Code
     [SyncVar(hook = nameof(OnChangeCode))] private string code;
@@ -49,7 +49,7 @@ public class LobbyOnline : NetworkBehaviour
         contentDropdown.onValueChanged.AddListener(OnDropdownContentChanged);
 
         lobbyPanel.SetActive(true);
-        code = WQRelayManager.Instance.relayJoinCode;
+        code = RelayService.Instance.relayJoinCode;
         YearDropdown();
         PopulateBundleDropdown();
 
@@ -61,15 +61,27 @@ public class LobbyOnline : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        lobbyPanel.SetActive(true);
-        SetupContentClient();
-        SetupButtons();
+
+        Debug.Log("Status game:" + RelayService.Instance.gameState);
+        if (RelayService.Instance.IsGameLobby())
+        {
+            lobbyPanel.SetActive(true);
+            SetupContentClient();
+            SetupButtons();
+        }
+        else
+        {
+            lobbyPanel.SetActive(false);
+        }
     }
 
     public override void OnStopClient()
     {
         base.OnStopClient();
+        Debug.Log("Stop client:" + RelayService.Instance.gameState);
+        if (!RelayService.Instance.IsGameLobby()) return;
 
+        lobbyPanel.SetActive(false);
         if (contentDropdown != null)
         {
             contentDropdown.onValueChanged.RemoveAllListeners();
@@ -99,11 +111,11 @@ public class LobbyOnline : NetworkBehaviour
     {
         if (isClient && isServer)
         {
-            WQRelayManager.Instance.StopHost();
+            RelayService.Instance.StopHost();
         }
         else if (isClient)
         {
-            WQRelayManager.Instance.StopClient();
+            RelayService.Instance.StopClient();
         }
     }
 
@@ -123,7 +135,7 @@ public class LobbyOnline : NetworkBehaviour
     private void LoadGameData()
     {
         newGame = false;
-        selectedContent = content.LocalTopicList.IndexOf(data.content);
+        selectedContent = ContentData.localContentList.IndexOf(data.content);
         selectedYear = (data.yearsToPlay - 10) / 5;
         // FIXME: Cargar banners jugadores como desconectados
     }
@@ -173,9 +185,9 @@ public class LobbyOnline : NetworkBehaviour
     {
         List<string> options = new List<string>();
 
-        foreach (var topic in content.LocalTopicList)
+        foreach (var content in ContentData.localContentList)
         {
-            string baseName = SaveSystem.ExtractName(topic);
+            string baseName = SaveService.ExtractNameContent(content);
             if (!string.IsNullOrEmpty(baseName))
             {
                 options.Add(baseName);
@@ -259,6 +271,7 @@ public class LobbyOnline : NetworkBehaviour
     {
         readyLocal = true;
         readyButton.interactable = false;
+        returnButton.interactable = false;
         CmdReadyPlayer();
     }
 
@@ -268,7 +281,7 @@ public class LobbyOnline : NetworkBehaviour
         readyPlayers++;
         Debug.Log("Player ready:" + readyPlayers);
         if (readyPlayers <= 1) return;
-        if (newGame && readyPlayers == WQRelayManager.Instance.connBanners)
+        if (newGame && readyPlayers == RelayService.Instance.connBanners)
             StartGameScene();
         else if (readyPlayers == data.playersData.Count)
             StartGameScene();
@@ -287,33 +300,28 @@ public class LobbyOnline : NetworkBehaviour
 
     public void StartGameScene()
     {
-        RpcDesactiveReturn();
+
         string content = contentDropdown.options[selectedContent].text;
         CmdSavePlayersData(content);
-    }
-
-    [ClientRpc]
-    private void RpcDesactiveReturn()
-    {
-        readyButton.interactable = false;
     }
 
     [Command(requiresAuthority = false)]
     private void CmdSavePlayersData(string content)
     {
-        StartCoroutine(LoadBoard(content));
+        LoadBoard(content);
     }
 
     [Server]
-    public IEnumerator LoadBoard(string content)
+    public void LoadBoard(string content)
     {
-        yield return data.LoadContent(content);
+        RpcReadyGame();
+        data.LoadContent(content);
 
         //FIXME: Revisar NewGame y LoadGame
         if (!data.DataExists())
         {
             CreateNewGameData();
-            Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = WQRelayManager.Instance.clientPanels;
+            Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = RelayService.Instance.clientPanels;
             foreach (var pair in clientPanels)
             {
                 BannerNetwork bannerPlayer = pair.Value;
@@ -322,7 +330,15 @@ public class LobbyOnline : NetworkBehaviour
                 data.playersData.Add(player);
             }
         }
-        WQRelayManager.Instance.ServerChangeScene(SCENE_GAME);
+        RelayService.Instance.GameReady();
+        RelayService.Instance.ServerChangeScene(SCENE_GAME);
+    }
+
+    [ClientRpc]
+    private void RpcReadyGame()
+    {
+        returnButton.interactable = false;
+        RelayService.Instance.GameReady();
     }
 
     private void CreateNewGameData()
@@ -330,6 +346,7 @@ public class LobbyOnline : NetworkBehaviour
         data.mode = 3;
         int years = 10 + (selectedYear * 5);
         data.yearsToPlay = years;
+        //data.yearsToPlay = 2; // Para pruebas
     }
 
     #endregion

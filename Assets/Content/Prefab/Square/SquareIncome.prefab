@@ -99,7 +99,7 @@ GameObject:
   - component: {fileID: 831885383913679002}
   - component: {fileID: 476326728974929582}
   - component: {fileID: -1717598170280323488}
-  - component: {fileID: 6707038561178666621}
+  - component: {fileID: 5972297079085583909}
   m_Layer: 3
   m_Name: SquareIncome
   m_TagString: Untagged
@@ -197,7 +197,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.2, z: 1}
   m_Center: {x: -0.007371664, y: 0.1, z: 0}
---- !u!114 &6707038561178666621
+--- !u!114 &5972297079085583909
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -206,8 +206,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 2379699470888432521}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a3cc9d4b00085c4ba6fdacfa4919fdb, type: 3}
+  m_Script: {fileID: 11500000, guid: 8f7b957748278be40a34348bfc09ffe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   data: {fileID: 11400000, guid: 0e469a3efbd0847428c3dff59e26e2bf, type: 2}
-  players: []
+  type: 2
