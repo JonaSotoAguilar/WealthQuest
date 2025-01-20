@@ -9,6 +9,7 @@ public class BannerNetwork : NetworkBehaviour
     [SyncVar(hook = nameof(OnChangePosition))] public Vector2 position = Vector2.zero;
     [SyncVar(hook = nameof(OnChangeUsername))] private string username = "Jugador_1";
     [SyncVar(hook = nameof(OnChangeCharacter))] private int character = 0;
+    [SyncVar] private int financeLevel = 1;
 
     [Header("Panel Player")]
     [SerializeField] private GameObject panelPlayer;
@@ -31,6 +32,7 @@ public class BannerNetwork : NetworkBehaviour
     public string UID { get => uid; }
     public string Username { get => username; }
     public int Character { get => character; }
+    public int FinanceLevel { get => financeLevel; }
 
     #endregion
 
@@ -43,16 +45,17 @@ public class BannerNetwork : NetworkBehaviour
 
         string uid = ProfileUser.uid;
         string name = ProfileUser.username;
+        int level = ProfileUser.financeLevel;
 
-        CmdSetProfilePlayer(uid, name, 0);
+        CmdSetProfilePlayer(uid, name, level);
     }
 
     [Command]
-    private void CmdSetProfilePlayer(string uidProfile, string nameProfile, int charID)
+    private void CmdSetProfilePlayer(string uidProfile, string nameProfile, int level)
     {
         uid = uidProfile;
         username = nameProfile;
-        character = charID;
+        financeLevel = level;
     }
 
     #endregion

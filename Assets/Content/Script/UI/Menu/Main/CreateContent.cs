@@ -90,7 +90,7 @@ public class CreateContent : MonoBehaviour
             return;
         }
 
-        if (ContentData.ExistsContent(nameInput.text))
+        if (ContentDatabase.ExistsContent(nameInput.text))
         {
             nameError.text = "Ya existe un contenido con ese nombre";
             nameError.gameObject.SetActive(true);
@@ -164,11 +164,11 @@ public class CreateContent : MonoBehaviour
     public void CreateContentBundle()
     {
         confirmButton.interactable = false;
-        List<QuestionData> questionList = new List<QuestionData>();
+        List<Question> questionList = new List<Question>();
 
         foreach (var question in questions)
         {
-            QuestionData questionData = question.CreateQuestionData();
+            Question questionData = question.CreateQuestionData();
             if (questionData == null)
             {
                 nameError.text = "Faltan campos por completar en una pregunta";

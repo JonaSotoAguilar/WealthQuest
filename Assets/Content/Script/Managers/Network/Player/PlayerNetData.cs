@@ -65,6 +65,7 @@ public class PlayerNetData : NetworkBehaviour
 
         position = playerData.Position;
         points = playerData.Points;
+        level = playerData.Level;
 
         money = playerData.Money;
         salary = playerData.Salary;
@@ -123,8 +124,9 @@ public class PlayerNetData : NetworkBehaviour
     [Server]
     private void UpdateLevel()
     {
-        level = Mathf.Min(4, Mathf.FloorToInt(Points / 8) + 1);
-        playerData.Level = level;
+        level = Mathf.Clamp(Level, 1, 3);
+        int additionalLevels = Mathf.FloorToInt(Points / 8);
+        level = Mathf.Clamp(Level + additionalLevels, 1, 3);
     }
 
     [Server]

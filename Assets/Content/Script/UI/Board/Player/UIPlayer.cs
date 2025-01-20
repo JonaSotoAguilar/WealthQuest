@@ -72,7 +72,7 @@ public class UIPlayer : MonoBehaviour
 
     #region QuestionPanel
 
-    public void SetupQuestion(QuestionData questionData, int attemps, bool isOwned)
+    public void SetupQuestion(Question questionData, int attemps, bool isOwned)
     {
         questionText.text = questionData.question;
 
@@ -93,7 +93,7 @@ public class UIPlayer : MonoBehaviour
         PauseMenu.SetCanvasGroup(canvasGroupUI);
     }
 
-    void Answer(int index, QuestionData questionData)
+    void Answer(int index, Question questionData)
     {
         bool isCorrect = index == questionData.indexCorrectAnswer;
 

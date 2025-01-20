@@ -8,10 +8,9 @@ public class PlayerNetUI : NetworkBehaviour
     [SerializeField] private UIPlayer ui;
 
     // Question
-    [SyncVar(hook = nameof(SetupQuestion))] private QuestionData currentQuestion = null;
-    private List<QuestionData> questions = new List<QuestionData>();
-    private int levelQuestion = 0;
-    private string topicQuestion;
+    [SyncVar(hook = nameof(SetupQuestion))] private Question currentQuestion = null;
+    private List<Question> questions = new List<Question>();
+    private int levelQuestion = 1;
     [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
     private bool useBGames = false;
     [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 15f;
@@ -64,15 +63,14 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void GetQuestionsTopic()
     {
-        if (levelQuestion == 0 || topicQuestion == null)
+        if (levelQuestion == 0)
         {
             levelQuestion = GetComponent<PlayerNetData>().Level;
-            topicQuestion = GameNetManager.Data.GetRandomTopicQuestions(levelQuestion);
         }
-        questions = GameNetManager.Data.GetQuestionsByTopic(topicQuestion, levelQuestion);
+        questions = GameNetManager.Data.GetQuestionsByTopic(levelQuestion);
     }
 
-    private void SetupQuestion(QuestionData oldQuestion, QuestionData newQuestion)
+    private void SetupQuestion(Question oldQuestion, Question newQuestion)
     {
         ui.ShowQuestion(false);
         if (newQuestion == null) return;
@@ -90,7 +88,6 @@ public class PlayerNetUI : NetworkBehaviour
     private void ResetQuestionValues()
     {
         levelQuestion = 0;
-        topicQuestion = null;
         attempts = 2;
         currentQuestion = null;
         questions.Clear();

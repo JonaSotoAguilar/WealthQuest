@@ -135,7 +135,7 @@ public class LobbyLocal : MonoBehaviour
     {
         newGame = false;
         // Bloquear seleccion de tema
-        contentDropdown.value = ContentData.localContentList.IndexOf(gameData.content);
+        contentDropdown.value = ContentDatabase.localContentList.IndexOf(gameData.content);
         contentDropdown.interactable = false;
         // Bloquear seleccion de años
         yearDropdown.value = (gameData.yearsToPlay - 10) / 5;
@@ -182,7 +182,7 @@ public class LobbyLocal : MonoBehaviour
         contentDropdown.ClearOptions();
         List<string> options = new List<string>();
 
-        foreach (var content in ContentData.localContentList)
+        foreach (var content in ContentDatabase.localContentList)
         {
             string baseName = SaveService.ExtractNameContent(content);
             options.Add(baseName);

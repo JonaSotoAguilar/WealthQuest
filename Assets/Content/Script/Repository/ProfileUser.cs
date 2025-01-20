@@ -15,6 +15,8 @@ public static class ProfileUser
     public static int financeLevel;
     public static string role;
 
+    private static bool testApplied = true;
+
     // BGames
     public static BGamesProfile bGamesProfile;
 
@@ -33,21 +35,21 @@ public static class ProfileUser
         _ = LoadBGamesProfile();
         // 4. Cargar historial
         LoadHistory();
-        // 5. Logeado
-        FirebaseService.Instance.logged = true;
     }
 
     public static void LoadLocalProfile(string userId)
     {
         uid = userId;
-        username = PlayerPrefs.GetString("username");
-        level = PlayerPrefs.GetInt("levelUser");
-        xp = PlayerPrefs.GetInt("xpUser");
-        averageScore = PlayerPrefs.GetInt("averageScoreUser");
-        bestScore = PlayerPrefs.GetInt("bestScoreUser");
-        playedGames = PlayerPrefs.GetInt("playedGames");
-        financeLevel = PlayerPrefs.GetInt("financeLevel");
-        role = PlayerPrefs.GetString("role");
+        username = PlayerPrefs.GetString("username", "Player");
+        level = PlayerPrefs.GetInt("levelUser", 1);
+        xp = PlayerPrefs.GetInt("xpUser", 0);
+        averageScore = PlayerPrefs.GetInt("averageScoreUser", 0);
+        bestScore = PlayerPrefs.GetInt("bestScoreUser", 0);
+        playedGames = PlayerPrefs.GetInt("playedGames", 0);
+        financeLevel = PlayerPrefs.GetInt("financeLevel", 1);
+        role = PlayerPrefs.GetString("role", "Player");
+
+        testApplied = PlayerPrefs.GetInt("testApplied", 1) == 1;
     }
 
     public static void LoadFirebaseProfile(string userId, string displayName, ProfileData data)
@@ -145,6 +147,8 @@ public static class ProfileUser
         {
             UpdateBestScoreUser(data.score);
         }
+
+        RefreshTest();
         PlayerPrefs.Save();
         FirebaseService.Instance.UpdateProfile(uid);
     }
@@ -235,6 +239,35 @@ public static class ProfileUser
         List<FinishGameData> historyFirebase = await FirebaseService.Instance.LoadGameHistory(uid);
         // 3. Actualizar historiales
         await FirebaseService.Instance.UpdateHistory(uid, historyFirebase);
+    }
+
+    #endregion
+
+    #region Test
+
+    public static bool ApplyTest()
+    {
+        return testApplied;
+    }
+
+    private static void RefreshTest()
+    {
+        // Se aplica cada 3 partidas sino es nivel 3 (máximo)
+        if (financeLevel >= 3 || playedGames % 3 != 0)
+        {
+            UpdateTestApplied(false);
+        }
+        else
+        {
+            UpdateTestApplied(true);
+        }
+    }
+
+    public static void UpdateTestApplied(bool applied)
+    {
+        testApplied = applied;
+        PlayerPrefs.SetInt("testApplied", testApplied ? 1 : 0);
+        PlayerPrefs.Save();
     }
 
     #endregion

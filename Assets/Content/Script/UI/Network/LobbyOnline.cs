@@ -135,7 +135,7 @@ public class LobbyOnline : NetworkBehaviour
     private void LoadGameData()
     {
         newGame = false;
-        selectedContent = ContentData.localContentList.IndexOf(data.content);
+        selectedContent = ContentDatabase.localContentList.IndexOf(data.content);
         selectedYear = (data.yearsToPlay - 10) / 5;
         // FIXME: Cargar banners jugadores como desconectados
     }
@@ -185,7 +185,7 @@ public class LobbyOnline : NetworkBehaviour
     {
         List<string> options = new List<string>();
 
-        foreach (var content in ContentData.localContentList)
+        foreach (var content in ContentDatabase.localContentList)
         {
             string baseName = SaveService.ExtractNameContent(content);
             if (!string.IsNullOrEmpty(baseName))
@@ -326,7 +326,7 @@ public class LobbyOnline : NetworkBehaviour
             {
                 BannerNetwork bannerPlayer = pair.Value;
 
-                PlayerData player = new PlayerData(bannerPlayer.UID, bannerPlayer.Username, bannerPlayer.Character);
+                PlayerData player = new PlayerData(bannerPlayer.UID, bannerPlayer.Username, bannerPlayer.Character, bannerPlayer.FinanceLevel);
                 data.playersData.Add(player);
             }
         }

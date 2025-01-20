@@ -8,6 +8,7 @@ using Firebase.Firestore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
+using Firebase.Extensions;
 
 public class FirebaseService : MonoBehaviour
 {
@@ -20,7 +21,6 @@ public class FirebaseService : MonoBehaviour
     private FirebaseFirestore firestore;
     private Coroutine syncProfileCoroutine;
     [HideInInspector] public DependencyStatus dependencyStatus;
-    [HideInInspector] public bool logged = false;
 
     #region Initialization
 
@@ -93,7 +93,7 @@ public class FirebaseService : MonoBehaviour
         if (user != null)
         {
             ProfileUser.LoadProfile(user.UserId);
-            MenuManager.Instance.OpenStartMenu();
+            MenuManager.Instance.OpenGameMenu();
         }
         else
         {
@@ -180,7 +180,7 @@ public class FirebaseService : MonoBehaviour
                 {
                     ProfileUser.LoadFirebaseProfile(user.UserId, user.DisplayName, profileServer);
                     ProfileUser.LoadProfile(user.UserId);
-                    MenuManager.Instance.OpenStartMenu();
+                    MenuManager.Instance.OpenGameMenu();
                 }
                 else
                 {
@@ -306,8 +306,8 @@ public class FirebaseService : MonoBehaviour
     private void CreateProfile(string userId, string birthDate, string gender)
     {
         int age = CalculateAge(birthDate);
-        int role = LoginManager.Instance.roleDropdown.value;
-        ProfileData profileData = new ProfileData(birthDate, gender, age, role);
+        //int role = LoginManager.Instance.roleDropdown.value;
+        ProfileData profileData = new ProfileData(birthDate, gender, age);
 
         firestore.Collection("users").Document(userId).SetAsync(profileData).ContinueWith(task =>
         {
@@ -340,7 +340,6 @@ public class FirebaseService : MonoBehaviour
     {
         auth.SignOut();
         user = null;
-        logged = false;
         Debug.Log("User Signed Out");
     }
 
@@ -558,7 +557,7 @@ public class FirebaseService : MonoBehaviour
 
             foreach (var game in newGames)
             {
-                await SaveGameHistory(userId, game); // Guardar en Firebase
+                await SaveGameHistory(userId, game);
             }
             PlayerPrefs.SetInt("gameId", lastGameLocal);
         }
@@ -595,6 +594,116 @@ public class FirebaseService : MonoBehaviour
     #endregion
 
     #region Sync Content
+
+    public void UploadContent(Content content)
+    {
+        // Convertir Content a ContentData
+        ContentData contentData = new ContentData(content);
+
+        // Referencia al documento principal (Content)
+        DocumentReference contentDocRef = FirebaseFirestore.DefaultInstance
+            .Collection("contents")
+            .Document(content.uid);
+
+        // Subir el documento ContentData, incluyendo las preguntas
+        contentDocRef.SetAsync(contentData).ContinueWith(task =>
+        {
+            if (task.IsCompletedSuccessfully)
+            {
+                Debug.Log($"Content with ID '{content.uid}' uploaded successfully.");
+            }
+            else
+            {
+                Debug.LogError($"Error uploading content: {task.Exception}");
+            }
+        });
+    }
+
+    // Descargar contenido y preguntas
+
+
+    // Obtener todos los contenidos
+
+
+
+
+    // Actualizar el contenido y las preguntas
+
+    // Sumar una descarga al contenido
+
+    #endregion
+
+    #region Diagnostic Test
+
+    // Obtener un test aleatorio de Firestore
+    public async Task<TestData> GetRandomTestAsync()
+    {
+        List<TestData> testList = new List<TestData>();
+
+        try
+        {
+            CollectionReference testCollection = firestore.Collection("diagnosticTest");
+            QuerySnapshot snapshot = await testCollection.GetSnapshotAsync();
+
+            Debug.Log($"Se han encontrado {snapshot.Count} test(s) en Firestore.");
+            foreach (DocumentSnapshot document in snapshot.Documents)
+            {
+                Debug.Log($"Document ID: {document.Id}");
+                string documentId = document.Id;
+                TestData test = document.ConvertTo<TestData>();
+                Debug.Log($"Test: {test.Questions.Count} questions");
+                testList.Add(test);
+            }
+
+            Debug.Log($"Se han obtenido {testList.Count} test(s) de Firestore.");
+
+            if (testList.Count > 0)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, testList.Count);
+                return testList[randomIndex];
+            }
+            else
+            {
+                Debug.LogWarning("No se encontraron tests en Firestore.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error al obtener los tests: {ex.Message}");
+        }
+
+        return null; // Retorna null si no hay tests o ocurre un error
+    }
+
+    // Subir resultados del test
+    public void SaveTestResults(TestResultsData testResults)
+    {
+        string userId = auth.CurrentUser.UserId;
+
+        // Crear un nuevo documento con un ID aleatorio en Firestore
+        DocumentReference testResultsRef = firestore
+            .Collection("users")
+            .Document(userId)
+            .Collection("testResults")
+            .Document();
+
+        // Subir el documento a Firestore
+        testResultsRef.SetAsync(testResults).ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Error uploading test results: " + task.Exception?.Flatten().Message);
+            }
+            else if (task.IsCanceled)
+            {
+                Debug.LogWarning("Test results upload was canceled.");
+            }
+            else
+            {
+                Debug.Log("Test results uploaded successfully.");
+            }
+        });
+    }
 
 
     #endregion

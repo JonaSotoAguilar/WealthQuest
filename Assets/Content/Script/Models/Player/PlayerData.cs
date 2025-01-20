@@ -42,15 +42,15 @@ public class PlayerData
 
     public PlayerData() { }
 
-    public PlayerData(string uid, string nickName, int characterID)
+    public PlayerData(string uid, string nickName, int characterID, int level = 1)
     {
         this.uid = uid;
         this.nickName = nickName;
         this.characterID = characterID;
+        this.level = level;
 
         position = 0;
         points = 0;
-        level = 1;
 
         money = 1000;
         salary = 1000;

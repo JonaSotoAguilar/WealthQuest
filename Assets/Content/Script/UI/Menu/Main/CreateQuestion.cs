@@ -14,7 +14,7 @@ public class CreateQuestion : MonoBehaviour
 
     [SerializeField] public Button deleteButton;
 
-    public void LoadQuestion(QuestionData questionData)
+    public void LoadQuestion(Question questionData)
     {
         question.text = questionData.question;
         for (int i = 0; i < answers.Length; i++)
@@ -28,7 +28,7 @@ public class CreateQuestion : MonoBehaviour
         levels.value = questionData.level;
     }
 
-    public QuestionData CreateQuestionData()
+    public Question CreateQuestionData()
     {
         if (string.IsNullOrEmpty(question.text) || string.IsNullOrEmpty(topic.text) || string.IsNullOrEmpty(subTopic.text))
         {
@@ -46,7 +46,7 @@ public class CreateQuestion : MonoBehaviour
             }
         }
 
-        return new QuestionData(question.text, answersArray, correctAnswer.value, topic.text, subTopic.text, levels.value);
+        return new Question(question.text, answersArray, correctAnswer.value, topic.text, subTopic.text, levels.value);
     }
 
 }

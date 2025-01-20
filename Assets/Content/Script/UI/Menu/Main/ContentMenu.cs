@@ -10,7 +10,7 @@ using System;
 public class ContentMenu : MonoBehaviour
 {
     [Header("Content")]
-    [SerializeField] private CreateContent createContent;
+    [SerializeField] private CreateContent createContent; //FIXME
     [SerializeField] private GameObject topicPrefab;
     [SerializeField] private Transform container;
     [SerializeField] private TMP_InputField searchInput;
@@ -42,21 +42,21 @@ public class ContentMenu : MonoBehaviour
 
     private IEnumerator InitializeContent()
     {
-        yield return ContentData.InitializeContent();
+        yield return ContentDatabase.InitializeContent();
 
-        foreach (string bundleName in ContentData.updateContentList)
+        foreach (string bundleName in ContentDatabase.localContentList)
+        {
+            CreateContentPanel(bundleName);
+        }
+
+        foreach (string bundleName in ContentDatabase.updateContentList)
         {
             CreateContentPanel(bundleName, true, true);
         }
 
-        foreach (string bundleName in ContentData.remoteContentList)
+        foreach (string bundleName in ContentDatabase.remoteContentList)
         {
             CreateContentPanel(bundleName, false);
-        }
-
-        foreach (string bundleName in ContentData.localContentList)
-        {
-            CreateContentPanel(bundleName);
         }
     }
 
@@ -76,7 +76,7 @@ public class ContentMenu : MonoBehaviour
 
         string name = SaveService.ExtractNameContent(bundleName);
         int version = SaveService.ExtractVersionContent(bundleName);
-        Content content = ContentData.GetContent(name, version);
+        Content content = ContentDatabase.GetContent(name, version);
 
         newPanel.transform.Find("Name").GetComponent<TextMeshProUGUI>().text = name;
         newPanel.transform.Find("Version").GetComponent<TextMeshProUGUI>().text = version + ".0";
@@ -85,6 +85,7 @@ public class ContentMenu : MonoBehaviour
         GameObject downloadedButton = newPanel.transform.Find("Downloaded").gameObject;
         GameObject deleteButton = newPanel.transform.Find("Delete").gameObject;
         GameObject updateButton = newPanel.transform.Find("Update").gameObject;
+        //GameObject uploadButton = newPanel.transform.Find("Upload").gameObject;
 
         GameObject changeButton = newPanel.transform.Find("Change").gameObject;
         GameObject exportButton = newPanel.transform.Find("Export").gameObject;
@@ -100,6 +101,9 @@ public class ContentMenu : MonoBehaviour
             downloadedButton.SetActive(false);
             updateButton.SetActive(true);
             exportButton.SetActive(false);
+
+            //FIXME
+            //uploadButton.SetActive(false);
         }
         else
         {
@@ -113,6 +117,9 @@ public class ContentMenu : MonoBehaviour
             downloadedButton.SetActive(isLocal);
             updateButton.SetActive(false);
             exportButton.SetActive(isLocal);
+
+            //FIXME
+            //uploadButton.SetActive(true);
         }
 
         downloadButton.GetComponent<Button>().onClick.AddListener(() =>
@@ -142,6 +149,11 @@ public class ContentMenu : MonoBehaviour
             MenuManager.Instance.OpenMessagePopup("Contenido exportado con éxito en Descargas.");
         });
 
+        // uploadButton.GetComponent<Button>().onClick.AddListener(() =>
+        // {
+        //     FirebaseService.Instance.UploadContent(content);
+        // });
+
         ShowContent(isLocal, isUpdate, newPanel, searchInput.text.ToLower(), name.ToLower());
     }
 
@@ -158,11 +170,11 @@ public class ContentMenu : MonoBehaviour
     private IEnumerator DownloadBundle(string contentName, GameObject contentPanel)
     {
         contentPanel.transform.Find("Download").GetComponent<Button>().interactable = false;
-        yield return StartCoroutine(ContentData.DownloadContent(contentName));
+        yield return StartCoroutine(ContentDatabase.DownloadContent(contentName));
 
         string name = SaveService.ExtractNameContent(contentName);
         int version = SaveService.ExtractVersionContent(contentName);
-        Content content = ContentData.GetContent(name, version);
+        Content content = ContentDatabase.GetContent(name, version);
 
         contentPanel.transform.Find("Download").gameObject.SetActive(false);
         contentPanel.transform.Find("Downloaded").gameObject.SetActive(true);
@@ -180,11 +192,11 @@ public class ContentMenu : MonoBehaviour
     private IEnumerator UpdateContent(string contentName, GameObject contentPanel)
     {
         contentPanel.transform.Find("Update").GetComponent<Button>().interactable = false;
-        yield return StartCoroutine(ContentData.DownloadUpdateContent(contentName));
+        yield return StartCoroutine(ContentDatabase.DownloadUpdateContent(contentName));
 
         string name = SaveService.ExtractNameContent(contentName);
         int version = SaveService.ExtractVersionContent(contentName);
-        Content content = ContentData.GetContent(name, version);
+        Content content = ContentDatabase.GetContent(name, version);
 
         contentPanel.transform.Find("Update").gameObject.SetActive(false);
         contentPanel.transform.Find("Downloaded").gameObject.SetActive(true);
@@ -202,7 +214,7 @@ public class ContentMenu : MonoBehaviour
 
     private void DeleteLocalTopic(string contentName, GameObject contentPanel)
     {
-        bool success = ContentData.DeleteLocalContent(contentName);
+        bool success = ContentDatabase.DeleteLocalContent(contentName);
 
         if (success)
         {
@@ -306,11 +318,12 @@ public class ContentMenu : MonoBehaviour
 
             if (selectedFilePath.EndsWith(".json"))
             {
-                ImportJson(selectedFilePath);
+                ContentDatabase.ImportJson(selectedFilePath);
             }
             else if (selectedFilePath.EndsWith(".content"))
             {
-                ImportContentFile(selectedFilePath);
+                ContentDatabase.ImportContentFile(selectedFilePath);
+
             }
             else
             {
@@ -321,85 +334,6 @@ public class ContentMenu : MonoBehaviour
         else
         {
             Debug.Log("Selección de archivo cancelada.");
-        }
-    }
-
-    private void ImportJson(string filePath)
-    {
-        try
-        {
-            // Leer el contenido del archivo JSON
-            string jsonContent = File.ReadAllText(filePath);
-
-            // Deserializar el JSON en una lista de preguntas
-            List<QuestionData> questions = JsonUtility.FromJson<QuestionList>($"{{\"questions\":{jsonContent}}}").questions;
-
-            if (questions != null && questions.Count > 0)
-            {
-                // Crear el contenido con el nombre del archivo
-                string fileName = Path.GetFileNameWithoutExtension(filePath);
-                string[] nameParts = fileName.Split('_');
-
-                string name = nameParts[0];
-                int version = nameParts.Length > 1 && int.TryParse(nameParts[1], out int parsedVersion) ? parsedVersion : 1;
-
-                // Crear el nuevo objeto Content
-                Content newContent = new Content(name, questions) { version = version };
-
-                // Guardar el contenido utilizando SaveContent
-                SaveService.SaveContent(newContent);
-            }
-            else
-            {
-                Debug.LogWarning("El JSON no contiene preguntas o el formato no es válido.");
-            }
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"Error al importar el archivo JSON: {ex.Message}");
-        }
-    }
-
-
-    private void ImportContentFile(string filePath)
-    {
-        try
-        {
-            // Leer el contenido del archivo JSON
-            string jsonContent = File.ReadAllText(filePath);
-
-            // Deserializar el JSON en una lista de preguntas
-            List<QuestionData> questions = JsonUtility.FromJson<QuestionList>($"{{\"questions\":{jsonContent}}}").questions;
-
-            if (questions != null && questions.Count > 0)
-            {
-                Debug.Log($"Importadas {questions.Count} preguntas desde el archivo.");
-
-                // Crear el objeto Content
-                string fileName = Path.GetFileNameWithoutExtension(filePath);
-                string[] nameParts = fileName.Split('_');
-
-                string name = nameParts[0];
-                int version = nameParts.Length > 1 && int.TryParse(nameParts[1], out int parsedVersion) ? parsedVersion : 1;
-
-                Content newContent = new Content(name, questions) { version = version };
-
-                // Guardar el contenido usando SaveContent
-                SaveService.SaveContent(newContent);
-
-                // Mostrar mensaje de éxito
-                MenuManager.Instance.OpenMessagePopup("Contenido importado con éxito.");
-            }
-            else
-            {
-                Debug.LogWarning("El archivo no contiene preguntas válidas o el formato no es correcto.");
-                MenuManager.Instance.OpenMessagePopup("El archivo no contiene preguntas válidas.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Error al importar el archivo: {ex.Message}");
-            MenuManager.Instance.OpenMessagePopup($"Error al importar el archivo: {ex.Message}");
         }
     }
 

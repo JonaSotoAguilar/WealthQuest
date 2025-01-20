@@ -63,9 +63,10 @@ public class PlayerLocalData : MonoBehaviour
 
     private void UpdateLevel()
     {
-        Level = Mathf.Min(4, Mathf.FloorToInt(Points / 8) + 1);
+        Level = Mathf.Clamp(Level, 1, 3);
+        int additionalLevels = Mathf.FloorToInt(Points / 8);
+        Level = Mathf.Clamp(Level + additionalLevels, 1, 3);
     }
-
 
     public void AddMoney(int amount)
     {

@@ -8,11 +8,10 @@ public class PlayerLocalUI : MonoBehaviour
     [SerializeField] private UIPlayer ui;
 
     // Question
-    private int levelQuestion = 0;
-    private string topicQuestion;
+    private int levelQuestion = 1;
     private int attempts = 2;
-    private List<QuestionData> questions = new List<QuestionData>();
-    private QuestionData currentQuestion;
+    private List<Question> questions = new List<Question>();
+    private Question currentQuestion;
     private Coroutine questionTimerCoroutine;
 
     bool useBGames = false;
@@ -53,19 +52,17 @@ public class PlayerLocalUI : MonoBehaviour
 
     private void GetQuestionsTopic()
     {
-        if (levelQuestion == 0 || topicQuestion == null)
+        if (levelQuestion == 0)
         {
             levelQuestion = GetComponent<PlayerLocalData>().Level;
-            topicQuestion = GameLocalManager.Data.GetRandomTopicQuestions(levelQuestion);
         }
-        questions = GameLocalManager.Data.GetQuestionsByTopic(topicQuestion, levelQuestion);
+        questions = GameLocalManager.Data.GetQuestionsByTopic(levelQuestion);
     }
 
     private void ResetQuestionValues()
     {
         useBGames = false;
         levelQuestion = 0;
-        topicQuestion = null;
         attempts = 2;
         currentQuestion = null;
         questions.Clear();

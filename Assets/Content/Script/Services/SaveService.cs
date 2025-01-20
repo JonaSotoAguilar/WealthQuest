@@ -188,26 +188,26 @@ public static class SaveService
             string nameWithVersion = Path.GetFileNameWithoutExtension(file);
 
             // Guardar el contenido en la lista
-            if (!ContentData.contentList.Any(c => c.uid == content.uid))
+            if (!ContentDatabase.contentList.Any(c => c.uid == content.uid))
             {
-                ContentData.contentList.Add(content);
-                ContentData.localContentList.Add(nameWithVersion);
+                ContentDatabase.contentList.Add(content);
+                ContentDatabase.localContentList.Add(nameWithVersion);
             }
         }
 
         // Posicionar contenido basico como primero
-        int index = ContentData.localContentList.FindIndex(name => Regex.IsMatch(name, @"^Contenido Basico_\d+$"));
+        int index = ContentDatabase.localContentList.FindIndex(name => Regex.IsMatch(name, @"^Contenido Basico_\d+$"));
         if (index != 0 && index != -1)
         {
-            string contenidoBasico = ContentData.localContentList[index];
-            ContentData.localContentList.RemoveAt(index);
-            ContentData.localContentList.Insert(0, contenidoBasico);
+            string contenidoBasico = ContentDatabase.localContentList[index];
+            ContentDatabase.localContentList.RemoveAt(index);
+            ContentDatabase.localContentList.Insert(0, contenidoBasico);
 
-            Content contentDefault = ContentData.contentList.Find(content => content.name == defaultContentName);
+            Content contentDefault = ContentDatabase.contentList.Find(content => content.name == defaultContentName);
             if (contentDefault != null)
             {
-                ContentData.contentList.Remove(contentDefault);
-                ContentData.contentList.Insert(0, contentDefault);
+                ContentDatabase.contentList.Remove(contentDefault);
+                ContentDatabase.contentList.Insert(0, contentDefault);
             }
         }
     }
@@ -247,7 +247,7 @@ public static class SaveService
 
         // Buscar en contentList por uid y actualizar
         string uid = content.uid;
-        Content existingContent = ContentData.contentList.Find(c => c.uid == content.uid);
+        Content existingContent = ContentDatabase.contentList.Find(c => c.uid == content.uid);
         if (existingContent != null)
         {
             if (existingContent.name == content.name &&
@@ -264,11 +264,11 @@ public static class SaveService
             Debug.Log($"Versión actualizada a: {content.version}");
             existingContent.name = content.name;
             existingContent.version = content.version;
-            existingContent.questions = new List<QuestionData>(content.questions);
+            existingContent.questions = new List<Question>(content.questions);
 
             // Actualizar la lista localContentList
-            int index = ContentData.localContentList.FindIndex(name => name.StartsWith($"{content.name}_"));
-            ContentData.localContentList[index] = $"{content.name}_{content.version}";
+            int index = ContentDatabase.localContentList.FindIndex(name => name.StartsWith($"{content.name}_"));
+            ContentDatabase.localContentList[index] = $"{content.name}_{content.version}";
 
             // Eliminar la versión anterior del archivo
             if (File.Exists(oldContentPath))
@@ -281,8 +281,8 @@ public static class SaveService
         {
             // Crear nuevo contenido
             Debug.Log("Nuevo contenido guardado.");
-            ContentData.contentList.Add(content);
-            ContentData.localContentList.Add($"{content.name}_{content.version}");
+            ContentDatabase.contentList.Add(content);
+            ContentDatabase.localContentList.Add($"{content.name}_{content.version}");
         }
 
         // Guardar el contenido en el directorio
@@ -327,7 +327,7 @@ public static class SaveService
             // Deserializar los datos al objeto QuestionList
             Content content = new Content();
             JsonUtility.FromJsonOverwrite(decryptedData, content);
-            ContentData.contentList.Add(content);
+            ContentDatabase.contentList.Add(content);
         }
         catch (Exception ex)
         {
@@ -345,11 +345,11 @@ public static class SaveService
         foreach (var file in files)
         {
             string nameWithVersion = Path.GetFileNameWithoutExtension(file);
-            ContentData.localContentList.RemoveAll(localContent => localContent == nameWithVersion);
+            ContentDatabase.localContentList.RemoveAll(localContent => localContent == nameWithVersion);
 
             string baseName = ExtractNameContent(nameWithVersion);
             int version = ExtractVersionContent(nameWithVersion);
-            ContentData.contentList.RemoveAll(content => content.name == baseName && content.version == version);
+            ContentDatabase.contentList.RemoveAll(content => content.name == baseName && content.version == version);
 
             File.Delete(file);
         }

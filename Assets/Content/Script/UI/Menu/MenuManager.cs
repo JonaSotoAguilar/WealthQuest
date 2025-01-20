@@ -12,6 +12,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private GameObject loginMenu;
     [SerializeField] private GameObject registerMenu;
     [SerializeField] private GameObject forgotMenu;
+    [SerializeField] private GameObject testMenu;
 
     [Header("Main Menus")]
     [SerializeField] private GameObject startMenu;
@@ -60,7 +61,6 @@ public class MenuManager : MonoBehaviour
     {
         CreateInstance();
         activeMenu = loginMenu;
-        if (FirebaseService.Instance.logged) OpenStartMenu();
     }
 
     private void CreateInstance()
@@ -110,6 +110,26 @@ public class MenuManager : MonoBehaviour
     #endregion
 
     #region Main Menus
+
+    public void OpenGameMenu()
+    {
+        Debug.Log("Open Test Menu:" + ProfileUser.ApplyTest());
+        if (ProfileUser.ApplyTest())
+        {
+            OpenTestMenu();
+        }
+        else
+        {
+            OpenStartMenu();
+        }
+    }
+
+    private void OpenTestMenu()
+    {
+        activeMenu.SetActive(false);
+        testMenu.SetActive(true);
+        activeMenu = testMenu;
+    }
 
     public void OpenStartMenu()
     {

@@ -17,7 +17,7 @@ public class SettingsLoad : MonoBehaviour
 
     private void LoadLocalContent()
     {
-        ContentData.InitializateLocalContent();
+        ContentDatabase.InitializateLocalContent();
     }
 
     private void SetFullscreen()

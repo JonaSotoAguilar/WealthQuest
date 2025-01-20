@@ -21,8 +21,8 @@ public class GameData : ScriptableObject
 
     [Space, Header("Content")]
     public string content;
-    public List<QuestionData> allQuestionList;
-    public List<QuestionData> questionList;
+    public List<Question> allQuestionList;
+    public List<Question> questionList;
     public List<ExpenseCard> expenseCards;
     public List<InvestmentCard> investmentCards;
     public List<IncomeCard> incomeCards;
@@ -55,8 +55,8 @@ public class GameData : ScriptableObject
         playersData = new List<PlayerData>();
 
         content = SaveService.defaultContentName;
-        allQuestionList = new List<QuestionData>();
-        questionList = new List<QuestionData>();
+        allQuestionList = new List<Question>();
+        questionList = new List<Question>();
         expenseCards = new List<ExpenseCard>();
         investmentCards = new List<InvestmentCard>();
         incomeCards = new List<IncomeCard>();
@@ -76,7 +76,7 @@ public class GameData : ScriptableObject
 
     public void SavePlayer(string uid, string username, int model)
     {
-        PlayerData data = new PlayerData(uid, username, model);
+        PlayerData data = new PlayerData(uid, username, model, ProfileUser.financeLevel);
         playersData.Add(data);
     }
 
@@ -138,11 +138,11 @@ public class GameData : ScriptableObject
 
     private void LoadQuestions(string content)
     {
-        List<QuestionData> questionList = ContentData.GetContent(content).questions;
+        List<Question> questionList = ContentDatabase.GetContent(content).questions;
 
         if (questionList != null && questionList.Count > 0)
         {
-            allQuestionList = new List<QuestionData>(questionList);
+            allQuestionList = new List<Question>(questionList);
             ResetQuestionList();
         }
     }
@@ -155,7 +155,7 @@ public class GameData : ScriptableObject
     {
         HashSet<string> topics = new HashSet<string>();
 
-        foreach (QuestionData question in allQuestionList)
+        foreach (Question question in allQuestionList)
         {
             if (question.level <= level)
                 topics.Add(question.topic);
@@ -173,30 +173,49 @@ public class GameData : ScriptableObject
         return topicList[randomIndex];
     }
 
-    public List<QuestionData> GetQuestionsByTopic(string topic, int level)
+    public List<Question> GetQuestionsByTopic(int level)
     {
-        List<QuestionData> questions = questionList.Where(q => q.topic == topic && q.level <= level).ToList();
-
-        if (questions.Count == 0)
+        // Intentar obtener preguntas desde el nivel más alto hacia abajo
+        for (int currentLevel = level; currentLevel >= 1; currentLevel--)
         {
-            ResetQuestionsByLevel(level);
-            return GetQuestionsByTopic(topic, level);
+            // Filtrar preguntas por tema y nivel actual
+            List<Question> questions = questionList.Where(q => q.level == currentLevel).ToList();
+
+            // Si se encuentran preguntas, devolverlas
+            if (questions.Count > 0)
+            {
+                return questions;
+            }
         }
 
-        return questions;
+        // Si no hay preguntas en ningún nivel, restaurar niveles y volver a intentarlo
+        ResetQuestionsByLevel(level);
+        return GetQuestionsByTopic(level);
     }
 
     public void ResetQuestionsByLevel(int level)
     {
-        questionList = new List<QuestionData>(allQuestionList.FindAll(q => q.level <= level));
+        // Recuperar preguntas agotadas para el nivel especificado y los niveles inferiores
+        var resetLevels = Enumerable.Range(1, level);
+        foreach (var lvl in resetLevels)
+        {
+            // Restaurar las preguntas de ese nivel (implementación específica)
+            RestoreQuestionsForLevel(lvl);
+        }
+    }
+
+
+    public void RestoreQuestionsForLevel(int level)
+    {
+        questionList = new List<Question>(allQuestionList.FindAll(q => q.level <= level));
     }
 
     public void ResetQuestionList()
     {
-        questionList = new List<QuestionData>(allQuestionList);
+        questionList = new List<Question>(allQuestionList);
     }
 
-    public void DeleteQuestion(QuestionData question)
+    public void DeleteQuestion(Question question)
     {
         questionList.Remove(question);
     }
