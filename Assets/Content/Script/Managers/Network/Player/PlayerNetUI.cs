@@ -13,7 +13,7 @@ public class PlayerNetUI : NetworkBehaviour
     private int levelQuestion = 1;
     [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
     private bool useBGames = false;
-    [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 15f;
+    [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 20f;
 
     // Cards
     private readonly SyncList<Card> selectedCards = new SyncList<Card>();
@@ -138,7 +138,7 @@ public class PlayerNetUI : NetworkBehaviour
     private void StartQuestionTimer()
     {
         if (timeRemaining > 0) StopCoroutine(nameof(QuestionTimer));
-        timeRemaining = 15f;
+        timeRemaining = 20f;
         StartCoroutine(nameof(QuestionTimer));
     }
 

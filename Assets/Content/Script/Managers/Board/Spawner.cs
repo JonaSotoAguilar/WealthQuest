@@ -13,9 +13,9 @@ public class Spawner : MonoBehaviour
     [SerializeField] private GameObject playerSinglePrefab;
     [SerializeField] private GameObject playerMultiPrefab;
 
-
     [Header("Mode")]
     [SerializeField] private GameObject eventSystem;
+    [SerializeField] private PlayerInput inputDevice;
     private Mode mode;
 
     private void Start()
@@ -26,14 +26,17 @@ public class Spawner : MonoBehaviour
             case Mode.Single:
                 SpawnSingle();
                 eventSystem.SetActive(true);
+                inputDevice.enabled = true;
                 break;
             case Mode.LocalPass:
                 SpawnLocalPass();
                 eventSystem.SetActive(true);
+                inputDevice.enabled = true;
                 break;
             case Mode.LocalMulti:
                 SpawnLocalMulti();
                 eventSystem.SetActive(false);
+                inputDevice.enabled = false;
                 break;
         }
 

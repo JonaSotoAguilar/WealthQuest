@@ -22,6 +22,8 @@ public class FirebaseService : MonoBehaviour
     private Coroutine syncProfileCoroutine;
     [HideInInspector] public DependencyStatus dependencyStatus;
 
+    public bool logged = false;
+
     #region Initialization
 
     private void Awake()
@@ -92,6 +94,7 @@ public class FirebaseService : MonoBehaviour
     {
         if (user != null)
         {
+            logged = true;
             ProfileUser.LoadProfile(user.UserId);
             MenuManager.Instance.OpenGameMenu();
         }
@@ -127,7 +130,6 @@ public class FirebaseService : MonoBehaviour
 
     public void Login()
     {
-
         StartCoroutine(LoginAsync());
     }
 
@@ -178,6 +180,7 @@ public class FirebaseService : MonoBehaviour
             {
                 if (success)
                 {
+                    logged = true;
                     ProfileUser.LoadFirebaseProfile(user.UserId, user.DisplayName, profileServer);
                     ProfileUser.LoadProfile(user.UserId);
                     MenuManager.Instance.OpenGameMenu();

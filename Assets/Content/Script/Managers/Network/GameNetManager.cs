@@ -5,6 +5,7 @@ using Mirror;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class GameNetManager : NetworkBehaviour
 {
@@ -19,6 +20,10 @@ public class GameNetManager : NetworkBehaviour
     [SerializeField] private GameData gameData;
     private GameStatus status = GameStatus.None;
     private DateTime currentTime;
+
+    [Header("Animations")]
+    [SerializeField] private GameObject arrowPrefab;
+    private GameObject spawnedArrow;
 
     // Players
     private List<PlayerNetManager> playersNet = new List<PlayerNetManager>();
@@ -62,11 +67,6 @@ public class GameNetManager : NetworkBehaviour
         }
     }
 
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
-    }
-
     public static void PlayerJoined(PlayerNetManager player)
     {
         if (instance == null) return;
@@ -79,7 +79,8 @@ public class GameNetManager : NetworkBehaviour
     {
         if (instance == null) return;
 
-        StartGame();
+        ActiveUI();
+        // StartGame();
         //instance.StartIntroCinematic();
     }
 
@@ -88,21 +89,17 @@ public class GameNetManager : NetworkBehaviour
     {
         if (instance == null) return;
 
-        // 1. Active and Update UI
-        instance.RpcActiveUI();
-        instance.UpdateYear(Data.currentYear);
-
-        // 2. Position players
+        // 1. Position players
         instance.InitializePosition();
 
-        // 3. Status game
+        // 2. Status game
         instance.status = GameStatus.Playing;
         instance.currPlayer = instance.playersNet[Data.turnPlayer];
 
-        // 4. Camera
+        // 3. Camera
         instance._camera.CurrentCamera(instance.currPlayer.transform);
 
-        // 5. Start game
+        // 4. Start game
         instance.content = instance.gameData.content;
         instance.currentTime = DateTime.Now;
         instance.StartTurn();
@@ -228,6 +225,14 @@ public class GameNetManager : NetworkBehaviour
 
     #region UI
 
+    [Server]
+    private static void ActiveUI()
+    {
+        instance.UpdateYear(Data.currentYear);
+        instance.RpcActiveUI();
+        instance.StartSelection();
+    }
+
     [ClientRpc]
     private void RpcResetPlayerHUD(string clientID)
     {
@@ -238,6 +243,12 @@ public class GameNetManager : NetworkBehaviour
     private void RpcNextPlayer(string clientID)
     {
         GameUIManager.SetPlayerTurn(clientID);
+    }
+
+    [ClientRpc]
+    private void RpcActiveTurn(string clientID, bool active)
+    {
+        GameUIManager.ActiveTurn(clientID, active);
     }
 
     [ClientRpc]
@@ -290,9 +301,15 @@ public class GameNetManager : NetworkBehaviour
         gameData.turnPlayer = newTurn;
     }
 
+    [Server]
+    private void UpdateInitialPlayer(int newInitial)
+    {
+        gameData.initialPlayerIndex = newInitial;
+    }
+
     #endregion
 
-    #region Cinematic
+    #region Animation
 
     [Server]
     private void StartIntroCinematic()
@@ -308,6 +325,7 @@ public class GameNetManager : NetworkBehaviour
         }
     }
 
+    [Server]
     private void OnIntroCinematicEnd(PlayableDirector director)
     {
         if (director == cinematicDirector)
@@ -315,6 +333,81 @@ public class GameNetManager : NetworkBehaviour
             cinematicDirector.stopped -= OnIntroCinematicEnd;
             StartGame();
         }
+    }
+
+    [Server]
+    private void StartSelection()
+    {
+        if (playersNet.Count == 0)
+        {
+            Debug.LogError("No hay jugadores configurados.");
+            return;
+        }
+
+        // Spawnear la flecha
+        spawnedArrow = Instantiate(arrowPrefab);
+        NetworkServer.Spawn(spawnedArrow);
+
+        // Mover la flecha entre los Huds
+        StartCoroutine(MoveArrow());
+    }
+
+    [Server]
+    private IEnumerator MoveArrow()
+    {
+        int hudIndex = 0;
+        float delay = 0.2f; // Tiempo entre movimientos
+
+        // Obtener la lista de HUDs desde GameUIManager
+        List<Transform> playerHuds = GameUIManager.HUDsList();
+
+        // Acceder a la imagen de la flecha (hija de spawnedArrow)
+        GameObject arrowImage = spawnedArrow.transform.GetChild(0).gameObject;
+
+        while (delay > 0.05f)
+        {
+            // Mover la flecha al siguiente Hud
+            Vector3 hudPosition = playerHuds[hudIndex].position;
+
+            // Ajustar la posición de la flecha debajo del Hud (modificando Z o Y según sea necesario)
+            arrowImage.transform.position = new Vector3(hudPosition.x, hudPosition.y - 200f, hudPosition.z);
+
+            // Avanzar al siguiente Hud
+            hudIndex = (hudIndex + 1) % playerHuds.Count;
+
+            // Reducir la velocidad con el tiempo
+            yield return new WaitForSeconds(delay);
+            delay -= 0.01f;
+        }
+
+        // Seleccionar un jugador aleatorio
+        int selectedPlayerIndex = Random.Range(0, playerHuds.Count);
+        Transform selectedHud = playerHuds[selectedPlayerIndex];
+
+        // Mover la flecha al jugador seleccionado
+        Vector3 selectedHudPosition = selectedHud.position;
+        arrowImage.transform.position = new Vector3(selectedHudPosition.x, selectedHudPosition.y - 200f, selectedHudPosition.z);
+        currPlayer = playersNet[selectedPlayerIndex];
+        RpcActiveTurn(currPlayer.Data.UID, true);
+
+        // Modificar al jugador inicial
+        UpdateTurnPlayer(selectedPlayerIndex);
+        UpdateInitialPlayer(selectedPlayerIndex);
+
+        // Despues de un tiempo, destruir la flecha
+        yield return new WaitForSeconds(2f);
+        DespawnArrow();
+    }
+
+    [Server]
+    public void DespawnArrow()
+    {
+        if (spawnedArrow != null)
+        {
+            NetworkServer.Destroy(spawnedArrow);
+            spawnedArrow = null;
+        }
+        StartGame();
     }
 
     #endregion

@@ -279,6 +279,8 @@ MonoBehaviour:
   debt: {fileID: 8383017835747602664}
   income: {fileID: 2239888357710663277}
   expense: {fileID: 603855785558039620}
+  characterSprite: {fileID: 3627421963240427022}
+  characterDB: {fileID: 11400000, guid: 5cab4728488ff544c9e750bc6ef6b5c7, type: 2}
 --- !u!1 &1222911186022900718
 GameObject:
   m_ObjectHideFlags: 0

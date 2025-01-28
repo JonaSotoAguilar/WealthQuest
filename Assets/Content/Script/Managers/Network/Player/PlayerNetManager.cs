@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Mirror;
+using Mirror.BouncyCastle.Asn1.X509;
 using Mirror.Examples.Basic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -70,9 +71,16 @@ public class PlayerNetManager : NetworkBehaviour
         movement.CenterPlayer(data.Position);
 
         //2. Initialize Question
+        RpcActiveUIActions(netIdentity.connectionToClient, true);
         ui.CreateQuestion();
     }
 
+    [TargetRpc]
+    public void RpcActiveUIActions(NetworkConnectionToClient target, bool active)
+    {
+        GameUIManager.ActiveUIActions(active);
+    }
+    
     //3. Throw Dice
     public void Throw()
     {

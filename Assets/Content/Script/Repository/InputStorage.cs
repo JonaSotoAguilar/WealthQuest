@@ -16,7 +16,6 @@ public static class InputStorage
         }
 
         devices.Add(device);
-        devices.ForEach(player => Debug.Log(player.device.name));
     }
 
     public static void ClearData()

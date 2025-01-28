@@ -37,6 +37,7 @@ public class BannerLocal : MonoBehaviour
         characterSelected = 0;
         characterSprite.sprite = characterDB.GetCharacter(characterSelected).characterIcon;
         nameInput.text = playerName;
+        changeName.gameObject.SetActive(false);
     }
 
     public void ActiveChanges(bool active)

@@ -40,11 +40,11 @@ MonoBehaviour:
   - characterID: 6
     characterName: Male_Hoodie
     characterPrefab: {fileID: 153682, guid: 958356f130ee9094f9ed7c04e22b239b, type: 3}
-    characterIcon: {fileID: 21300000, guid: 28e963134e550ad4ea6dc23d678b74be, type: 3}
+    characterIcon: {fileID: 21300000, guid: 0e8462f035197364682a7e856956140c, type: 3}
   - characterID: 7
     characterName: Male_Jacket
     characterPrefab: {fileID: 183828, guid: 638191c17aab7e94aa8fb76e2c19a950, type: 3}
-    characterIcon: {fileID: 21300000, guid: 0e8462f035197364682a7e856956140c, type: 3}
+    characterIcon: {fileID: 21300000, guid: 78e4f06e161df4548bb12c1855895b69, type: 3}
   - characterID: 8
     characterName: Male_Police
     characterPrefab: {fileID: 191860, guid: 69ffedeac55bad843912defe1388f779, type: 3}

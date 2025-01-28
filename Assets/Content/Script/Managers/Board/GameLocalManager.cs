@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class GameLocalManager : MonoBehaviour
 {
@@ -18,6 +19,10 @@ public class GameLocalManager : MonoBehaviour
     [SerializeField] private GameData gameData;
     private GameStatus status = GameStatus.None;
     private DateTime currentTime;
+
+    [Header("Animations")]
+    [SerializeField] private GameObject arrowPrefab;
+    private GameObject spawnedArrow;
 
     // Players
     private List<PlayerLocalManager> playersLocal = new List<PlayerLocalManager>();
@@ -64,29 +69,28 @@ public class GameLocalManager : MonoBehaviour
     {
         if (instance == null) return;
 
-        //instance.StartIntroCinematic();
-        StartGame();
+        // Lo ejectua si timePlayed es 00:00:00
+        if (instance.gameData.timePlayed == "00:00:00")
+            ActiveUI();
+        else
+            StartGame();
     }
 
     private static void StartGame()
     {
         if (instance == null) return;
 
-        // 1. Active and Update UI
-        instance.ActiveUI();
-        instance.UpdateYear(Data.currentYear);
-
-        // 2. Position players
+        // 1. Position players
         instance.InitializePosition();
 
-        // 3. Status game
+        // 2. Status game
         instance.status = GameStatus.Playing;
         instance.currPlayer = instance.playersLocal[Data.turnPlayer];
 
-        // 4. Camera
+        // 3. Camera
         instance._camera.CurrentCamera(instance.currPlayer.transform);
 
-        // 5. Start game
+        // 4. Start game
         instance.currentTime = DateTime.Now;
         instance.StartTurn();
     }
@@ -112,9 +116,12 @@ public class GameLocalManager : MonoBehaviour
         }
     }
 
-    private void ActiveUI()
+    private static void ActiveUI()
     {
+        // 1. Active and Update UI
+        instance.UpdateYear(Data.currentYear);
         GameUIManager.ShowPanel(true);
+        instance.StartSelection();
     }
 
     #endregion
@@ -238,9 +245,14 @@ public class GameLocalManager : MonoBehaviour
         gameData.turnPlayer = newTurn;
     }
 
+    private void UpdateInitialPlayer(int newInitial)
+    {
+        gameData.initialPlayerIndex = newInitial;
+    }
+
     #endregion
 
-    #region Cinematic
+    #region Animation
 
     private void StartIntroCinematic()
     {
@@ -267,6 +279,81 @@ public class GameLocalManager : MonoBehaviour
             // Continuar con el flujo del juego
             StartGame();
         }
+    }
+
+    private void StartSelection()
+    {
+        if (playersLocal.Count == 0)
+        {
+            Debug.LogError("No hay jugadores configurados.");
+            return;
+        }
+        else if (playersLocal.Count == 1)
+        {
+            StartIntroCinematic();
+        }
+
+        // Spawnear la flecha
+        spawnedArrow = Instantiate(arrowPrefab);
+
+        // Mover la flecha entre los Huds
+        StartCoroutine(MoveArrow());
+    }
+
+    private IEnumerator MoveArrow()
+    {
+        int hudIndex = 0;
+        float delay = 0.2f; // Tiempo entre movimientos
+
+        // Obtener la lista de HUDs desde GameUIManager
+        List<Transform> playerHuds = GameUIManager.HUDsList();
+
+        // Acceder a la imagen de la flecha (hija de spawnedArrow)
+        GameObject arrowImage = spawnedArrow.transform.GetChild(0).gameObject;
+
+        while (delay > 0.05f)
+        {
+            // Mover la flecha al siguiente Hud
+            Vector3 hudPosition = playerHuds[hudIndex].position;
+
+            // Ajustar la posición de la flecha debajo del Hud (modificando Z o Y según sea necesario)
+            arrowImage.transform.position = new Vector3(hudPosition.x, hudPosition.y - 200f, hudPosition.z);
+
+            // Avanzar al siguiente Hud
+            hudIndex = (hudIndex + 1) % playerHuds.Count;
+
+            // Reducir la velocidad con el tiempo
+            yield return new WaitForSeconds(delay);
+            delay -= 0.01f;
+        }
+
+        // Seleccionar un jugador aleatorio
+        int selectedPlayerIndex = Random.Range(0, playerHuds.Count);
+        Transform selectedHud = playerHuds[selectedPlayerIndex];
+
+        // Mover la flecha al jugador seleccionado
+        Vector3 selectedHudPosition = selectedHud.position;
+        arrowImage.transform.position = new Vector3(selectedHudPosition.x, selectedHudPosition.y - 200f, selectedHudPosition.z);
+        currPlayer = playersLocal[selectedPlayerIndex];
+        GameUIManager.ActiveTurn(currPlayer.Data.UID, true);
+
+        // Modificar al jugador inicial
+        UpdateTurnPlayer(selectedPlayerIndex);
+        UpdateInitialPlayer(selectedPlayerIndex);
+
+        // Despues de un tiempo, destruir la flecha
+        yield return new WaitForSeconds(2f);
+        DespawnArrow();
+    }
+
+    public void DespawnArrow()
+    {
+        if (spawnedArrow != null)
+        {
+            Destroy(spawnedArrow);
+            spawnedArrow = null;
+        }
+        StartIntroCinematic();
     }
 
     #endregion

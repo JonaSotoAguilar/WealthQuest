@@ -4427,7 +4427,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &6358287590933295116
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5873,6 +5873,7 @@ GameObject:
   - component: {fileID: 1990761757217575863}
   - component: {fileID: 6749260958749780936}
   - component: {fileID: 2978186574047880478}
+  - component: {fileID: 2781344245546511018}
   m_Layer: 5
   m_Name: Copy
   m_TagString: Untagged
@@ -5993,6 +5994,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &2781344245546511018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8979021345238823375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc98942e99269614e8152380669c1a95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9098107958609288475
 GameObject:
   m_ObjectHideFlags: 0

@@ -336,7 +336,6 @@ public class LobbyLocal : MonoBehaviour
 
     public void SavePlayerInputs()
     {
-        Debug.Log("Save Player Inputs");
         InputStorage.ClearData();
 
         // Jugador principal

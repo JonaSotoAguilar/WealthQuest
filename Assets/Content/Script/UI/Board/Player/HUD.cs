@@ -19,6 +19,10 @@ public class HUD : MonoBehaviour
     [SerializeField] private TextMeshProUGUI income;
     [SerializeField] private TextMeshProUGUI expense;
 
+    [Header("Character")]
+    [SerializeField] private RawImage characterSprite;
+    [SerializeField] private CharactersDatabase characterDB;
+
     public void InitializeUILocal(string clientID)
     {
         var data = GameLocalManager.GetPlayer(clientID).Data;
@@ -29,6 +33,8 @@ public class HUD : MonoBehaviour
         debt.text = data.Debt.ToString("C0", chileanCulture);
         income.text = data.Income.ToString("C0", chileanCulture);
         expense.text = data.Expense.ToString("C0", chileanCulture);
+
+        characterSprite.texture = characterDB.GetCharacter(data.CharacterID).characterIcon.texture;
     }
 
     public void InitializeUINet(string clientID)
@@ -41,6 +47,8 @@ public class HUD : MonoBehaviour
         debt.text = data.Debt.ToString("C0", chileanCulture);
         income.text = data.Income.ToString("C0", chileanCulture);
         expense.text = data.Expense.ToString("C0", chileanCulture);
+
+        characterSprite.texture = characterDB.GetCharacter(data.CharacterID).characterIcon.texture;
     }
 
 

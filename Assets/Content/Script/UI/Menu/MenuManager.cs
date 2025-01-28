@@ -60,7 +60,9 @@ public class MenuManager : MonoBehaviour
     private void Awake()
     {
         CreateInstance();
-        activeMenu = loginMenu;
+
+        if (FirebaseService.Instance.logged == true)
+            OpenGameMenu();
     }
 
     private void CreateInstance()
@@ -86,7 +88,7 @@ public class MenuManager : MonoBehaviour
     public void OpenLoginMenu()
     {
         LoginManager.Instance.ResetLoginFields();
-        activeMenu.SetActive(false);
+        if (activeMenu != null) activeMenu.SetActive(false);
         loginMenu.SetActive(true);
         activeMenu = loginMenu;
     }
@@ -133,7 +135,7 @@ public class MenuManager : MonoBehaviour
 
     public void OpenStartMenu()
     {
-        activeMenu.SetActive(false);
+        if (activeMenu != null) activeMenu.SetActive(false);
         startMenu.SetActive(true);
         activeMenu = startMenu;
     }

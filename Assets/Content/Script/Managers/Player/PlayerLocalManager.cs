@@ -16,6 +16,7 @@ public class PlayerLocalManager : MonoBehaviour
     [SerializeField] private InputActionAsset inputActions;
     private PlayerInput input;
     private InputAction throwAction;
+    private bool isGamepad = false;
 
     private bool rollDice = false;
 
@@ -39,6 +40,7 @@ public class PlayerLocalManager : MonoBehaviour
         movement.Animator = animator;
 
         if (input == null) SetActions();
+        else SetScheme();
     }
 
     private void SetActions()
@@ -46,6 +48,18 @@ public class PlayerLocalManager : MonoBehaviour
         throwAction = inputActions?.FindAction("Throw");
         throwAction.performed += ctx => OnThrowAction();
         throwAction.Enable();
+    }
+
+    private void SetScheme()
+    {
+        if (input.currentControlScheme == "Keyboard" || input.currentControlScheme == "Keyboard&Mouse" || input.currentControlScheme == "Mouse")
+        {
+            isGamepad = false;
+        }
+        else
+        {
+            isGamepad = true;
+        }
     }
 
     private void OnDestroy()
@@ -67,6 +81,9 @@ public class PlayerLocalManager : MonoBehaviour
         movement.CenterPlayer(data.Position);
 
         // Crear pregunta
+        if (input != null) GameUIManager.ChangeScheme(isGamepad);
+        GameUIManager.ActiveMenu();
+        GameUIManager.ActiveUIActions(true);
         ui.CreateQuestion();
     }
 
@@ -88,6 +105,8 @@ public class PlayerLocalManager : MonoBehaviour
             rollDice = true;
             if (input != null) input.SwitchCurrentActionMap("Player");
             dice.ShowDice(true);
+            GameUIManager.ActiveUIActions(false);
+            GameUIManager.ActiveThrowActions(true);
             StartCoroutine(dice.RotateDiceRoutine());
         }
         else
@@ -119,12 +138,16 @@ public class PlayerLocalManager : MonoBehaviour
     public void ActiveSquare()
     {
         Square square = SquareManager.Squares[data.Position];
+        GameUIManager.ActiveThrowActions(false);
+        GameUIManager.ActiveUIActions(true);
         ui.SetupCards(square);
     }
 
     // Finalizar turno
     public void FinishTurn()
     {
+        GameUIManager.ActiveUIActions(false);
+        GameUIManager.ActiveThrowActions(false);
         movement.CornerPlayer(data.Position);
         GameLocalManager.FinishTurn();
     }

@@ -113,7 +113,7 @@ public class PlayerLocalUI : MonoBehaviour
 
     private IEnumerator QuestionTimer()
     {
-        float timeRemaining = 15f;
+        float timeRemaining = 20f;
         while (timeRemaining > 0)
         {
             timeRemaining -= Time.deltaTime;
