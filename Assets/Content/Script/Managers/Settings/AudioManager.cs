@@ -9,10 +9,32 @@ public class AudioManager : MonoBehaviour
     [SerializeField] public AudioSource musicMenuSource;
     [SerializeField] public AudioSource sfxMenuSource;
 
-    [Header("Audio Buttons")]
+    [Header("Music")]
     [SerializeField] private AudioClip musicMenuClip;
+    [SerializeField] private AudioClip musicGameClip;
+
+    [Header("Audio UI")]
     [SerializeField] private AudioClip buttonSelectClip;
     [SerializeField] private AudioClip buttonPressClip;
+    [SerializeField] private AudioClip arrowClip;
+    [SerializeField] private AudioClip bannerNextPlayerClip;
+    [SerializeField] private AudioClip bannerNextPlayerEndClip;
+
+    [Header("Audio Cards")]
+    [SerializeField] private AudioClip correctAnswerClip;
+    [SerializeField] private AudioClip wrongAnswerClip;
+
+    [Header("Audio Card")]
+    [SerializeField] private AudioClip openCardClip;
+    [SerializeField] private AudioClip eventCardClip;
+    [SerializeField] private AudioClip expenseCardClip;
+    [SerializeField] private AudioClip incomeCardClip;
+    [SerializeField] private AudioClip investmentCardClip;
+
+    [Header("Audio Player")]
+    [SerializeField] private AudioClip timerClip;
+    [SerializeField] private AudioClip diceClip;
+
 
     #region Initialization
 
@@ -65,11 +87,20 @@ public class AudioManager : MonoBehaviour
     {
         if (scene.name == "Menu")
         {
+            StopSoundSFX();
+            StopMusic();
             PlayMenuMusic();
+        }
+        else if (scene.name == "LocalBoard" || scene.name == "OnlineBoard")
+        {
+            StopSoundSFX();
+            StopMusic();
+            PlayGameMusic();
         }
         else
         {
-            StopMenuMusic();
+            StopSoundSFX();
+            StopMusic();
         }
     }
 
@@ -89,7 +120,14 @@ public class AudioManager : MonoBehaviour
         musicMenuSource.Play();
     }
 
-    private void StopMenuMusic()
+    private void PlayGameMusic()
+    {
+        musicMenuSource.clip = musicGameClip;
+        musicMenuSource.loop = true;
+        musicMenuSource.Play();
+    }
+
+    private void StopMusic()
     {
         musicMenuSource.Stop();
     }
@@ -105,16 +143,80 @@ public class AudioManager : MonoBehaviour
 
     public static void PlaySoundButtonSelect()
     {
-        AudioClip clip = Instance.buttonSelectClip;
-        Instance.sfxMenuSource.PlayOneShot(clip);
+        Instance.sfxMenuSource.PlayOneShot(Instance.buttonSelectClip);
     }
 
     public static void PlaySoundButtonPress()
     {
-        AudioClip clip = Instance.buttonPressClip;
-        Instance.sfxMenuSource.PlayOneShot(clip);
+        Instance.sfxMenuSource.PlayOneShot(Instance.buttonPressClip);
+    }
+
+    public static void PlaySoundCorrectAnswer()
+    {
+        Instance.sfxMenuSource.PlayOneShot(Instance.correctAnswerClip);
+    }
+
+    public static void PlaySoundWrongAnswer()
+    {
+        Instance.sfxMenuSource.PlayOneShot(Instance.wrongAnswerClip);
+    }
+
+    public static void PlayOpenCard()
+    {
+        Instance.sfxMenuSource.PlayOneShot(Instance.openCardClip);
+    }
+
+    public static void PlaySoundSquare(SquareType square)
+    {
+        switch (square)
+        {
+            case SquareType.Event:
+                Instance.sfxMenuSource.PlayOneShot(Instance.eventCardClip);
+                break;
+            case SquareType.Expense:
+                Instance.sfxMenuSource.PlayOneShot(Instance.expenseCardClip);
+                break;
+            case SquareType.Income:
+                Instance.sfxMenuSource.PlayOneShot(Instance.incomeCardClip);
+                break;
+            case SquareType.Investment:
+                Instance.sfxMenuSource.PlayOneShot(Instance.investmentCardClip);
+                break;
+        }
+    }
+
+    public static void PlaySoundArrow()
+    {
+        Instance.sfxMenuSource.clip = Instance.arrowClip;
+        Instance.sfxMenuSource.loop = true;
+        Instance.sfxMenuSource.Play();
+    }
+
+    public static void PlaySoundTimer()
+    {
+        //Sonido en bucle
+        Instance.sfxMenuSource.clip = Instance.timerClip;
+        Instance.sfxMenuSource.loop = true;
+        Instance.sfxMenuSource.Play();
+    }
+
+    public static void PlaySoundBannerNextPlayer()
+    {
+        Instance.sfxMenuSource.PlayOneShot(Instance.bannerNextPlayerClip);
+    }
+
+    public static void PlaySoundBannerNextPlayerEnd()
+    {
+        Instance.sfxMenuSource.PlayOneShot(Instance.bannerNextPlayerEndClip);
+    }
+
+    public static void StopSoundSFX()
+    {
+        Instance.sfxMenuSource.loop = false;
+        Instance.sfxMenuSource.Stop();
     }
 
     #endregion
+
 }
 

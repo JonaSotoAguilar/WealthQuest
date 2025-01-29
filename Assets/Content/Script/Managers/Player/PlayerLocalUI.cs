@@ -71,6 +71,7 @@ public class PlayerLocalUI : MonoBehaviour
     private void OnAnswerQuestion(bool isCorrect)
     {
         ui.OnQuestionAnswered -= OnAnswerQuestion;
+        AudioManager.StopSoundSFX();
 
         // Detener el temporizador
         if (questionTimerCoroutine != null)
@@ -83,6 +84,7 @@ public class PlayerLocalUI : MonoBehaviour
 
         if (isCorrect)
         {
+            AudioManager.PlaySoundCorrectAnswer();
             GetComponent<PlayerLocalData>().AddPoints(levelQuestion);
             GameLocalManager.Data.DeleteQuestion(currentQuestion);
             ResetQuestionValues();
@@ -90,6 +92,7 @@ public class PlayerLocalUI : MonoBehaviour
         }
         else
         {
+            AudioManager.PlaySoundWrongAnswer();
             attempts--;
             if (attempts <= 0)
             {
@@ -113,7 +116,8 @@ public class PlayerLocalUI : MonoBehaviour
 
     private IEnumerator QuestionTimer()
     {
-        float timeRemaining = 20f;
+        float timeRemaining = 30f;
+        AudioManager.PlaySoundTimer();
         while (timeRemaining > 0)
         {
             timeRemaining -= Time.deltaTime;
@@ -205,6 +209,7 @@ public class PlayerLocalUI : MonoBehaviour
             int capital = 0;
             if (selectedCard is InvestmentCard) capital = ui.AmountInvest;
             selectedCard.ApplyEffect(capital);
+            AudioManager.PlaySoundSquare(selectedCard.GetCardType());
         }
         selectedCards.Clear();
         ui.CloseCards();

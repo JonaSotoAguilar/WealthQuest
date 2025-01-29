@@ -1,24 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Users;
+using UnityEngine.UI;
 
 public class GameUIManager : MonoBehaviour
 {
     private static GameUIManager instance;
 
-    [Header("Data")]
+    [Space, Header("Data")]
     [SerializeField] private TextMeshProUGUI yearText;
 
-    [Header("HUDs")]
+    [Space, Header("HUDs")]
     [SerializeField] private Transform HUDParent;
     [SerializeField] private HUD HUDPrefab;
     private Dictionary<string, HUD> HUDs = new Dictionary<string, HUD>();
 
-    [Header("Actions")]
+    [Space, Header("Actions")]
     [SerializeField] private GameObject navKeyboards;
     [SerializeField] private GameObject navGamepads;
     [SerializeField] private GameObject selectKeyboards;
@@ -30,6 +32,14 @@ public class GameUIManager : MonoBehaviour
     private bool activeThrow = false;
     private bool activeUI = false;
     private bool isGamepad = false;
+
+    [Space, Header("Banner NextPlayer")]
+    [SerializeField] private CharactersDatabase characterDB;
+    [SerializeField] private GameObject bannerNextPlayer;
+    [SerializeField] private Image characterNextPlayer;
+    [SerializeField] private TextMeshProUGUI nicknameNextPlayer;
+    private Vector3 offScreenPosition;
+    private Vector3 centerPosition;
 
     #region Getters
 
@@ -57,6 +67,7 @@ public class GameUIManager : MonoBehaviour
 
         instance = this;
         ShowPanel(false);
+        SetBannerPlayer();
     }
 
     private void OnDestroy()
@@ -65,6 +76,17 @@ public class GameUIManager : MonoBehaviour
         {
             instance = null;
         }
+    }
+
+    private void SetBannerPlayer()
+    {
+        // Definir la posición fuera de la pantalla (arriba: 800) y en el centro (Y = 0) usando localPosition
+        offScreenPosition = new Vector3(bannerNextPlayer.transform.localPosition.x, 800, bannerNextPlayer.transform.localPosition.z);
+        centerPosition = new Vector3(bannerNextPlayer.transform.localPosition.x, 0, bannerNextPlayer.transform.localPosition.z);
+
+        // Asegurar que el banner inicie fuera de la pantalla
+        bannerNextPlayer.transform.localPosition = offScreenPosition;
+        bannerNextPlayer.SetActive(false);
     }
 
     private void OnEnable()
@@ -123,33 +145,9 @@ public class GameUIManager : MonoBehaviour
         return instance.HUDs[clientID];
     }
 
-    public static void SetPlayerTurn(string clientID)
+    public static void ShowsHUDs(bool show)
     {
-        HUD currentHUD = GetHUD(clientID);
-        currentHUD.SetActiveTurn(true);
-        foreach (Transform child in currentHUD.transform)
-        {
-            child.position -= new Vector3(0, 15, 0);
-        }
-
-    }
-
-    public static void ResetPlayerTurn(string clientID)
-    {
-        HUD currentHUD = GetHUD(clientID);
-        foreach (Transform child in currentHUD.transform)
-        {
-            child.position += new Vector3(0, 15, 0);
-        }
-        currentHUD.SetActiveTurn(false);
-    }
-
-    public static void ActiveTurn(string clientID, bool active)
-    {
-        if (instance == null) return;
-
-        HUD currentHUD = GetHUD(clientID);
-        currentHUD.SetActiveTurn(active);
+        instance.HUDParent.gameObject.SetActive(show);
     }
 
     #endregion
@@ -266,6 +264,76 @@ public class GameUIManager : MonoBehaviour
         instance.selectGamepads.SetActive(false);
         instance.throwKeyboards.SetActive(false);
         instance.throwGamepads.SetActive(false);
+    }
+
+    #endregion
+
+    #region NextPlayer
+
+    public static async Task SetPlayerTurn(string clientID, bool animation = true)
+    {
+        if (animation) await instance.BannerNextPlayer(clientID); // Espera a que la animación termine
+
+        HUD currentHUD = GetHUD(clientID);
+        currentHUD.SetActiveTurn(true);
+
+        foreach (Transform child in currentHUD.transform)
+        {
+            child.position -= new Vector3(0, 15, 0);
+        }
+    }
+
+    public async Task BannerNextPlayer(string clientID)
+    {
+        ShowsHUDs(false);
+
+        var data = GameLocalManager.GetPlayer(clientID).Data;
+        characterNextPlayer.sprite = characterDB.GetCharacter(data.CharacterID).characterIcon;
+        nicknameNextPlayer.text = data.Nickname;
+
+        bannerNextPlayer.SetActive(true);
+        bannerNextPlayer.transform.localPosition = offScreenPosition;
+
+        AudioManager.PlaySoundBannerNextPlayer();
+        await MoveBanner(bannerNextPlayer, centerPosition.y, 0.4f, LeanTweenType.easeOutBack);
+
+        await Task.Delay(600);
+
+        AudioManager.PlaySoundBannerNextPlayerEnd();
+        await MoveBanner(bannerNextPlayer, offScreenPosition.y, 0.4f, LeanTweenType.easeInBack);
+
+        bannerNextPlayer.SetActive(false);
+        ShowsHUDs(true);
+    }
+
+    // Modificar la función MoveBanner para usar localPosition
+    private Task MoveBanner(GameObject banner, float targetY, float duration, LeanTweenType easeType)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        LeanTween.moveLocalY(banner, targetY, duration)
+            .setEase(easeType)
+            .setOnComplete(() => tcs.SetResult(true));
+
+        return tcs.Task;
+    }
+
+    public static void ActiveTurn(string clientID, bool active)
+    {
+        if (instance == null) return;
+
+        HUD currentHUD = GetHUD(clientID);
+        currentHUD.SetActiveTurn(active);
+    }
+
+    public static void ResetPlayerTurn(string clientID)
+    {
+        HUD currentHUD = GetHUD(clientID);
+        foreach (Transform child in currentHUD.transform)
+        {
+            child.position += new Vector3(0, 15, 0);
+        }
+        currentHUD.SetActiveTurn(false);
     }
 
     #endregion

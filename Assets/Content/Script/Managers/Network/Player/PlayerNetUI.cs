@@ -13,7 +13,7 @@ public class PlayerNetUI : NetworkBehaviour
     private int levelQuestion = 1;
     [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
     private bool useBGames = false;
-    [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 20f;
+    [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 30f;
 
     // Cards
     private readonly SyncList<Card> selectedCards = new SyncList<Card>();
@@ -102,10 +102,12 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void SubmitAnswer(bool isCorrect)
     {
+        RpcStopSoundTimer();
         StopCoroutine(nameof(QuestionTimer));
 
         if (isCorrect)
         {
+            RpcCorrectAnswer();
             GetComponent<PlayerNetData>().AddPoints(levelQuestion);
             GameNetManager.Data.DeleteQuestion(currentQuestion);
             ResetQuestionValues();
@@ -113,6 +115,7 @@ public class PlayerNetUI : NetworkBehaviour
         }
         else
         {
+            RpcWrongAnswer();
             attempts--;
             if (attempts <= 0)
             {
@@ -138,13 +141,14 @@ public class PlayerNetUI : NetworkBehaviour
     private void StartQuestionTimer()
     {
         if (timeRemaining > 0) StopCoroutine(nameof(QuestionTimer));
-        timeRemaining = 20f;
+        timeRemaining = 30f;
         StartCoroutine(nameof(QuestionTimer));
     }
 
     [Server]
     private IEnumerator QuestionTimer()
     {
+        RpcSoundTimer();
         while (timeRemaining > 0)
         {
             timeRemaining -= Time.deltaTime;
@@ -272,6 +276,7 @@ public class PlayerNetUI : NetworkBehaviour
             int capital = 0;
             if (selectedCard is InvestmentCard) capital = amountInvest;
             selectedCard.ApplyEffect(capital, false);
+            RpcPlaySoundSquare(selectedCard.GetCardType());
         }
         selectedCards.Clear();
         RpcCloseCards();
@@ -338,6 +343,40 @@ public class PlayerNetUI : NetworkBehaviour
     private void FinishTurn()
     {
         GetComponent<PlayerNetManager>().FinishTurn();
+    }
+
+    #endregion
+
+    #region Audio
+
+    [ClientRpc]
+    private void RpcCorrectAnswer()
+    {
+        AudioManager.PlaySoundCorrectAnswer();
+    }
+
+    [ClientRpc]
+    private void RpcWrongAnswer()
+    {
+        AudioManager.PlaySoundWrongAnswer();
+    }
+
+    [ClientRpc]
+    private void RpcPlaySoundSquare(SquareType type)
+    {
+        AudioManager.PlaySoundSquare(type);
+    }
+
+    [ClientRpc]
+    private void RpcSoundTimer()
+    {
+        AudioManager.PlaySoundTimer();
+    }
+
+    [ClientRpc]
+    private void RpcStopSoundTimer()
+    {
+        AudioManager.StopSoundSFX();
     }
 
     #endregion

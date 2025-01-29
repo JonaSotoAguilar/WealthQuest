@@ -7,15 +7,6 @@ public class Square : MonoBehaviour
 {
     [SerializeField] private GameData data;
     [SerializeField] private SquareType type;
-
-    enum SquareType
-    {
-        Event,
-        Expense,
-        Income,
-        Investment
-    }
-
     private List<PlayerMovement> players = new List<PlayerMovement>();
 
     #region Getters

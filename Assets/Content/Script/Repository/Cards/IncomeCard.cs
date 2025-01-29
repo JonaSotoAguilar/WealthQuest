@@ -7,7 +7,13 @@ public class IncomeCard : Card
     [Tooltip("Afecta al salario")] public bool affectIncome;
     [Tooltip("affectSalary = true: Aplica salaryChange al salario")] public float incomeChange;
     [Tooltip("affectSalary = false: Agrega Income al dinero")] public int income;
+
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
+
+    public override SquareType GetCardType()
+    {
+        return SquareType.Income;
+    }
 
     public override string GetFormattedText(int playerKFP)
     {

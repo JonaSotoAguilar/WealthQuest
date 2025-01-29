@@ -3,10 +3,12 @@ using UnityEngine;
 
 public abstract class Card : ScriptableObject
 {
-    [Tooltip("Titulo carta")] public string title; 
-    [Tooltip("Imagen de carta")] public Sprite image;  
+    [Tooltip("Titulo carta")] public string title;
+    [Tooltip("Imagen de carta")] public Sprite image;
 
     // Método abstracto que deberá ser implementado por las subclases para formatear el texto
+    public abstract SquareType GetCardType();
+
     public abstract string GetFormattedText(int playerKFP);
 
     public abstract void ApplyEffect(int capital = 0, bool isLocalGame = true);
@@ -27,7 +29,7 @@ public static class CardSerializer
     // Leer la carta (deserialización)
     public static Card ReadCard(this NetworkReader reader)
     {
-        string cardName = reader.ReadString(); 
+        string cardName = reader.ReadString();
         string cardType = reader.ReadString();
         Debug.Log($"Card name: {cardName}, Card type: {cardType}");
 
@@ -60,7 +62,7 @@ public static class CardSerializer
             "InvestmentCard" => "Investment",
             "IncomeCard" => "Income",
             "EventCard" => "Event",
-            _ => null, 
+            _ => null,
         };
     }
 }

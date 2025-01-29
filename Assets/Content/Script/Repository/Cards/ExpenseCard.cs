@@ -4,9 +4,15 @@ using System.Globalization;
 [CreateAssetMenu(fileName = "ExpenseCard", menuName = "Cards/ExpenseCard")]
 public class ExpenseCard : Card
 {
-    [Range(1,25)] public int duration;      // Duración en turnos del costo recurrente
+    [Range(1, 25)] public int duration;      // Duración en turnos del costo recurrente
     [Min(1)] public int cost;               // Costo de la tarjeta
+
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
+
+    public override SquareType GetCardType()
+    {
+        return SquareType.Expense;
+    }
 
     public override string GetFormattedText(int score)
     {

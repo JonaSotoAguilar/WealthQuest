@@ -52,38 +52,71 @@ public class HUD : MonoBehaviour
     }
 
 
-    public void UpdatePoints(int points)
+    public void UpdatePoints(int newPoints)
     {
-        this.points.text = points.ToString();
+        int oldPoints = int.Parse(points.text);
+        LeanTween.value(oldPoints, newPoints, 1.5f).setOnUpdate((float val) =>
+        {
+            points.text = Mathf.RoundToInt(val).ToString();
+        }).setEaseOutQuad();
+
+        // Efecto de escala al actualizar
+        LeanTween.scale(points.gameObject, Vector3.one * 1.2f, 0.3f).setEaseOutBack().setLoopPingPong(5);
     }
 
-    public void UpdateMoney(int money)
+    public void UpdateMoney(int newMoney)
     {
-        this.money.text = money.ToString("C0", chileanCulture);
+        int oldMoney = int.Parse(money.text, NumberStyles.Currency, chileanCulture);
+        LeanTween.value(oldMoney, newMoney, 3f).setOnUpdate((float val) =>
+        {
+            money.text = Mathf.RoundToInt(val).ToString("C0", chileanCulture);
+        }).setEaseOutQuad();
     }
 
-    public void UpdateInvest(int invest)
+    public void UpdateInvest(int newInvest)
     {
-        this.invest.text = invest.ToString("C0", chileanCulture);
+        int oldInvest = int.Parse(invest.text, NumberStyles.Currency, chileanCulture);
+        LeanTween.value(oldInvest, newInvest, 3f).setOnUpdate((float val) =>
+        {
+            invest.text = Mathf.RoundToInt(val).ToString("C0", chileanCulture);
+        }).setEaseOutQuad();
     }
 
-    public void UpdateDebt(int debt)
+    public void UpdateDebt(int newDebt)
     {
-        this.debt.text = debt.ToString("C0", chileanCulture);
+        int oldDebt = int.Parse(debt.text, NumberStyles.Currency, chileanCulture);
+        LeanTween.value(oldDebt, newDebt, 3f).setOnUpdate((float val) =>
+        {
+            debt.text = Mathf.RoundToInt(val).ToString("C0", chileanCulture);
+        }).setEaseOutQuad();
     }
 
-    public void UpdateIncome(int income)
+    public void UpdateIncome(int newIncome)
     {
-        this.income.text = income.ToString("C0", chileanCulture);
+        int oldIncome = int.Parse(income.text, NumberStyles.Currency, chileanCulture);
+        LeanTween.value(oldIncome, newIncome, 3f).setOnUpdate((float val) =>
+        {
+            income.text = Mathf.RoundToInt(val).ToString("C0", chileanCulture);
+        }).setEaseOutQuad();
     }
 
-    public void UpdateExpense(int expense)
+    public void UpdateExpense(int newExpense)
     {
-        this.expense.text = expense.ToString("C0", chileanCulture);
+        int oldExpense = int.Parse(expense.text, NumberStyles.Currency, chileanCulture);
+        LeanTween.value(oldExpense, newExpense, 3f).setOnUpdate((float val) =>
+        {
+            expense.text = Mathf.RoundToInt(val).ToString("C0", chileanCulture);
+        }).setEaseOutQuad();
     }
 
     public void SetActiveTurn(bool active)
     {
         activeTurn.SetActive(active);
+        if (active)
+        {
+            // Efecto de escala y brillo al activar el turno
+            LeanTween.scale(activeTurn, Vector3.one * 1.2f, 0.3f).setEaseOutBack().setLoopPingPong(5);
+        }
     }
+
 }

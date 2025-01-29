@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Mirror;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -79,9 +80,13 @@ public class GameNetManager : NetworkBehaviour
     {
         if (instance == null) return;
 
-        ActiveUI();
-        // StartGame();
-        //instance.StartIntroCinematic();
+        instance.UpdateYear(Data.currentYear);
+        instance.RpcActiveUI(true);
+
+        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count > 1)
+            instance.StartSelection();
+        else
+            StartGame();
     }
 
     [Server]
@@ -135,6 +140,12 @@ public class GameNetManager : NetworkBehaviour
     private void StartTurn()
     {
         RpcNextPlayer(currPlayer.Data.UID);
+        StartCoroutine(WaitUIStartTurn());
+    }
+
+    private IEnumerator WaitUIStartTurn()
+    {
+        yield return new WaitForSeconds(1.6f);
         currPlayer.StartTurn();
     }
 
@@ -225,14 +236,6 @@ public class GameNetManager : NetworkBehaviour
 
     #region UI
 
-    [Server]
-    private static void ActiveUI()
-    {
-        instance.UpdateYear(Data.currentYear);
-        instance.RpcActiveUI();
-        instance.StartSelection();
-    }
-
     [ClientRpc]
     private void RpcResetPlayerHUD(string clientID)
     {
@@ -242,7 +245,7 @@ public class GameNetManager : NetworkBehaviour
     [ClientRpc]
     private void RpcNextPlayer(string clientID)
     {
-        GameUIManager.SetPlayerTurn(clientID);
+        _ = GameUIManager.SetPlayerTurn(clientID);
     }
 
     [ClientRpc]
@@ -252,9 +255,9 @@ public class GameNetManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcActiveUI()
+    private void RpcActiveUI(bool active)
     {
-        GameUIManager.ShowPanel(true);
+        GameUIManager.ShowPanel(active);
     }
 
     #endregion
@@ -316,6 +319,7 @@ public class GameNetManager : NetworkBehaviour
     {
         if (cinematicDirector != null)
         {
+            instance.RpcActiveUI(false);
             cinematicDirector.Play();
             cinematicDirector.stopped += OnIntroCinematicEnd;
         }
@@ -331,6 +335,7 @@ public class GameNetManager : NetworkBehaviour
         if (director == cinematicDirector)
         {
             cinematicDirector.stopped -= OnIntroCinematicEnd;
+            instance.RpcActiveUI(true);
             StartGame();
         }
     }
@@ -364,6 +369,7 @@ public class GameNetManager : NetworkBehaviour
         // Acceder a la imagen de la flecha (hija de spawnedArrow)
         GameObject arrowImage = spawnedArrow.transform.GetChild(0).gameObject;
 
+        RpcSoundArrow();
         while (delay > 0.05f)
         {
             // Mover la flecha al siguiente Hud
@@ -395,6 +401,7 @@ public class GameNetManager : NetworkBehaviour
         UpdateInitialPlayer(selectedPlayerIndex);
 
         // Despues de un tiempo, destruir la flecha
+        StopRpcSoundArrow();
         yield return new WaitForSeconds(2f);
         DespawnArrow();
     }
@@ -408,6 +415,22 @@ public class GameNetManager : NetworkBehaviour
             spawnedArrow = null;
         }
         StartGame();
+    }
+
+    #endregion
+
+    #region Audio
+
+    [ClientRpc]
+    private void RpcSoundArrow()
+    {
+        AudioManager.PlaySoundArrow();
+    }
+
+    [ClientRpc]
+    private void StopRpcSoundArrow()
+    {
+        AudioManager.StopSoundSFX();
     }
 
     #endregion

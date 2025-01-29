@@ -107,7 +107,18 @@ public class UIPlayer : MonoBehaviour
 
     public void ShowQuestion(bool visible)
     {
-        questionPanel.SetActive(visible);
+        if (visible)
+        {
+            questionPanel.transform.localScale = Vector3.zero;
+            questionPanel.SetActive(true);
+            LeanTween.scale(questionPanel, Vector3.one, 0.3f).setEaseOutBack();
+            AudioManager.PlayOpenCard();
+        }
+        else
+        {
+            questionPanel.SetActive(false);
+        }
+
     }
 
     #endregion
@@ -184,6 +195,7 @@ public class UIPlayer : MonoBehaviour
     {
         if (investPanel.activeSelf == true) ShowInvest(false);
         cardsPanel.SetActive(false);
+        investPanel.SetActive(false);
         ClearCards();
     }
 
@@ -210,8 +222,11 @@ public class UIPlayer : MonoBehaviour
             ShowInvest(false);
         }
 
+        cardsPanel.transform.localScale = Vector3.zero;
         cardsPanel.SetActive(true);
-        
+        AudioManager.PlayOpenCard();
+        LeanTween.scale(cardsPanel, Vector3.one, 0.3f).setEaseOutBack();
+
         if (systemLocal != null) systemLocal.SetSelectedGameObject(cardButtons[0].gameObject);
         else EventSystem.current.SetSelectedGameObject(cardButtons[0].gameObject);
         PauseMenu.SetCanvasGroup(canvasGroupUI);

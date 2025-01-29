@@ -71,16 +71,11 @@ public class PlayerNetManager : NetworkBehaviour
         movement.CenterPlayer(data.Position);
 
         //2. Initialize Question
+        RpcActiveMenu(netIdentity.connectionToClient, true);
         RpcActiveUIActions(netIdentity.connectionToClient, true);
         ui.CreateQuestion();
     }
 
-    [TargetRpc]
-    public void RpcActiveUIActions(NetworkConnectionToClient target, bool active)
-    {
-        GameUIManager.ActiveUIActions(active);
-    }
-    
     //3. Throw Dice
     public void Throw()
     {
@@ -106,6 +101,8 @@ public class PlayerNetManager : NetworkBehaviour
         if (newRoll)
         {
             dice.ShowDice(true);
+            RpcActiveUIActions(netIdentity.connectionToClient, false);
+            RpcActiveThrowActions(netIdentity.connectionToClient, true);
             if (isOwned) StartCoroutine(dice.RotateDiceRoutine());
         }
         else
@@ -142,6 +139,8 @@ public class PlayerNetManager : NetworkBehaviour
     [Server]
     public void ActiveSquare()
     {
+        RpcActiveThrowActions(netIdentity.connectionToClient, false);
+        RpcActiveUIActions(netIdentity.connectionToClient, true);
         Square square = SquareManager.Squares[data.Position];
         ui.SetupCards(square);
     }
@@ -150,8 +149,32 @@ public class PlayerNetManager : NetworkBehaviour
     [Server]
     public void FinishTurn()
     {
+        RpcActiveUIActions(netIdentity.connectionToClient, false);
+        RpcActiveThrowActions(netIdentity.connectionToClient, false);
         movement.CornerPlayer(data.Position);
         GameNetManager.FinishTurn();
+    }
+
+    #endregion
+
+    #region UI Actions
+
+    [TargetRpc]
+    private void RpcActiveMenu(NetworkConnectionToClient target, bool active)
+    {
+        GameUIManager.ActiveMenu();
+    }
+
+    [TargetRpc]
+    private void RpcActiveUIActions(NetworkConnectionToClient target, bool active)
+    {
+        GameUIManager.ActiveUIActions(active);
+    }
+
+    [TargetRpc]
+    private void RpcActiveThrowActions(NetworkConnectionToClient target, bool active)
+    {
+        GameUIManager.ActiveThrowActions(active);
     }
 
     #endregion

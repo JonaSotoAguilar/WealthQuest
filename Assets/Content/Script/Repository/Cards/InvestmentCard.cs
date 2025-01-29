@@ -10,6 +10,11 @@ public class InvestmentCard : Card
     [Range(-1, 100), Tooltip("Porcentaje de cambio.")] public List<float> pctChange;
     [Range(0, 1), Tooltip("Porcentaje de dividendos.")] public List<float> pctDividend;
 
+    public override SquareType GetCardType()
+    {
+        return SquareType.Investment;
+    }
+
     public override string GetFormattedText(int scoreKFP)
     {
         string description = $"Invertir en el año <color=blue>{startYear}</color> durante <color=blue>{duration}</color> años. ";
@@ -38,8 +43,6 @@ public class InvestmentCard : Card
 
     public Sprite GenerateGraphSprite()
     {
-        Debug.Log("Generando gráfico en tiempo de ejecución...");
-
         int width = 256;
         int height = 128;
         Texture2D texture = new Texture2D(width, height, TextureFormat.RGBA32, false)

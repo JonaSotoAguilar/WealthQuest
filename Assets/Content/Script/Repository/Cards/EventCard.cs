@@ -6,7 +6,13 @@ using Mirror;
 public class EventCard : Card
 {
     [Tooltip("Monto a ganar/perder")] public int amount;
+
     private CultureInfo chileanCulture = new CultureInfo("es-CL");
+
+    public override SquareType GetCardType()
+    {
+        return SquareType.Event;
+    }
 
     public override string GetFormattedText(int playerKFP)
     {

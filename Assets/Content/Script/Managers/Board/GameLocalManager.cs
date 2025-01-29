@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
@@ -69,9 +70,12 @@ public class GameLocalManager : MonoBehaviour
     {
         if (instance == null) return;
 
-        // Lo ejectua si timePlayed es 00:00:00
-        if (instance.gameData.timePlayed == "00:00:00")
-            ActiveUI();
+        instance.UpdateYear(Data.currentYear);
+        GameUIManager.ShowPanel(true);
+
+        // StartGame(); // Para pruebas
+        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count > 1)
+            instance.StartSelection();
         else
             StartGame();
     }
@@ -92,7 +96,7 @@ public class GameLocalManager : MonoBehaviour
 
         // 4. Start game
         instance.currentTime = DateTime.Now;
-        instance.StartTurn();
+        _ = instance.StartTurn();
     }
 
     private void InitializePosition()
@@ -116,21 +120,13 @@ public class GameLocalManager : MonoBehaviour
         }
     }
 
-    private static void ActiveUI()
-    {
-        // 1. Active and Update UI
-        instance.UpdateYear(Data.currentYear);
-        GameUIManager.ShowPanel(true);
-        instance.StartSelection();
-    }
-
     #endregion
 
     #region Turn Management
 
-    private void StartTurn()
+    private async Task StartTurn()
     {
-        GameUIManager.SetPlayerTurn(currPlayer.Data.UID);
+        await GameUIManager.SetPlayerTurn(currPlayer.Data.UID, playersLocal.Count > 1);
         currPlayer.StartTurn();
     }
 
@@ -145,7 +141,7 @@ public class GameLocalManager : MonoBehaviour
         instance.NextPlayer();
         instance.SaveGame();
         instance._camera.CurrentCamera(instance.currPlayer.transform);
-        instance.StartTurn();
+        _ = instance.StartTurn();
     }
 
     private void NextPlayer()
@@ -258,6 +254,7 @@ public class GameLocalManager : MonoBehaviour
     {
         if (cinematicDirector != null)
         {
+            GameUIManager.ShowPanel(false);
             cinematicDirector.Play(); // Reproduce la cinemática
 
             // Registrar un evento para cuando termine
@@ -277,6 +274,7 @@ public class GameLocalManager : MonoBehaviour
             cinematicDirector.stopped -= OnIntroCinematicEnd;
 
             // Continuar con el flujo del juego
+            GameUIManager.ShowPanel(true);
             StartGame();
         }
     }
@@ -311,6 +309,7 @@ public class GameLocalManager : MonoBehaviour
         // Acceder a la imagen de la flecha (hija de spawnedArrow)
         GameObject arrowImage = spawnedArrow.transform.GetChild(0).gameObject;
 
+        AudioManager.PlaySoundArrow();
         while (delay > 0.05f)
         {
             // Mover la flecha al siguiente Hud
@@ -342,6 +341,7 @@ public class GameLocalManager : MonoBehaviour
         UpdateInitialPlayer(selectedPlayerIndex);
 
         // Despues de un tiempo, destruir la flecha
+        AudioManager.StopSoundSFX();
         yield return new WaitForSeconds(2f);
         DespawnArrow();
     }
