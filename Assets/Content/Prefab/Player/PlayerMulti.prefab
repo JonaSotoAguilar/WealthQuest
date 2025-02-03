@@ -262,7 +262,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data: {fileID: 1918101371015911700}
   ui: {fileID: 2926968601090034961}
-  dice: {fileID: 4190967231159452853}
+  dice: {fileID: 5223971357826727521}
   movement: {fileID: 6990081593806790679}
   inputActions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}
 --- !u!114 &2926968601090034961
@@ -873,23 +873,14 @@ PrefabInstance:
     - {fileID: 246495730960206203, guid: 3b69837b137ac9844a651b4eb9fcedaf, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 153946259858020827, guid: 3b69837b137ac9844a651b4eb9fcedaf, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4190967231159452853}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3b69837b137ac9844a651b4eb9fcedaf, type: 3}
---- !u!1 &5042998055766431472 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 153946259858020827, guid: 3b69837b137ac9844a651b4eb9fcedaf, type: 3}
+--- !u!114 &5223971357826727521 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1126461792410956106, guid: 3b69837b137ac9844a651b4eb9fcedaf, type: 3}
   m_PrefabInstance: {fileID: 5178780364061527851}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4190967231159452853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5042998055766431472}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 46bdcba08ff49ce4099c37feba0897cb, type: 3}

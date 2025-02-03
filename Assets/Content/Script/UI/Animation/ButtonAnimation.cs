@@ -4,7 +4,6 @@ using UnityEngine.EventSystems;
 [DisallowMultipleComponent]
 public class ButtonAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, ISubmitHandler, IPointerClickHandler
 {
-    
     public void OnPointerEnter(PointerEventData eventData)
     {
         OnSelect(eventData);
@@ -38,11 +37,11 @@ public class ButtonAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void ScaleButton()
     {
-        LeanTween.scale(gameObject, Vector3.one * 1.2f, 0.1f).setEase(LeanTweenType.easeOutBack).setIgnoreTimeScale(true); ;
+        LeanTween.scale(gameObject, Vector3.one * 1.2f, 0.1f).setEase(LeanTweenType.easeOutBack).setIgnoreTimeScale(true);
     }
 
     private void UnscaleButton()
     {
-        LeanTween.scale(gameObject, Vector3.one, 0.1f).setEase(LeanTweenType.easeOutBack).setIgnoreTimeScale(true); ;
+        LeanTween.scale(gameObject, Vector3.one, 0.1f).setEase(LeanTweenType.easeOutBack).setIgnoreTimeScale(true);
     }
 }

@@ -101,9 +101,13 @@ public class PlayerNetManager : NetworkBehaviour
         if (newRoll)
         {
             dice.ShowDice(true);
-            RpcActiveUIActions(netIdentity.connectionToClient, false);
-            RpcActiveThrowActions(netIdentity.connectionToClient, true);
-            if (isOwned) StartCoroutine(dice.RotateDiceRoutine());
+
+            if (isOwned)
+            {
+                GameUIManager.ActiveUIActions(false);
+                GameUIManager.ActiveThrowActions(true);
+                StartCoroutine(dice.RotateDiceRoutine());
+            }
         }
         else
         {

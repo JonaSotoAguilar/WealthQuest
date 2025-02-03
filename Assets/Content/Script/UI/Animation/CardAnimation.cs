@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public class CardAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, ISubmitHandler, IPointerClickHandler
@@ -18,11 +19,13 @@ public class CardAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void OnSelect(BaseEventData eventData)
     {
         AudioManager.PlaySoundButtonSelect();
+        ActiveOutline(true);
         ScaleButton();
     }
 
     public void OnDeselect(BaseEventData eventData)
     {
+        ActiveOutline(false);
         UnscaleButton();
     }
 
@@ -34,6 +37,15 @@ public class CardAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void OnSubmit(BaseEventData eventData)
     {
         AudioManager.PlaySoundButtonPress();
+    }
+
+    private void ActiveOutline(bool active)
+    {
+        Outline outline = GetComponent<Outline>();
+        if (outline != null)
+        {
+            outline.enabled = active;
+        }
     }
 
     private void ScaleButton()

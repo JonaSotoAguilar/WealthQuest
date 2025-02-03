@@ -23,13 +23,13 @@ public class Square : MonoBehaviour
         switch (type)
         {
             case SquareType.Event:
-                return data.GetRandomEventCards(1).Cast<Card>().ToList();
+                return data.GetRandomEventCards(2).Cast<Card>().ToList();
             case SquareType.Expense:
-                return data.GetRandomExpenseCards(1).Cast<Card>().ToList();
+                return data.GetRandomExpenseCards(2).Cast<Card>().ToList();
             case SquareType.Income:
-                return data.GetRandomIncomeCards(1).Cast<Card>().ToList();
+                return data.GetRandomIncomeCards(2).Cast<Card>().ToList();
             case SquareType.Investment:
-                return data.GetRandomInvestmentCards(1).Cast<Card>().ToList();
+                return data.GetRandomInvestmentCards(3).Cast<Card>().ToList();
             default:
                 return new List<Card>();
         }

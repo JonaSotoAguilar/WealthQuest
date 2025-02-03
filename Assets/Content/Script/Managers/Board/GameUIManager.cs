@@ -53,6 +53,18 @@ public class GameUIManager : MonoBehaviour
         return list;
     }
 
+    public static string GetCurrentNickname(string clientID, bool isLocal = true)
+    {
+        if (isLocal) return GameLocalManager.GetPlayer(clientID).Data.Nickname;
+        else return GameNetManager.GetPlayer(clientID).Data.Nickname;
+    }
+
+    public static int GetCurrentCharacterID(string clientID, bool isLocal = true)
+    {
+        if (isLocal) return GameLocalManager.GetPlayer(clientID).Data.CharacterID;
+        else return GameNetManager.GetPlayer(clientID).Data.CharacterID;
+    }
+
     #endregion
 
     #region Initialization
@@ -66,7 +78,6 @@ public class GameUIManager : MonoBehaviour
         }
 
         instance = this;
-        ShowPanel(false);
         SetBannerPlayer();
     }
 
@@ -270,12 +281,12 @@ public class GameUIManager : MonoBehaviour
 
     #region NextPlayer
 
-    public static async Task SetPlayerTurn(string clientID, bool animation = true)
+    public static async Task SetPlayerTurn(string clientID, bool animation = true, bool isLocal = true)
     {
-        if (animation) await instance.BannerNextPlayer(clientID); // Espera a que la animación termine
+        if (animation) await instance.BannerNextPlayer(clientID, isLocal);
 
         HUD currentHUD = GetHUD(clientID);
-        currentHUD.SetActiveTurn(true);
+        ActiveTurn(clientID, true);
 
         foreach (Transform child in currentHUD.transform)
         {
@@ -283,13 +294,12 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    public async Task BannerNextPlayer(string clientID)
+    public async Task BannerNextPlayer(string clientID, bool isLocal = true)
     {
         ShowsHUDs(false);
 
-        var data = GameLocalManager.GetPlayer(clientID).Data;
-        characterNextPlayer.sprite = characterDB.GetCharacter(data.CharacterID).characterIcon;
-        nicknameNextPlayer.text = data.Nickname;
+        characterNextPlayer.sprite = characterDB.GetCharacter(GetCurrentCharacterID(clientID, isLocal)).characterIcon;
+        nicknameNextPlayer.text = GetCurrentNickname(clientID, isLocal);
 
         bannerNextPlayer.SetActive(true);
         bannerNextPlayer.transform.localPosition = offScreenPosition;
@@ -298,7 +308,6 @@ public class GameUIManager : MonoBehaviour
         await MoveBanner(bannerNextPlayer, centerPosition.y, 0.4f, LeanTweenType.easeOutBack);
 
         await Task.Delay(600);
-
         AudioManager.PlaySoundBannerNextPlayerEnd();
         await MoveBanner(bannerNextPlayer, offScreenPosition.y, 0.4f, LeanTweenType.easeInBack);
 

@@ -22,7 +22,7 @@ public class FirebaseService : MonoBehaviour
     private Coroutine syncProfileCoroutine;
     [HideInInspector] public DependencyStatus dependencyStatus;
 
-    public bool logged = false;
+    private bool loggedIn = false;
 
     #region Initialization
 
@@ -42,6 +42,24 @@ public class FirebaseService : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "Menu" && loggedIn)
+        {
+            MenuManager.Instance.OpenGameMenu();
+        }
     }
 
     private IEnumerator CheckAndFixDependenciesAsync()
@@ -94,8 +112,8 @@ public class FirebaseService : MonoBehaviour
     {
         if (user != null)
         {
-            logged = true;
             ProfileUser.LoadProfile(user.UserId);
+            loggedIn = true;
             MenuManager.Instance.OpenGameMenu();
         }
         else
@@ -180,9 +198,9 @@ public class FirebaseService : MonoBehaviour
             {
                 if (success)
                 {
-                    logged = true;
                     ProfileUser.LoadFirebaseProfile(user.UserId, user.DisplayName, profileServer);
                     ProfileUser.LoadProfile(user.UserId);
+                    loggedIn = true;
                     MenuManager.Instance.OpenGameMenu();
                 }
                 else

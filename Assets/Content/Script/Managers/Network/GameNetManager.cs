@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mirror;
+using Mirror.BouncyCastle.Bcpg;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
@@ -29,12 +30,13 @@ public class GameNetManager : NetworkBehaviour
     // Players
     private List<PlayerNetManager> playersNet = new List<PlayerNetManager>();
     private PlayerNetManager currPlayer;
-    private int turnPlayer = 0;
 
     // SyncVars
     [SyncVar] private string content = "Default";
     [SyncVar] private string timePlayed = "00:00:00";
     [SyncVar(hook = nameof(OnChangeYear))] private int currentYear = 0;
+    [SyncVar] private int turnPlayer = 0;
+    private int readyBanner = 0;
 
     # region Getters
 
@@ -43,7 +45,6 @@ public class GameNetManager : NetworkBehaviour
     public static PlayerNetManager CurrentPlayer { get => instance.currPlayer; }
     public static PlayerNetManager GetPlayer(string clientID) => instance.playersNet.Find(player => player.Data.UID == clientID);
     public static int CurrentYear { get => instance.currentYear; }
-    public static int TurnPlayer { get => instance.turnPlayer; }
 
     #endregion
 
@@ -83,7 +84,7 @@ public class GameNetManager : NetworkBehaviour
         instance.UpdateYear(Data.currentYear);
         instance.RpcActiveUI(true);
 
-        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count > 1)
+        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count >= 1)
             instance.StartSelection();
         else
             StartGame();
@@ -140,13 +141,6 @@ public class GameNetManager : NetworkBehaviour
     private void StartTurn()
     {
         RpcNextPlayer(currPlayer.Data.UID);
-        StartCoroutine(WaitUIStartTurn());
-    }
-
-    private IEnumerator WaitUIStartTurn()
-    {
-        yield return new WaitForSeconds(1.6f);
-        currPlayer.StartTurn();
     }
 
     [Server]
@@ -245,7 +239,26 @@ public class GameNetManager : NetworkBehaviour
     [ClientRpc]
     private void RpcNextPlayer(string clientID)
     {
-        _ = GameUIManager.SetPlayerTurn(clientID);
+        _ = ReadyNextPlayer(clientID);
+    }
+
+    [Client]
+    private async Task ReadyNextPlayer(string clientID)
+    {
+        await GameUIManager.SetPlayerTurn(clientID, true, false);
+        CmdReadyNextPlayer(clientID);
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdReadyNextPlayer(string clientID)
+    {
+        readyBanner++;
+
+        if (readyBanner == playersNet.Count)
+        {
+            readyBanner = 0;
+            currPlayer.StartTurn();
+        }
     }
 
     [ClientRpc]
@@ -414,7 +427,7 @@ public class GameNetManager : NetworkBehaviour
             NetworkServer.Destroy(spawnedArrow);
             spawnedArrow = null;
         }
-        StartGame();
+        StartIntroCinematic();
     }
 
     #endregion

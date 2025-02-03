@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Mirror;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ public class PlayerNetUI : NetworkBehaviour
     [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
     private bool useBGames = false;
     [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 30f;
+    private int readyPlayer = 0;
 
     // Cards
     private readonly SyncList<Card> selectedCards = new SyncList<Card>();
@@ -78,12 +80,6 @@ public class PlayerNetUI : NetworkBehaviour
         if (isOwned) ui.OnQuestionAnswered += OnAnswerQuestion;
     }
 
-    private void OnAnswerQuestion(bool isCorrect)
-    {
-        ui.OnQuestionAnswered -= OnAnswerQuestion;
-        CmdSubmitAnswer(isCorrect);
-    }
-
     [Server]
     private void ResetQuestionValues()
     {
@@ -93,21 +89,63 @@ public class PlayerNetUI : NetworkBehaviour
         questions.Clear();
     }
 
-    [Command]
-    private void CmdSubmitAnswer(bool isCorrect)
+    private void OnAnswerQuestion(int index, bool isCorrect)
     {
-        SubmitAnswer(isCorrect);
+        ui.OnQuestionAnswered -= OnAnswerQuestion;
+        CmdSubmitAnswer(index, isCorrect);
+    }
+
+    [Command]
+    private void CmdSubmitAnswer(int index, bool isCorrect)
+    {
+        FinishAnswer(index, isCorrect);
+    }
+
+    [Server]
+    private void FinishAnswer(int index, bool isCorrect)
+    {
+        RpcStopSoundTimer();
+        StopCoroutine(nameof(QuestionTimer));
+
+        if (index < 0)
+        {
+            SubmitAnswer(false);
+        }
+        else
+        {
+            RpcAnsweredQuestion(index, isCorrect);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcAnsweredQuestion(int index, bool isCorrect)
+    {
+        _ = TaskRpcAnsweredQuestion(index, isCorrect);
+    }
+
+    private async Task TaskRpcAnsweredQuestion(int index, bool isCorrect)
+    {
+        await ui.AnsweredQuestion(index, isCorrect);
+        CmdFinishAnsweredQuestion(isCorrect);
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdFinishAnsweredQuestion(bool isCorrect)
+    {
+        readyPlayer++;
+
+        if (GameNetManager.Players.Count == readyPlayer)
+        {
+            readyPlayer = 0;
+            SubmitAnswer(isCorrect);
+        }
     }
 
     [Server]
     private void SubmitAnswer(bool isCorrect)
     {
-        RpcStopSoundTimer();
-        StopCoroutine(nameof(QuestionTimer));
-
         if (isCorrect)
         {
-            RpcCorrectAnswer();
             GetComponent<PlayerNetData>().AddPoints(levelQuestion);
             GameNetManager.Data.DeleteQuestion(currentQuestion);
             ResetQuestionValues();
@@ -115,7 +153,6 @@ public class PlayerNetUI : NetworkBehaviour
         }
         else
         {
-            RpcWrongAnswer();
             attempts--;
             if (attempts <= 0)
             {
@@ -155,7 +192,7 @@ public class PlayerNetUI : NetworkBehaviour
             yield return null;
         }
 
-        SubmitAnswer(false);
+        FinishAnswer(-1, false);
     }
 
     private void OnTimerUpdated(float oldTime, float newTime)
@@ -255,7 +292,7 @@ public class PlayerNetUI : NetworkBehaviour
     private void ShowCards()
     {
         PlayerNetData data = GetComponent<PlayerNetData>();
-        ui.ShowCards(data.Money);
+        ui.ShowCards(data.Money, isOwned);
         if (isOwned) ui.OnCardSelected += OnCardSelected;
     }
 
@@ -270,23 +307,64 @@ public class PlayerNetUI : NetworkBehaviour
     [Command]
     private void CmdSubmitCard(int indexCard)
     {
-        if (indexCard >= 0)
+        CardSelected(indexCard);
+    }
+
+    [Server]
+    private void CardSelected(int index)
+    {
+        if (index < 0)
         {
-            Card selectedCard = selectedCards[indexCard];
+            RpcCloseCards();
+            SubmitCard();
+        }
+        else
+        {
+            Card selectedCard = selectedCards[index];
             int capital = 0;
             if (selectedCard is InvestmentCard) capital = amountInvest;
             selectedCard.ApplyEffect(capital, false);
-            RpcPlaySoundSquare(selectedCard.GetCardType());
+
+            RpcCardSelected(index);
         }
+    }
+
+    [ClientRpc]
+    private void RpcCardSelected(int index)
+    {
+        _ = TaskCardSelected(index);
+    }
+
+    private async Task TaskCardSelected(int index)
+    {
+        await ui.CardSelected(index);
+        CmdFinishCard();
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdFinishCard()
+    {
+        readyPlayer++;
+
+        if (GameNetManager.Players.Count == readyPlayer)
+        {
+            readyPlayer = 0;
+            SubmitCard();
+        }
+    }
+
+    [Server]
+    private void SubmitCard()
+    {
         selectedCards.Clear();
-        RpcCloseCards();
+
+        FinishTurn();
     }
 
     [ClientRpc]
     private void RpcCloseCards()
     {
         ui.CloseCards();
-        if (isOwned) CmdFinishTurn();
     }
 
     #endregion
@@ -334,12 +412,6 @@ public class PlayerNetUI : NetworkBehaviour
         GetComponent<PlayerNetManager>().EnableDice(true);
     }
 
-    [Command]
-    private void CmdFinishTurn()
-    {
-        GetComponent<PlayerNetManager>().FinishTurn();
-    }
-
     private void FinishTurn()
     {
         GetComponent<PlayerNetManager>().FinishTurn();
@@ -349,23 +421,6 @@ public class PlayerNetUI : NetworkBehaviour
 
     #region Audio
 
-    [ClientRpc]
-    private void RpcCorrectAnswer()
-    {
-        AudioManager.PlaySoundCorrectAnswer();
-    }
-
-    [ClientRpc]
-    private void RpcWrongAnswer()
-    {
-        AudioManager.PlaySoundWrongAnswer();
-    }
-
-    [ClientRpc]
-    private void RpcPlaySoundSquare(SquareType type)
-    {
-        AudioManager.PlaySoundSquare(type);
-    }
 
     [ClientRpc]
     private void RpcSoundTimer()

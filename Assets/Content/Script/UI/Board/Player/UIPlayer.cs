@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using Mirror;
 using TMPro;
 using UnityEngine;
@@ -17,10 +18,12 @@ public class UIPlayer : MonoBehaviour
 
     [Header("Questions")]
     [SerializeField] private GameObject questionPanel;
+    [SerializeField] private GameObject questionTextPanel;
     [SerializeField] private TextMeshProUGUI questionText;
+    [SerializeField] private GameObject optionsParent;
     [SerializeField] private Button[] optionButtons;
     [SerializeField] private TextMeshProUGUI timerText;
-    public event Action<bool> OnQuestionAnswered;
+    public event Action<int, bool> OnQuestionAnswered;
 
     [Header("Attempts")]
     [SerializeField] private GameObject attemptsPanel;
@@ -33,6 +36,7 @@ public class UIPlayer : MonoBehaviour
     [SerializeField] private GameObject cardsPanel;
     [SerializeField] private Transform cardGrid;
     [SerializeField] private GameObject cardPrefab;
+    private List<Card> cards = new List<Card>();
     private List<Button> cardButtons = new List<Button>();
     private bool isInvestmentCard = false;
     public event Action<Card> OnCardSelected;
@@ -50,10 +54,15 @@ public class UIPlayer : MonoBehaviour
     private int moneyPlayer;
     private int amountInvest;
 
+    #region Getters
+
     public int AmountChange { get => amountChange; }
     public int MinInvestment { get => minInvestment; }
     public int AmountInvest { get => amountInvest; }
 
+    #endregion
+
+    #region Initialization
 
     void Awake()
     {
@@ -69,6 +78,8 @@ public class UIPlayer : MonoBehaviour
         canvasGroupUI.interactable = false;
         canvasGroupUI.blocksRaycasts = false;
     }
+
+    #endregion
 
     #region QuestionPanel
 
@@ -87,17 +98,20 @@ public class UIPlayer : MonoBehaviour
         attemptsValue.text = attemps.ToString();
         ShowQuestion(true);
 
-        if (systemLocal != null) systemLocal.SetSelectedGameObject(optionButtons[0].gameObject);
-        else EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
+
+        if (systemLocal != null && isOwned) systemLocal.SetSelectedGameObject(optionButtons[0].gameObject);
+        else if (isOwned) EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
 
         PauseMenu.SetCanvasGroup(canvasGroupUI);
     }
 
     void Answer(int index, Question questionData)
     {
+        foreach (Button button in optionButtons)
+            button.interactable = false;
         bool isCorrect = index == questionData.indexCorrectAnswer;
 
-        OnQuestionAnswered?.Invoke(isCorrect);
+        OnQuestionAnswered?.Invoke(index, isCorrect);
     }
 
     public void UpdateTimerDisplay(int secondsRemaining)
@@ -110,15 +124,106 @@ public class UIPlayer : MonoBehaviour
         if (visible)
         {
             questionPanel.transform.localScale = Vector3.zero;
+            questionTextPanel.SetActive(true);
+            foreach (Button button in optionButtons)
+            {
+                button.gameObject.SetActive(true);
+                button.interactable = true;
+            }
             questionPanel.SetActive(true);
+
             LeanTween.scale(questionPanel, Vector3.one, 0.3f).setEaseOutBack();
             AudioManager.PlayOpenCard();
         }
         else
         {
             questionPanel.SetActive(false);
+            ResertOutline();
+        }
+    }
+
+    public async Task AnsweredQuestion(int index, bool isCorrect)
+    {
+        if (index < 0 || index >= optionButtons.Length) return;
+
+        questionTextPanel.SetActive(false);
+        optionsParent.transform.localPosition = new Vector3(0, -50, 0);
+
+        // Esconde los botones que no son el índice seleccionado
+        for (int i = 0; i < optionButtons.Length; i++)
+        {
+            if (i != index) optionButtons[i].gameObject.SetActive(false);
         }
 
+        // Obtiene CardAnimation
+        CardAnimation cardAnimation = optionButtons[index].GetComponent<CardAnimation>();
+        cardAnimation.enabled = false;
+
+        // Obtener el componente Outline del botón
+        Outline outline = optionButtons[index].GetComponent<Outline>();
+
+        // Guardar el color original (para restaurarlo después)
+        Color originalOutlineColor = outline != null ? outline.effectColor : Color.clear;
+
+        // Reproduce sonido según si es correcto o incorrecto
+        if (isCorrect)
+        {
+            AudioManager.PlaySoundCorrectAnswer();
+            if (outline != null)
+            {
+                outline.enabled = true;
+                outline.effectColor = Color.green; // Cambia el borde a verde
+            }
+        }
+        else
+        {
+            AudioManager.PlaySoundWrongAnswer();
+            if (outline != null)
+            {
+                outline.enabled = true;
+                outline.effectColor = Color.red; // Cambia el borde a rojo
+            }
+        }
+
+        // Escala el botón seleccionado y espera a que termine la animación
+        await ScaleButtonAsync(optionButtons[index].gameObject, Vector3.one * 1.4f, 0.8f);
+
+        // Restaurar el color original del borde
+        if (outline != null)
+        {
+            outline.enabled = false;
+            outline.effectColor = originalOutlineColor;
+        }
+
+        // Esconde el botón después de la animación
+        optionButtons[index].gameObject.SetActive(false);
+        optionButtons[index].transform.localScale = Vector3.one;
+        optionsParent.transform.localPosition = new Vector3(0, -216, 0);
+        cardAnimation.enabled = true;
+    }
+
+    private void ResertOutline()
+    {
+        foreach (Button button in optionButtons)
+        {
+            Outline outline = button.GetComponent<Outline>();
+            if (outline != null)
+            {
+                outline.enabled = false;
+            }
+        }
+    }
+
+    private Task ScaleButtonAsync(GameObject button, Vector3 targetScale, float duration)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        // Usa LeanTween para escalar el botón y completa la tarea al finalizar
+        LeanTween.scale(button, targetScale, duration)
+            .setEaseOutBack()
+            .setOnComplete(() => tcs.SetResult(true));
+
+        return tcs.Task;
     }
 
     #endregion
@@ -158,8 +263,10 @@ public class UIPlayer : MonoBehaviour
 
     public void SetupCard(Card card, int points)
     {
+        // Instanciar la carta
         GameObject cardInstance = Instantiate(cardPrefab, cardGrid);
 
+        // Configurar el gráfico si es una carta de inversión
         GameObject grafic = cardInstance.transform.Find("Grafic").gameObject;
         if (card is InvestmentCard)
         {
@@ -171,6 +278,7 @@ public class UIPlayer : MonoBehaviour
             grafic.SetActive(false);
         }
 
+        // Configurar imagen, descripción y costo
         RawImage cardImage = cardInstance.transform.Find("CardImage").GetComponent<RawImage>();
         cardImage.texture = card.image.texture;
 
@@ -180,14 +288,18 @@ public class UIPlayer : MonoBehaviour
         TextMeshProUGUI costText = cardInstance.transform.Find("CostText").GetComponent<TextMeshProUGUI>();
         costText.text = card.GetFormattedText(points);
 
+        // Configurar el botón de la carta
         Button cardButton = cardInstance.GetComponent<Button>();
         cardButton.onClick.AddListener(() => HandleOptionSelected(card));
-
         cardButtons.Add(cardButton);
+        cards.Add(card);
     }
 
     public void HandleOptionSelected(Card selectedCard)
     {
+        foreach (Button button in cardButtons)
+            button.interactable = false;
+
         OnCardSelected?.Invoke(selectedCard);
     }
 
@@ -206,7 +318,7 @@ public class UIPlayer : MonoBehaviour
             Destroy(child.gameObject);
     }
 
-    public void ShowCards(int money)
+    public void ShowCards(int money, bool isOwned = true)
     {
         if (isInvestmentCard)
         {
@@ -227,14 +339,44 @@ public class UIPlayer : MonoBehaviour
         AudioManager.PlayOpenCard();
         LeanTween.scale(cardsPanel, Vector3.one, 0.3f).setEaseOutBack();
 
-        if (systemLocal != null) systemLocal.SetSelectedGameObject(cardButtons[0].gameObject);
-        else EventSystem.current.SetSelectedGameObject(cardButtons[0].gameObject);
+        if (systemLocal != null && isOwned) systemLocal.SetSelectedGameObject(cardButtons[0].gameObject);
+        else if (isOwned) EventSystem.current.SetSelectedGameObject(cardButtons[0].gameObject);
         PauseMenu.SetCanvasGroup(canvasGroupUI);
     }
 
     public bool ActiveCards()
     {
         return cardsPanel.activeSelf;
+    }
+
+    public async Task CardSelected(int index)
+    {
+        if (index < 0 || index >= cardButtons.Count) return;
+
+        investPanel.SetActive(false);
+
+        // Esconde los botones que no son el índice seleccionado
+        for (int i = 0; i < cardButtons.Count; i++)
+        {
+            if (i != index) cardButtons[i].gameObject.SetActive(false);
+        }
+
+        CardAnimation cardAnimation = cardButtons[index].GetComponent<CardAnimation>();
+        cardAnimation.enabled = false;
+
+        Outline outline = optionButtons[index].GetComponent<Outline>();
+        if (outline != null) outline.enabled = true;
+
+        // Reproduce sonido según si es correcto o incorrecto
+        Card selectedCard = cards[index];
+        AudioManager.PlaySoundSquare(selectedCard.GetCardType());
+
+        // Escala el botón seleccionado y espera a que termine la animación
+        await ScaleButtonAsync(cardButtons[index].gameObject, Vector3.one * 1.4f, 0.8f);
+
+        // Esconde el botón después de la animación
+        cardButtons[index].gameObject.SetActive(false);
+        CloseCards();
     }
 
     #endregion

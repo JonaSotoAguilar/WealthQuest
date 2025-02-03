@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem.UI;
 
@@ -68,9 +69,29 @@ public class PlayerLocalUI : MonoBehaviour
         questions.Clear();
     }
 
-    private void OnAnswerQuestion(bool isCorrect)
+    private void OnAnswerQuestion(int index, bool isCorrect)
     {
         ui.OnQuestionAnswered -= OnAnswerQuestion;
+        StopTimer();
+
+        if (index < 0)
+        {
+            SubmitAnswer(false);
+        }
+        else
+        {
+            _ = TaskRpcAnsweredQuestion(index, isCorrect);
+        }
+    }
+
+    private async Task TaskRpcAnsweredQuestion(int index, bool isCorrect)
+    {
+        await ui.AnsweredQuestion(index, isCorrect);
+        SubmitAnswer(isCorrect);
+    }
+
+    private void StopTimer()
+    {
         AudioManager.StopSoundSFX();
 
         // Detener el temporizador
@@ -79,12 +100,14 @@ public class PlayerLocalUI : MonoBehaviour
             StopCoroutine(questionTimerCoroutine);
             questionTimerCoroutine = null;
         }
+    }
 
+    private void SubmitAnswer(bool isCorrect)
+    {
         ui.ShowQuestion(false);
 
         if (isCorrect)
         {
-            AudioManager.PlaySoundCorrectAnswer();
             GetComponent<PlayerLocalData>().AddPoints(levelQuestion);
             GameLocalManager.Data.DeleteQuestion(currentQuestion);
             ResetQuestionValues();
@@ -92,7 +115,6 @@ public class PlayerLocalUI : MonoBehaviour
         }
         else
         {
-            AudioManager.PlaySoundWrongAnswer();
             attempts--;
             if (attempts <= 0)
             {
@@ -129,7 +151,7 @@ public class PlayerLocalUI : MonoBehaviour
         }
 
         // Si se agota el tiempo, se considera respuesta incorrecta
-        OnAnswerQuestion(false);
+        OnAnswerQuestion(-1, false);
     }
 
     #endregion
@@ -198,21 +220,36 @@ public class PlayerLocalUI : MonoBehaviour
         ui.OnCardSelected -= OnCardSelected;
         int index = -1;
         if (card != null) index = selectedCards.IndexOf(card);
-        SubmitCard(index);
+        CardSelected(index);
     }
 
-    private void SubmitCard(int indexCard)
+    private void CardSelected(int index)
     {
-        if (indexCard >= 0)
+        if (index < 0)
         {
-            Card selectedCard = selectedCards[indexCard];
-            int capital = 0;
-            if (selectedCard is InvestmentCard) capital = ui.AmountInvest;
-            selectedCard.ApplyEffect(capital);
-            AudioManager.PlaySoundSquare(selectedCard.GetCardType());
+            ui.CloseCards();
+            SubmitCard();
         }
+        else
+        {
+            _ = TaskCardSelected(index);
+        }
+    }
+
+    private async Task TaskCardSelected(int index)
+    {
+        Card selectedCard = selectedCards[index];
+        int capital = 0;
+        if (selectedCard is InvestmentCard) capital = ui.AmountInvest;
+        selectedCard.ApplyEffect(capital);
+
+        await ui.CardSelected(index);
+        SubmitCard();
+    }
+
+    private void SubmitCard()
+    {
         selectedCards.Clear();
-        ui.CloseCards();
         FinishTurn();
     }
 

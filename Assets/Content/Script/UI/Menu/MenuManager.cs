@@ -60,9 +60,6 @@ public class MenuManager : MonoBehaviour
     private void Awake()
     {
         CreateInstance();
-
-        if (FirebaseService.Instance.logged == true)
-            OpenGameMenu();
     }
 
     private void CreateInstance()
@@ -115,7 +112,6 @@ public class MenuManager : MonoBehaviour
 
     public void OpenGameMenu()
     {
-        Debug.Log("Open Test Menu:" + ProfileUser.ApplyTest());
         if (ProfileUser.ApplyTest())
         {
             OpenTestMenu();

@@ -36,7 +36,7 @@ public class PauseMenu : MonoBehaviour
     // Control Canvas
     private GameObject currentMenu;
     private GameObject currentSelected;
-    [SerializeField] private CanvasGroup canvasGroupUI;
+    private CanvasGroup canvasGroupUI;
 
     #region Initialization
 
@@ -203,7 +203,6 @@ public class PauseMenu : MonoBehaviour
         if (gameData.mode != 3)
         {
             SceneManager.LoadScene("Menu");
-
         }
         else
         {
@@ -258,6 +257,7 @@ public class PauseMenu : MonoBehaviour
     private void GroupActive(CanvasGroup canvasGroup, bool active)
     {
         if (canvasGroup == null) return;
+        else if (gameData.mode <= 3) return;
         canvasGroup.interactable = active;
         canvasGroup.blocksRaycasts = active;
     }

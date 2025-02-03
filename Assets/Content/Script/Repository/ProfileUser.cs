@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Mirror.Examples.Basic;
 using UnityEngine;
 
 [System.Serializable]
@@ -14,8 +15,6 @@ public static class ProfileUser
     public static int playedGames;
     public static int financeLevel;
     public static string role;
-
-    private static bool testApplied = true;
 
     // BGames
     public static BGamesProfile bGamesProfile;
@@ -48,8 +47,6 @@ public static class ProfileUser
         playedGames = PlayerPrefs.GetInt("playedGames", 0);
         financeLevel = PlayerPrefs.GetInt("financeLevel", 1);
         role = PlayerPrefs.GetString("role", "Player");
-
-        testApplied = PlayerPrefs.GetInt("testApplied", 1) == 1;
     }
 
     public static void LoadFirebaseProfile(string userId, string displayName, ProfileData data)
@@ -148,7 +145,6 @@ public static class ProfileUser
             UpdateBestScoreUser(data.score);
         }
 
-        RefreshTest();
         PlayerPrefs.Save();
         FirebaseService.Instance.UpdateProfile(uid);
     }
@@ -247,26 +243,17 @@ public static class ProfileUser
 
     public static bool ApplyTest()
     {
-        return testApplied;
+        int testApplied = PlayerPrefs.GetInt("testApplied", 0);
+        if (financeLevel >= 3) return false;
+        else if (testApplied == 0) return true;
+        else if (testApplied % 5 == 0) return true;
+        else return false;
     }
 
-    private static void RefreshTest()
+    public static void UpdateTestApplied()
     {
-        // Se aplica cada 3 partidas sino es nivel 3 (máximo)
-        if (financeLevel >= 3 || playedGames % 3 != 0)
-        {
-            UpdateTestApplied(false);
-        }
-        else
-        {
-            UpdateTestApplied(true);
-        }
-    }
-
-    public static void UpdateTestApplied(bool applied)
-    {
-        testApplied = applied;
-        PlayerPrefs.SetInt("testApplied", testApplied ? 1 : 0);
+        int testApplied = PlayerPrefs.GetInt("testApplied", 0);
+        PlayerPrefs.SetInt("testApplied", testApplied + 1);
         PlayerPrefs.Save();
     }
 

@@ -82,7 +82,7 @@ public class TestManager : MonoBehaviour
 
         DateTime date = DateTime.Now;
         testResults.Date = date.ToString("dd/MM/yyyy HH:mm:ss");
-        ProfileUser.UpdateTestApplied(false);
+        ProfileUser.UpdateTestApplied();
         FirebaseService.Instance.SaveTestResults(testResults);
         MenuManager.Instance.OpenStartMenu();
     }

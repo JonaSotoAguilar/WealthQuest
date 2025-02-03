@@ -315,7 +315,7 @@ public class RelayService : NetworkManager
         GameObject player = Instantiate(playerGamePrefab);
         PlayerNetManager playerManager = player.GetComponent<PlayerNetManager>();
         playerManager.Data.SetPlayerData(playerData);
-        playerManager.Data.Initialize();
+        playerManager.Data.Initialize();    
 
         NetworkServer.AddPlayerForConnection(conn, player);
     }

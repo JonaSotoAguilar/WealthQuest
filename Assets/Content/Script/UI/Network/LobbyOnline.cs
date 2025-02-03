@@ -281,7 +281,7 @@ public class LobbyOnline : NetworkBehaviour
         readyPlayers++;
         Debug.Log("Player ready:" + readyPlayers);
         if (readyPlayers <= 1) return;
-        if (newGame && readyPlayers == RelayService.Instance.connBanners)
+        else if (newGame && readyPlayers == RelayService.Instance.connBanners)
             StartGameScene();
         else if (readyPlayers == data.playersData.Count)
             StartGameScene();
