@@ -162,7 +162,7 @@ public class PauseMenu : MonoBehaviour
 
     public void OpenConfirmMenuPopup()
     {
-        currentMenu.SetActive(false);
+        if (currentMenu != null) currentMenu.SetActive(false);
         confirmMenuPopup.SetActive(true);
         eventSystem.SetSelectedGameObject(firstConfirmMenuButton);
         currentMenu = confirmMenuPopup;

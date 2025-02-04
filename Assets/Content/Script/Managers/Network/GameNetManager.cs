@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mirror;
 using Mirror.BouncyCastle.Bcpg;
+using Unity.Services.Relay;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
@@ -36,7 +37,7 @@ public class GameNetManager : NetworkBehaviour
     [SyncVar] private string timePlayed = "00:00:00";
     [SyncVar(hook = nameof(OnChangeYear))] private int currentYear = 0;
     [SyncVar] private int turnPlayer = 0;
-    private int readyBanner = 0;
+    private int readyPlayer = 0;
 
     # region Getters
 
@@ -186,44 +187,80 @@ public class GameNetManager : NetworkBehaviour
         foreach (var player in playersNet)
             player.Data.ProccessFinances();
 
+        RpcNextYear();
         UpdateYear(newYear);
+        while (instance.readyPlayer < instance.playersNet.Count) { }
+        Debug.Log("Ready Year");
+        readyPlayer = 0;
     }
 
     [Server]
     private void FinishGame()
     {
         // 1. Calculate winner
-        PlayerNetManager winner = playersNet[0];
+        SetFinalScore();
+
+        // 2. Finish Game
+        RpcFinishGame();
+    }
+
+    public void ExitGame()
+    {
+        bool isHost = isClient && isServer;
+        RelayService.Instance.FinishGame(isHost);
+    }
+
+    [Server]
+    private void SetFinalScore()
+    {
+        // Calcular puntajes finales para todos los jugadores
         foreach (var player in playersNet)
         {
             player.Data.SetFinalScore();
-            if (player.Data.FinalScore > winner.Data.FinalScore)
-                winner = player;
         }
 
-        // 2. Announce winner (Cinematic)
+        // Ordenar jugadores por puntaje (de mayor a menor)
+        List<PlayerNetManager> sortedPlayers = new List<PlayerNetManager>(playersNet);
+        sortedPlayers.Sort((a, b) => b.Data.FinalScore.CompareTo(a.Data.FinalScore));
 
+        // Asignar posiciones considerando empates
+        int currentRank = 1; // Comenzar desde la posición 1
+        int playersAtRank = 0; // Número de jugadores en la posición actual
+        int previousScore = sortedPlayers[0].Data.FinalScore; // Puntaje del primer jugador
 
-        // 3. Save History
-        RpcSaveHistory();
+        for (int i = 0; i < sortedPlayers.Count; i++)
+        {
+            var player = sortedPlayers[i];
 
-        // 4. Close game (Return to main menu)
-        LoadMenu();
+            if (player.Data.FinalScore < previousScore)
+            {
+                // Si el puntaje cambia, avanzar en el ranking
+                currentRank += playersAtRank;
+                playersAtRank = 0; // Reiniciar el contador de jugadores en la posición actual
+            }
+
+            // Asignar la posición actual al jugador
+            player.Data.SetResultPosition(currentRank);
+            playersAtRank++;
+            previousScore = player.Data.FinalScore;
+        }
+
     }
 
+
     [ClientRpc]
-    private void RpcSaveHistory()
+    private void RpcFinishGame()
+    {
+        SaveHistory();
+        _ = GameUIManager.ShowFinishGame(false);
+    }
+
+    private void SaveHistory()
     {
         RelayService.Instance.GameFinished();
         int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
         FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score);
         ProfileUser.SaveGame(finishData, 3);
-    }
-
-    [Server]
-    private void LoadMenu()
-    {
-        RelayService.Instance.FinishGame();
     }
 
     #endregion
@@ -252,13 +289,32 @@ public class GameNetManager : NetworkBehaviour
     [Command(requiresAuthority = false)]
     private void CmdReadyNextPlayer(string clientID)
     {
-        readyBanner++;
+        readyPlayer++;
 
-        if (readyBanner == playersNet.Count)
+        if (readyPlayer == playersNet.Count)
         {
-            readyBanner = 0;
+            readyPlayer = 0;
             currPlayer.StartTurn();
         }
+    }
+
+    [ClientRpc]
+    private void RpcNextYear()
+    {
+        _ = ReadyNextYear();
+    }
+
+    [Client]
+    private async Task ReadyNextYear()
+    {
+        await GameUIManager.ShowNextYear();
+        CmdReadyNextYear();
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdReadyNextYear()
+    {
+        readyPlayer++;
     }
 
     [ClientRpc]

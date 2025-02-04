@@ -173,7 +173,7 @@ public class GameData : ScriptableObject
         return topicList[randomIndex];
     }
 
-    public List<Question> GetQuestionsByTopic(int level)
+    public List<Question> GetQuestionsByLevel(int level)
     {
         // Intentar obtener preguntas desde el nivel más alto hacia abajo
         for (int currentLevel = level; currentLevel >= 1; currentLevel--)
@@ -190,7 +190,7 @@ public class GameData : ScriptableObject
 
         // Si no hay preguntas en ningún nivel, restaurar niveles y volver a intentarlo
         ResetQuestionsByLevel(level);
-        return GetQuestionsByTopic(level);
+        return GetQuestionsByLevel(level);
     }
 
     public void ResetQuestionsByLevel(int level)

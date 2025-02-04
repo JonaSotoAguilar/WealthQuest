@@ -315,7 +315,7 @@ public class RelayService : NetworkManager
         GameObject player = Instantiate(playerGamePrefab);
         PlayerNetManager playerManager = player.GetComponent<PlayerNetManager>();
         playerManager.Data.SetPlayerData(playerData);
-        playerManager.Data.Initialize();    
+        playerManager.Data.Initialize();
 
         NetworkServer.AddPlayerForConnection(conn, player);
     }
@@ -350,13 +350,17 @@ public class RelayService : NetworkManager
         }
     }
 
-    public void FinishGame()
+    public void FinishGame(bool isHost = false)
     {
         gameState = GameState.Finished;
         if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
         {
-            Debug.Log("Terminando el juego y regresando al menú...");
-            if (NetworkServer.active)
+            if (!isHost)
+            {
+                StopClient();
+                SceneManager.LoadScene(SCENE_MENU);
+            }
+            else if (NetworkServer.active)
             {
                 ServerChangeScene(SCENE_MENU);
             }

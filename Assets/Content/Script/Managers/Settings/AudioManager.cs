@@ -200,12 +200,12 @@ public class AudioManager : MonoBehaviour
         Instance.sfxMenuSource.Play();
     }
 
-    public static void PlaySoundBannerNextPlayer()
+    public static void PlaySoundAppear()
     {
         Instance.sfxMenuSource.PlayOneShot(Instance.bannerNextPlayerClip);
     }
 
-    public static void PlaySoundBannerNextPlayerEnd()
+    public static void PlaySoundBannerDisappear()
     {
         Instance.sfxMenuSource.PlayOneShot(Instance.bannerNextPlayerEndClip);
     }

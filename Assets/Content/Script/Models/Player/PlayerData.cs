@@ -51,6 +51,7 @@ public class PlayerData
 
         position = 0;
         points = 0;
+        finalScore = 0;
 
         money = 1000;
         salary = 1000;

@@ -270,11 +270,13 @@ public class UIPlayer : MonoBehaviour
         GameObject grafic = cardInstance.transform.Find("Grafic").gameObject;
         if (card is InvestmentCard)
         {
+            isInvestmentCard = true;
             ConfigureGrafic(card, grafic);
             grafic.SetActive(true);
         }
         else
         {
+            isInvestmentCard = false;
             grafic.SetActive(false);
         }
 
@@ -305,7 +307,6 @@ public class UIPlayer : MonoBehaviour
 
     public void CloseCards()
     {
-        if (investPanel.activeSelf == true) ShowInvest(false);
         cardsPanel.SetActive(false);
         investPanel.SetActive(false);
         ClearCards();
@@ -364,7 +365,7 @@ public class UIPlayer : MonoBehaviour
         CardAnimation cardAnimation = cardButtons[index].GetComponent<CardAnimation>();
         cardAnimation.enabled = false;
 
-        Outline outline = optionButtons[index].GetComponent<Outline>();
+        Outline outline = cardButtons[index].GetComponent<Outline>();
         if (outline != null) outline.enabled = true;
 
         // Reproduce sonido según si es correcto o incorrecto
@@ -385,7 +386,6 @@ public class UIPlayer : MonoBehaviour
 
     private void ConfigureGrafic(Card card, GameObject grafic)
     {
-        isInvestmentCard = true;
         InvestmentCard investmentCard = (InvestmentCard)card;
         Sprite image = investmentCard.GenerateGraphSprite();
         card.image = image;

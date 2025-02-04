@@ -10,6 +10,7 @@ public class PlayerLocalData : MonoBehaviour
 
     // Variables
     [SerializeField] private float interest = 0.05f;
+    private int resultPosition = 4;
 
     #region Getters
 
@@ -34,6 +35,8 @@ public class PlayerLocalData : MonoBehaviour
     public int Income { get => playerData.Income; set => playerData.Income = value; }
     public int Expense { get => playerData.Expense; set => playerData.Expense = value; }
 
+    public int ResultPosition { get => resultPosition; set => resultPosition = value; }
+
     #endregion
 
     #region Change Values
@@ -41,12 +44,22 @@ public class PlayerLocalData : MonoBehaviour
     public void SetFinalScore()
     {
         double pointsMoney;
-        float finalMoney = Money + Invest - Debt;
+        int finalMoney = GetFinalCapital();
 
         if (finalMoney <= 0) pointsMoney = -Math.Log10(-finalMoney + 1);
         else pointsMoney = Math.Log10(finalMoney + 1);
 
         FinalScore = (int)Math.Round(Points + pointsMoney, 2);
+    }
+
+    public int GetFinalCapital()
+    {
+        return Money + Invest - Debt;
+    }
+
+    public void SetResultPosition(int position)
+    {
+        resultPosition = position;
     }
 
     public void NewPosition(int newPosition)
@@ -63,9 +76,8 @@ public class PlayerLocalData : MonoBehaviour
 
     private void UpdateLevel()
     {
-        Level = Mathf.Clamp(Level, 1, 3);
-        int additionalLevels = Mathf.FloorToInt(Points / 8);
-        Level = Mathf.Clamp(Level + additionalLevels, 1, 3);
+        int newLevel = 1 + Mathf.FloorToInt(Points / 6);
+        if (newLevel != Level) Level = Mathf.Clamp(newLevel, 1, 4);
     }
 
     public void AddMoney(int amount)

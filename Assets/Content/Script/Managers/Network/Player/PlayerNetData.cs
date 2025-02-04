@@ -32,6 +32,7 @@ public class PlayerNetData : NetworkBehaviour
 
     // Variables
     [SerializeField] private float interest = 0.05f;
+    [SyncVar] private int resultPosition = 4;
 
     #region Getters
 
@@ -52,10 +53,11 @@ public class PlayerNetData : NetworkBehaviour
     public int Income { get => income; }
     public int Expense { get => expense; }
 
+    public int ResultPosition { get => resultPosition; set => resultPosition = value; }
+
     #endregion
 
     #region Initialization
-
 
     public void Initialize()
     {
@@ -97,13 +99,23 @@ public class PlayerNetData : NetworkBehaviour
     public void SetFinalScore()
     {
         double pointsMoney;
-        float finalMoney = money + invest - debt;
+        int finalMoney = GetFinalCapital();
 
         if (finalMoney <= 0) pointsMoney = -Math.Log10(-finalMoney + 1);
         else pointsMoney = Math.Log10(finalMoney + 1);
 
         finalScore = (int)Math.Round(points + pointsMoney, 2);
         playerData.FinalScore = finalScore;
+    }
+
+    public int GetFinalCapital()
+    {
+        return Money + Invest - Debt;
+    }
+
+    public void SetResultPosition(int position)
+    {
+        resultPosition = position;
     }
 
     [Server]
@@ -124,9 +136,8 @@ public class PlayerNetData : NetworkBehaviour
     [Server]
     private void UpdateLevel()
     {
-        level = Mathf.Clamp(Level, 1, 3);
-        int additionalLevels = Mathf.FloorToInt(Points / 8);
-        level = Mathf.Clamp(Level + additionalLevels, 1, 3);
+        int newLevel = 1 + Mathf.FloorToInt(Points / 6);
+        if (newLevel != level) level = Mathf.Clamp(newLevel, 1, 4);
     }
 
     [Server]

@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mirror;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -40,6 +38,25 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nicknameNextPlayer;
     private Vector3 offScreenPosition;
     private Vector3 centerPosition;
+
+    [Space, Header("Next Year")]
+    [SerializeField] private GameObject nextYearBackground;
+    [SerializeField] private GameObject nextYearClouds;
+    [SerializeField] private GameObject nextYearClock;
+    [SerializeField] private GameObject nextYearSign;
+
+    [Space, Header("Finish Game")]
+    [SerializeField] private GameObject finishBackground;
+    [SerializeField] private GameObject cloudsPanel;
+    [SerializeField] private GameObject wavesPanel;
+    [SerializeField] private GameObject finishText;
+
+    [Space, Header("Results")]
+    [SerializeField] private GameObject resultsPanel;
+    [SerializeField] private GameObject resultParent;
+    [SerializeField] private GameObject resultPrefab;
+    private List<Result> resultsPlayers = new List<Result>();
+    [SerializeField] private Button returnButton;
 
     #region Getters
 
@@ -100,6 +117,7 @@ public class GameUIManager : MonoBehaviour
         bannerNextPlayer.SetActive(false);
     }
 
+
     private void OnEnable()
     {
         // Escuchar cambios en el dispositivo de entrada
@@ -118,18 +136,6 @@ public class GameUIManager : MonoBehaviour
         instance.gameObject.SetActive(show);
     }
 
-    public static void InitializeHUD(string clientID, bool isLocal = true)
-    {
-        if (instance == null) return;
-
-        HUD newHUD = Instantiate(instance.HUDPrefab, instance.HUDParent);
-        instance.HUDs.Add(clientID, newHUD);
-        newHUD.name = "HUD [" + clientID + "]";
-
-        if (isLocal) newHUD.InitializeUILocal(clientID);
-        else newHUD.InitializeUINet(clientID);
-    }
-
     #endregion
 
     #region Year
@@ -144,6 +150,18 @@ public class GameUIManager : MonoBehaviour
     #endregion
 
     #region HUD
+
+    public static void InitializeHUD(string clientID, bool isLocal = true)
+    {
+        if (instance == null) return;
+
+        HUD newHUD = Instantiate(instance.HUDPrefab, instance.HUDParent);
+        instance.HUDs.Add(clientID, newHUD);
+        newHUD.name = "HUD [" + clientID + "]";
+
+        if (isLocal) newHUD.InitializeUILocal(clientID);
+        else newHUD.InitializeUINet(clientID);
+    }
 
     public static HUD GetHUD(string clientID)
     {
@@ -279,7 +297,7 @@ public class GameUIManager : MonoBehaviour
 
     #endregion
 
-    #region NextPlayer
+    #region Next Player
 
     public static async Task SetPlayerTurn(string clientID, bool animation = true, bool isLocal = true)
     {
@@ -304,27 +322,15 @@ public class GameUIManager : MonoBehaviour
         bannerNextPlayer.SetActive(true);
         bannerNextPlayer.transform.localPosition = offScreenPosition;
 
-        AudioManager.PlaySoundBannerNextPlayer();
-        await MoveBanner(bannerNextPlayer, centerPosition.y, 0.4f, LeanTweenType.easeOutBack);
+        AudioManager.PlaySoundAppear();
+        await MoveLocalYAsync(bannerNextPlayer, centerPosition.y, 0.6f, LeanTweenType.easeOutBack);
 
         await Task.Delay(600);
-        AudioManager.PlaySoundBannerNextPlayerEnd();
-        await MoveBanner(bannerNextPlayer, offScreenPosition.y, 0.4f, LeanTweenType.easeInBack);
+        AudioManager.PlaySoundBannerDisappear();
+        await MoveLocalYAsync(bannerNextPlayer, offScreenPosition.y, 0.4f, LeanTweenType.easeInBack);
 
         bannerNextPlayer.SetActive(false);
         ShowsHUDs(true);
-    }
-
-    // Modificar la función MoveBanner para usar localPosition
-    private Task MoveBanner(GameObject banner, float targetY, float duration, LeanTweenType easeType)
-    {
-        var tcs = new TaskCompletionSource<bool>();
-
-        LeanTween.moveLocalY(banner, targetY, duration)
-            .setEase(easeType)
-            .setOnComplete(() => tcs.SetResult(true));
-
-        return tcs.Task;
     }
 
     public static void ActiveTurn(string clientID, bool active)
@@ -343,6 +349,232 @@ public class GameUIManager : MonoBehaviour
             child.position += new Vector3(0, 15, 0);
         }
         currentHUD.SetActiveTurn(false);
+    }
+
+    #endregion
+
+    #region Next Year
+
+    public static async Task ShowNextYear()
+    {
+        instance.ActiveNextYear(true);
+        await instance.AnimateNextYear();
+        instance.ActiveNextYear(false);
+    }
+
+    private async Task AnimateNextYear()
+    {
+        // Posicionar el fondo en Y=0
+        AudioManager.PlaySoundAppear();
+        await MoveLocalYAsync(nextYearBackground, 0, 0.5f, LeanTweenType.easeOutCubic);
+
+        // Mover los otros 3 elementos en paralelo a sus posiciones iniciales
+        AudioManager.PlaySoundAppear();
+        var cloudsTask = MoveLocalYAsync(nextYearClouds, 0, 0.5f, LeanTweenType.easeOutCubic);
+        var clockTask = MoveLocalYAsync(nextYearClock, 540, 0.5f, LeanTweenType.easeOutCubic);
+        var signTask = MoveLocalYAsync(nextYearSign, -260, 0.5f, LeanTweenType.easeOutCubic);
+
+        await Task.WhenAll(cloudsTask, clockTask, signTask);
+
+        // Animación de rotación del reloj (entre -15 y 15 grados, repetitiva)
+        var clockRotationTween = LeanTween.rotateZ(nextYearClock, -15, 0.5f)
+            .setLoopPingPong()
+            .setEase(LeanTweenType.easeInOutSine);
+
+        // Animación de movimiento cíclico del letrero (entre Y=180 y Y=150)
+        var signBounceTween = LeanTween.moveLocalY(nextYearSign, -280, 0.75f)
+            .setLoopPingPong()
+            .setEase(LeanTweenType.easeInOutSine);
+
+        // Esperar unos segundos con animaciones activas
+        await Task.Delay(2000);
+
+        // Detener animaciones cíclicas
+        LeanTween.cancel(nextYearClock);
+        LeanTween.cancel(nextYearSign);
+
+        // Animación de salida en paralelo
+        AudioManager.PlaySoundBannerDisappear();
+        var clockExitTask = MoveLocalYAsync(nextYearClock, 1080, 0.3f, LeanTweenType.easeInCubic);
+        var signExitTask = MoveLocalYAsync(nextYearSign, -800, 0.3f, LeanTweenType.easeInCubic);
+
+        await Task.WhenAll(clockExitTask, signExitTask);
+
+        var cloudsExitTask = MoveLocalYAsync(nextYearClouds, 1080, 0.3f, LeanTweenType.easeInCubic);
+        var backgroundExitTask = MoveLocalYAsync(nextYearBackground, 1080, 0.3f, LeanTweenType.easeInCubic);
+
+        await Task.WhenAll(cloudsExitTask, clockExitTask, signExitTask, backgroundExitTask);
+        nextYearClock.transform.localRotation = Quaternion.Euler(0, 0, 15);
+    }
+
+    private void ActiveNextYear(bool active)
+    {
+        nextYearBackground.SetActive(active);
+        nextYearClouds.SetActive(active);
+        nextYearClock.SetActive(active);
+        nextYearSign.SetActive(active);
+    }
+
+    #endregion
+
+    #region Finish Game
+
+    public static async Task ShowFinishGame(bool isLocal = true)
+    {
+        await instance.AnimateFinishSequence();
+        instance.SetResults(isLocal);
+    }
+
+    private async Task AnimateFinishSequence()
+    {
+        // Background animation
+        finishBackground.SetActive(true);
+        await MoveLocalYAsync(finishBackground, 0, 0.5f, LeanTweenType.easeOutCubic);
+
+        // Clouds and waves animation
+        cloudsPanel.SetActive(true);
+        wavesPanel.SetActive(true);
+        AudioManager.PlaySoundAppear();
+        var cloudsTask = MoveLocalYAsync(cloudsPanel, 0, 0.5f, LeanTweenType.easeOutCubic);
+        var wavesTask = MoveLocalYAsync(wavesPanel, 0, 0.5f, LeanTweenType.easeOutCubic);
+        await Task.WhenAll(cloudsTask, wavesTask);
+
+        // Finish text animation
+        finishText.SetActive(true);
+        AudioManager.PlaySoundAppear();
+        await MoveLocalYAsync(finishText, 0, 0.5f, LeanTweenType.easeOutCubic);
+
+        // Wait for 2 seconds
+        await Task.Delay(2000);
+
+        // Move finish text out of the screen
+        AudioManager.PlaySoundBannerDisappear();
+        await MoveLocalYAsync(finishText, 1080, 0.5f, LeanTweenType.easeInCubic);
+    }
+
+    private void SetResults(bool isLocal = true)
+    {
+        if (isLocal)
+        {
+            SetResultsLocal();
+        }
+        else
+        {
+            SetResultsNet();
+        }
+    }
+
+    private void SetResultsLocal(bool isLocal = true)
+    {
+        foreach (var player in GameLocalManager.Players)
+        {
+            Result newResult = Instantiate(resultPrefab, resultParent.transform).GetComponent<Result>();
+            newResult.InitializeResult(player.Data.Nickname, characterDB.GetCharacter(player.Data.CharacterID).characterIcon);
+            resultsPlayers.Add(newResult);
+        }
+        ActiveResultPanel(isLocal);
+    }
+
+    private void SetResultsNet(bool isLocal = true)
+    {
+        foreach (var player in GameNetManager.Players)
+        {
+            Result newResult = Instantiate(resultPrefab, resultParent.transform).GetComponent<Result>();
+            newResult.InitializeResult(player.Data.Nickname, characterDB.GetCharacter(player.Data.CharacterID).characterIcon);
+            resultsPlayers.Add(newResult);
+        }
+        ActiveResultPanel(isLocal);
+    }
+
+    private void ActiveResultPanel(bool isLocal = true)
+    {
+        // Configurar la escala y opacidad inicial del panel
+        resultsPanel.transform.localScale = Vector3.zero;
+        CanvasGroup canvasGroup = resultsPanel.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = resultsPanel.AddComponent<CanvasGroup>();
+        }
+        canvasGroup.alpha = 0;
+
+        // Activar el panel y animarlo
+        resultsPanel.SetActive(true);
+        AnimateResultsPanel(canvasGroup, isLocal);
+    }
+
+    private void AnimateResultsPanel(CanvasGroup canvasGroup, bool isLocal = true)
+    {
+        AudioManager.PlaySoundAppear();
+        // Animar escala de 0 a 1
+        LeanTween.scale(resultsPanel, Vector3.one, 0.5f).setEase(LeanTweenType.easeOutBack);
+
+        // Animar opacidad de 0 a 1
+        LeanTween.value(resultsPanel, 0, 1, 0.5f)
+            .setEase(LeanTweenType.easeOutQuad)
+            .setOnUpdate((float alpha) =>
+            {
+                canvasGroup.alpha = alpha;
+            })
+            .setOnComplete(() =>
+            {
+                if (isLocal)
+                {
+                    UpdateResultsLocal();
+                }
+                else
+                {
+                    UpdateResultsNet();
+                }
+            });
+    }
+
+    private void UpdateResultsLocal()
+    {
+        for (int i = 0; i < GameLocalManager.Players.Count; i++)
+        {
+            // Acceder directamente al resultado y jugador correspondiente por índice
+            Result result = resultsPlayers[i];
+            var player = GameLocalManager.Players[i];
+
+            // Actualizar el resultado con animación
+            result.UpdateResultLocal(player.Data.UID);
+        }
+        LeanTween.delayedCall(1.5f, () =>
+            {
+                returnButton.gameObject.SetActive(true);
+            });
+    }
+
+    private void UpdateResultsNet()
+    {
+        for (int i = 0; i < GameLocalManager.Players.Count; i++)
+        {
+            // Acceder directamente al resultado y jugador correspondiente por índice
+            Result result = resultsPlayers[i];
+            var player = GameLocalManager.Players[i];
+
+            // Actualizar el resultado con animación
+            result.UpdateResultLocal(player.Data.UID);
+        }
+        LeanTween.delayedCall(1.5f, () =>
+            {
+                returnButton.gameObject.SetActive(true);
+            });
+    }
+
+    #endregion
+
+    #region Utils
+
+    private Task MoveLocalYAsync(GameObject target, float targetY, float duration, LeanTweenType easeType)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        LeanTween.moveLocalY(target, targetY, duration)
+            .setEase(easeType)
+            .setOnComplete(() => tcs.SetResult(true));
+
+        return tcs.Task;
     }
 
     #endregion

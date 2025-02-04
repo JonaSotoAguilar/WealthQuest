@@ -69,7 +69,7 @@ public class PlayerNetUI : NetworkBehaviour
         {
             levelQuestion = GetComponent<PlayerNetData>().Level;
         }
-        questions = GameNetManager.Data.GetQuestionsByTopic(levelQuestion);
+        questions = GameNetManager.Data.GetQuestionsByLevel(levelQuestion);
     }
 
     private void SetupQuestion(Question oldQuestion, Question newQuestion)

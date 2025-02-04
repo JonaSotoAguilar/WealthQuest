@@ -134,14 +134,24 @@ public class GameLocalManager : MonoBehaviour
     {
         if (instance == null) return;
 
-        instance.UpdateTime();
-        instance.NextYear();
+        _ = TaskFinishTurn();
+    }
 
+    public static async Task TaskFinishTurn()
+    {
+        instance.UpdateTime();
+        // Esperar a que NextYear termine antes de continuar
+        await instance.NextYear();
+
+        // Si el juego ha terminado, detener la ejecución
         if (instance.status == GameStatus.Finish) return;
+
         instance.NextPlayer();
         instance.SaveGame();
         instance._camera.CurrentCamera(instance.currPlayer.transform);
-        _ = instance.StartTurn();
+
+        // Esperar a que StartTurn termine antes de continuar
+        await instance.StartTurn();
     }
 
     private void NextPlayer()
@@ -152,7 +162,7 @@ public class GameLocalManager : MonoBehaviour
         currPlayer = playersLocal[nexTurn];
     }
 
-    private void NextYear()
+    private async Task NextYear()
     {
         if (instance == null) return;
 
@@ -167,31 +177,66 @@ public class GameLocalManager : MonoBehaviour
             instance.FinishGame();
             return;
         }
+
+        // Procesar finanzas de cada jugador
         foreach (var player in playersLocal)
             player.Data.ProccessFinances();
 
+        // Esperar a que termine la animación de Next Year antes de continuar
+        await GameUIManager.ShowNextYear();
         UpdateYear(newYear);
     }
 
     private void FinishGame()
     {
-        // 1. Calculate winner
-        PlayerLocalManager winner = playersLocal[0];
+        // 1. Calculate final score
+        SetFinalScore();
+
+        // 2. Save History
+        SaveHistory();
+
+        // 3. Announce winner (Animation)
+        ShowResults();
+    }
+
+    private void SetFinalScore()
+    {
+        // Calcular puntajes finales para todos los jugadores
         foreach (var player in playersLocal)
         {
             player.Data.SetFinalScore();
-            if (player.Data.FinalScore > winner.Data.FinalScore)
-                winner = player;
         }
 
-        // 2. Announce winner (Cinematic)
+        // Ordenar jugadores por puntaje (de mayor a menor)
+        List<PlayerLocalManager> sortedPlayers = new List<PlayerLocalManager>(playersLocal);
+        sortedPlayers.Sort((a, b) => b.Data.FinalScore.CompareTo(a.Data.FinalScore));
 
+        // Asignar posiciones considerando empates
+        int currentRank = 1; // Comenzar desde la posición 1
+        int playersAtRank = 0; // Número de jugadores en la posición actual
+        int previousScore = sortedPlayers[0].Data.FinalScore; // Puntaje del primer jugador
 
-        // 3. Save History
-        SaveHistory();
+        for (int i = 0; i < sortedPlayers.Count; i++)
+        {
+            var player = sortedPlayers[i];
 
-        // 4. Close game (Return to main menu)
-        LoadMenu();
+            if (player.Data.FinalScore < previousScore)
+            {
+                // Si el puntaje cambia, avanzar en el ranking
+                currentRank += playersAtRank;
+                playersAtRank = 0; // Reiniciar el contador de jugadores en la posición actual
+            }
+
+            // Asignar la posición actual al jugador
+            player.Data.SetResultPosition(currentRank);
+            playersAtRank++;
+            previousScore = player.Data.FinalScore;
+        }
+    }
+
+    private void ShowResults()
+    {
+        _ = GameUIManager.ShowFinishGame();
     }
 
     private void SaveHistory()
@@ -200,11 +245,6 @@ public class GameLocalManager : MonoBehaviour
         FinishGameData finishData = new FinishGameData(gameData.currentYear, gameData.timePlayed, gameData.content, score);
         int slotData = gameData.mode == 0 ? 1 : 2;
         ProfileUser.SaveGame(finishData, slotData);
-    }
-
-    private void LoadMenu()
-    {
-        SceneManager.LoadScene("Menu");
     }
 
     #endregion

@@ -51,7 +51,6 @@ public class HUD : MonoBehaviour
         characterSprite.texture = characterDB.GetCharacter(data.CharacterID).characterIcon.texture;
     }
 
-
     public void UpdatePoints(int newPoints)
     {
         int oldPoints = int.Parse(points.text);

@@ -57,7 +57,7 @@ public class PlayerLocalUI : MonoBehaviour
         {
             levelQuestion = GetComponent<PlayerLocalData>().Level;
         }
-        questions = GameLocalManager.Data.GetQuestionsByTopic(levelQuestion);
+        questions = GameLocalManager.Data.GetQuestionsByLevel(levelQuestion);
     }
 
     private void ResetQuestionValues()
