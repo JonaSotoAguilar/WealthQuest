@@ -4,13 +4,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Playables;
-using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class GameLocalManager : MonoBehaviour
 {
     private static GameLocalManager instance;
-    enum GameStatus { None, Playing, Finish }
 
     [Header("Components")]
     [SerializeField] private CameraManager _camera;
@@ -18,7 +16,6 @@ public class GameLocalManager : MonoBehaviour
 
     [Header("Status")]
     [SerializeField] private GameData gameData;
-    private GameStatus status = GameStatus.None;
     private DateTime currentTime;
 
     [Header("Animations")]
@@ -35,7 +32,6 @@ public class GameLocalManager : MonoBehaviour
     public static List<PlayerLocalManager> Players { get => instance.playersLocal; }
     public static PlayerLocalManager CurrentPlayer { get => instance.currPlayer; }
     public static PlayerLocalManager GetPlayer(string clientID) => instance.playersLocal.Find(player => player.Data.UID == clientID);
-
     #endregion
 
     #region Initialization
@@ -88,7 +84,6 @@ public class GameLocalManager : MonoBehaviour
         instance.InitializePosition();
 
         // 2. Status game
-        instance.status = GameStatus.Playing;
         instance.currPlayer = instance.playersLocal[Data.turnPlayer];
 
         // 3. Camera
@@ -134,24 +129,20 @@ public class GameLocalManager : MonoBehaviour
     {
         if (instance == null) return;
 
-        _ = TaskFinishTurn();
-    }
-
-    public static async Task TaskFinishTurn()
-    {
         instance.UpdateTime();
         // Esperar a que NextYear termine antes de continuar
-        await instance.NextYear();
+        instance.NextYear();
+    }
 
+    private static void UpdateNextTurn()
+    {
         // Si el juego ha terminado, detener la ejecución
-        if (instance.status == GameStatus.Finish) return;
-
         instance.NextPlayer();
         instance.SaveGame();
         instance._camera.CurrentCamera(instance.currPlayer.transform);
 
         // Esperar a que StartTurn termine antes de continuar
-        await instance.StartTurn();
+        _ = instance.StartTurn();
     }
 
     private void NextPlayer()
@@ -162,29 +153,39 @@ public class GameLocalManager : MonoBehaviour
         currPlayer = playersLocal[nexTurn];
     }
 
-    private async Task NextYear()
+    private void NextYear()
     {
         if (instance == null) return;
 
         int nextTurn = (gameData.turnPlayer + 1) % gameData.playersData.Count;
-        if (nextTurn != gameData.initialPlayerIndex) return;
+        if (nextTurn != gameData.initialPlayerIndex)
+        {
+            UpdateNextTurn();
+        }
+        else
+        {
+            _ = NextYearProcess();
+        }
+    }
 
+    private async Task NextYearProcess()
+    {
         int newYear = gameData.currentYear + 1;
-
         if (newYear > gameData.yearsToPlay)
         {
-            status = GameStatus.Finish;
-            instance.FinishGame();
-            return;
+            FinishGame();
         }
+        else
+        {
+            // Procesar finanzas de cada jugador
+            foreach (var player in playersLocal)
+                player.Data.ProccessFinances();
 
-        // Procesar finanzas de cada jugador
-        foreach (var player in playersLocal)
-            player.Data.ProccessFinances();
-
-        // Esperar a que termine la animación de Next Year antes de continuar
-        await GameUIManager.ShowNextYear();
-        UpdateYear(newYear);
+            // Esperar a que termine la animación de Next Year antes de continuar
+            await GameUIManager.ShowNextYear();
+            UpdateYear(newYear);
+            UpdateNextTurn();
+        }
     }
 
     private void FinishGame()
@@ -294,6 +295,7 @@ public class GameLocalManager : MonoBehaviour
     {
         if (cinematicDirector != null)
         {
+            PauseMenu.SetPauseDisabled(true);
             GameUIManager.ShowPanel(false);
             cinematicDirector.Play(); // Reproduce la cinemática
 
@@ -310,6 +312,7 @@ public class GameLocalManager : MonoBehaviour
     {
         if (director == cinematicDirector)
         {
+            PauseMenu.SetPauseDisabled(false);
             // Desregistrar el evento
             cinematicDirector.stopped -= OnIntroCinematicEnd;
 

@@ -55,7 +55,7 @@ public class LoadPopup : MonoBehaviour
     {
         gameData.ClearGameData();
         if (mode == 4) TryJoinOnlineGame();
-        else if (mode == 3) TryCreateOnlineGame(); //FIXME: Revisar
+        else if (mode == 3) TryCreateOnlineGame();
         else if (!SaveService.CheckSaveFile(slotData)) NewGame();
         else MenuManager.Instance.OpenLoadMenu();
     }
@@ -130,8 +130,7 @@ public class LoadPopup : MonoBehaviour
         }
         else
         {
-            //FIXME: Agregar Popup de error
-            Debug.LogError("Failed to create Relay, please try again.");
+            MenuManager.Instance.OpenMessagePopup("Error al crear la sala.");
         }
     }
 
@@ -154,8 +153,7 @@ public class LoadPopup : MonoBehaviour
         }
         else
         {
-            //FIXME: Agregar Popup de error
-            Debug.Log("Failed to join Relay, please try again.");
+            MenuManager.Instance.OpenMessagePopup("Sala no encontrada.");
         }
     }
 

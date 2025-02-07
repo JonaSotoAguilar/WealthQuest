@@ -38,6 +38,9 @@ public class PauseMenu : MonoBehaviour
     private GameObject currentSelected;
     private CanvasGroup canvasGroupUI;
 
+    // Block Pause
+    private bool notPause = false;
+
     #region Initialization
 
     private void Awake()
@@ -89,7 +92,7 @@ public class PauseMenu : MonoBehaviour
 
     private void OnPauseAction(CallbackContext context)
     {
-        if (instance == null)
+        if (instance == null || notPause)
         {
             return;
         }
@@ -132,7 +135,7 @@ public class PauseMenu : MonoBehaviour
 
     public void OpenPauseMenu()
     {
-        if (background == null || pauseMenu == null)
+        if (notPause || background == null || pauseMenu == null)
         {
             return;
         }
@@ -140,8 +143,6 @@ public class PauseMenu : MonoBehaviour
         background.SetActive(true);
         pauseMenu.SetActive(true);
         currentMenu = pauseMenu;
-
-        // Time.timeScale = 0;
     }
 
     public void ReturnPauseMenu()
@@ -186,8 +187,6 @@ public class PauseMenu : MonoBehaviour
         background.SetActive(false);
         currentMenu.SetActive(false);
         currentMenu = null;
-
-        // Time.timeScale = 1;
     }
 
     #endregion
@@ -200,13 +199,15 @@ public class PauseMenu : MonoBehaviour
         GroupActive(canvasGroup, false);
         DisablePauseAction();
 
-        if (gameData.mode != 3)
+        if (gameData.mode < 3)
         {
             SceneManager.LoadScene("Menu");
         }
         else
         {
-            StartCoroutine(DisconnectAndReturnToMenu());
+            ReturnPauseMenu();
+            CloseCurrentMenu();
+            GameNetManager.Return();
         }
     }
 
@@ -227,7 +228,6 @@ public class PauseMenu : MonoBehaviour
         CanvasGroup canvasGroup = confirmExitPopup.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, false);
         DisablePauseAction();
-        // Time.timeScale = 1;
         Application.Quit();
     }
 
@@ -264,4 +264,20 @@ public class PauseMenu : MonoBehaviour
 
     #endregion
 
+    #region Pause Control
+
+    public static void SetPauseDisabled(bool enabled)
+    {
+        if (instance == null) return;
+
+        instance.notPause = enabled;
+
+        // Si se deshabilita la pausa y el menú estaba abierto, cerrarlo
+        if (enabled && instance.ActivePauseMenu())
+        {
+            instance.CloseCurrentMenu();
+        }
+    }
+
+    #endregion
 }

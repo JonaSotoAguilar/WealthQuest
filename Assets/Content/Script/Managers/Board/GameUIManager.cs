@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
@@ -57,6 +58,15 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject resultPrefab;
     private List<Result> resultsPlayers = new List<Result>();
     [SerializeField] private Button returnButton;
+    [SerializeField] private TextMeshProUGUI returnText;
+    private float countdownTime = 5f; // Tiempo de espera en segundos
+
+    [Space, Header("Messages")]
+    [SerializeField] private GameObject messagePopup;
+    [SerializeField] private TextMeshProUGUI messageText;
+
+    // Control
+    private bool isLocal = true;
 
     #region Getters
 
@@ -70,16 +80,21 @@ public class GameUIManager : MonoBehaviour
         return list;
     }
 
-    public static string GetCurrentNickname(string clientID, bool isLocal = true)
+    public static string GetCurrentNickname(string clientID)
     {
-        if (isLocal) return GameLocalManager.GetPlayer(clientID).Data.Nickname;
+        if (instance.isLocal) return GameLocalManager.GetPlayer(clientID).Data.Nickname;
         else return GameNetManager.GetPlayer(clientID).Data.Nickname;
     }
 
-    public static int GetCurrentCharacterID(string clientID, bool isLocal = true)
+    public static int GetCurrentCharacterID(string clientID)
     {
-        if (isLocal) return GameLocalManager.GetPlayer(clientID).Data.CharacterID;
+        if (instance.isLocal) return GameLocalManager.GetPlayer(clientID).Data.CharacterID;
         else return GameNetManager.GetPlayer(clientID).Data.CharacterID;
+    }
+
+    public static void SetLocal(bool isLocal)
+    {
+        instance.isLocal = isLocal;
     }
 
     #endregion
@@ -151,7 +166,7 @@ public class GameUIManager : MonoBehaviour
 
     #region HUD
 
-    public static void InitializeHUD(string clientID, bool isLocal = true)
+    public static void InitializeHUD(string clientID)
     {
         if (instance == null) return;
 
@@ -159,7 +174,7 @@ public class GameUIManager : MonoBehaviour
         instance.HUDs.Add(clientID, newHUD);
         newHUD.name = "HUD [" + clientID + "]";
 
-        if (isLocal) newHUD.InitializeUILocal(clientID);
+        if (instance.isLocal) newHUD.InitializeUILocal(clientID);
         else newHUD.InitializeUINet(clientID);
     }
 
@@ -299,9 +314,12 @@ public class GameUIManager : MonoBehaviour
 
     #region Next Player
 
-    public static async Task SetPlayerTurn(string clientID, bool animation = true, bool isLocal = true)
+    public static async Task SetPlayerTurn(string clientID, bool animation = true)
     {
-        if (animation) await instance.BannerNextPlayer(clientID, isLocal);
+        if (animation)
+        {
+            await instance.BannerNextPlayer(clientID);
+        }
 
         HUD currentHUD = GetHUD(clientID);
         ActiveTurn(clientID, true);
@@ -312,12 +330,13 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    public async Task BannerNextPlayer(string clientID, bool isLocal = true)
+    public async Task BannerNextPlayer(string clientID)
     {
+        PauseMenu.SetPauseDisabled(true);
         ShowsHUDs(false);
 
-        characterNextPlayer.sprite = characterDB.GetCharacter(GetCurrentCharacterID(clientID, isLocal)).characterIcon;
-        nicknameNextPlayer.text = GetCurrentNickname(clientID, isLocal);
+        characterNextPlayer.sprite = characterDB.GetCharacter(GetCurrentCharacterID(clientID)).characterIcon;
+        nicknameNextPlayer.text = GetCurrentNickname(clientID);
 
         bannerNextPlayer.SetActive(true);
         bannerNextPlayer.transform.localPosition = offScreenPosition;
@@ -331,6 +350,7 @@ public class GameUIManager : MonoBehaviour
 
         bannerNextPlayer.SetActive(false);
         ShowsHUDs(true);
+        PauseMenu.SetPauseDisabled(false);
     }
 
     public static void ActiveTurn(string clientID, bool active)
@@ -357,13 +377,13 @@ public class GameUIManager : MonoBehaviour
 
     public static async Task ShowNextYear()
     {
-        instance.ActiveNextYear(true);
         await instance.AnimateNextYear();
-        instance.ActiveNextYear(false);
     }
 
     private async Task AnimateNextYear()
     {
+        PauseMenu.SetPauseDisabled(true);
+        instance.ActiveNextYear(true);
         // Posicionar el fondo en Y=0
         AudioManager.PlaySoundAppear();
         await MoveLocalYAsync(nextYearBackground, 0, 0.5f, LeanTweenType.easeOutCubic);
@@ -405,6 +425,8 @@ public class GameUIManager : MonoBehaviour
 
         await Task.WhenAll(cloudsExitTask, clockExitTask, signExitTask, backgroundExitTask);
         nextYearClock.transform.localRotation = Quaternion.Euler(0, 0, 15);
+        instance.ActiveNextYear(false);
+        PauseMenu.SetPauseDisabled(false);
     }
 
     private void ActiveNextYear(bool active)
@@ -419,10 +441,11 @@ public class GameUIManager : MonoBehaviour
 
     #region Finish Game
 
-    public static async Task ShowFinishGame(bool isLocal = true)
+    public static async Task ShowFinishGame()
     {
+        PauseMenu.SetPauseDisabled(true);
         await instance.AnimateFinishSequence();
-        instance.SetResults(isLocal);
+        instance.SetResults();
     }
 
     private async Task AnimateFinishSequence()
@@ -452,7 +475,7 @@ public class GameUIManager : MonoBehaviour
         await MoveLocalYAsync(finishText, 1080, 0.5f, LeanTweenType.easeInCubic);
     }
 
-    private void SetResults(bool isLocal = true)
+    private void SetResults()
     {
         if (isLocal)
         {
@@ -464,7 +487,7 @@ public class GameUIManager : MonoBehaviour
         }
     }
 
-    private void SetResultsLocal(bool isLocal = true)
+    private void SetResultsLocal()
     {
         foreach (var player in GameLocalManager.Players)
         {
@@ -472,10 +495,10 @@ public class GameUIManager : MonoBehaviour
             newResult.InitializeResult(player.Data.Nickname, characterDB.GetCharacter(player.Data.CharacterID).characterIcon);
             resultsPlayers.Add(newResult);
         }
-        ActiveResultPanel(isLocal);
+        ActiveResultPanel();
     }
 
-    private void SetResultsNet(bool isLocal = true)
+    private void SetResultsNet()
     {
         foreach (var player in GameNetManager.Players)
         {
@@ -483,10 +506,10 @@ public class GameUIManager : MonoBehaviour
             newResult.InitializeResult(player.Data.Nickname, characterDB.GetCharacter(player.Data.CharacterID).characterIcon);
             resultsPlayers.Add(newResult);
         }
-        ActiveResultPanel(isLocal);
+        ActiveResultPanel();
     }
 
-    private void ActiveResultPanel(bool isLocal = true)
+    private void ActiveResultPanel()
     {
         // Configurar la escala y opacidad inicial del panel
         resultsPanel.transform.localScale = Vector3.zero;
@@ -499,10 +522,10 @@ public class GameUIManager : MonoBehaviour
 
         // Activar el panel y animarlo
         resultsPanel.SetActive(true);
-        AnimateResultsPanel(canvasGroup, isLocal);
+        AnimateResultsPanel(canvasGroup);
     }
 
-    private void AnimateResultsPanel(CanvasGroup canvasGroup, bool isLocal = true)
+    private void AnimateResultsPanel(CanvasGroup canvasGroup)
     {
         AudioManager.PlaySoundAppear();
         // Animar escala de 0 a 1
@@ -547,24 +570,61 @@ public class GameUIManager : MonoBehaviour
 
     private void UpdateResultsNet()
     {
-        for (int i = 0; i < GameLocalManager.Players.Count; i++)
+        for (int i = 0; i < GameNetManager.Players.Count; i++)
         {
             // Acceder directamente al resultado y jugador correspondiente por índice
             Result result = resultsPlayers[i];
-            var player = GameLocalManager.Players[i];
+            var player = GameNetManager.Players[i];
 
             // Actualizar el resultado con animación
-            result.UpdateResultLocal(player.Data.UID);
+            result.UpdateResultNet(player.Data.UID);
         }
         LeanTween.delayedCall(1.5f, () =>
             {
-                returnButton.gameObject.SetActive(true);
+                StartCoroutine(ReturnMenuNetCountdown());
             });
+    }
+
+    private IEnumerator ReturnMenuNetCountdown()
+    {
+        returnText.gameObject.SetActive(true);
+
+        while (countdownTime > 0)
+        {
+            returnText.text = $"VOLVIENDO AL MENU PRINCIPAL EN {Mathf.CeilToInt(countdownTime)}...";
+            yield return new WaitForSeconds(1f);
+            countdownTime -= 1f;
+        }
+
+        returnText.text = "VOLVIENDO AL MENU PRINCIPAL...";
+
+        // Solo el host finaliza el juego
+        if (GameNetManager.IsHost)
+        {
+            RelayService.Instance.FinishGame();
+        }
     }
 
     #endregion
 
-    #region Utils
+    #region Messages
+
+    public static void OpenMessagePopup(string message)
+    {
+        instance.messageText.text = message;
+        instance.ShowMessagePopup();
+    }
+
+    private void ShowMessagePopup()
+    {
+        CanvasGroup canvasGroup = messagePopup.GetComponent<CanvasGroup>();
+        canvasGroup.alpha = 1;
+        messagePopup.SetActive(true);
+    }
+
+    #endregion
+
+    #region Animation
 
     private Task MoveLocalYAsync(GameObject target, float targetY, float duration, LeanTweenType easeType)
     {

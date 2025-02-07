@@ -41,7 +41,7 @@ public class Result : MonoBehaviour
         var data = GameLocalManager.GetPlayer(clientID).Data;
 
         UpdatePoints(data.Points);
-        UpdateMoney(data.Money);
+        UpdateMoney(data.GetFinalCapital());
         UpdateScore(data.FinalScore);
         UpdateGrade(data.Level);
 
@@ -54,7 +54,7 @@ public class Result : MonoBehaviour
         var data = GameNetManager.GetPlayer(clientID).Data;
 
         UpdatePoints(data.Points);
-        UpdateMoney(data.Money);
+        UpdateMoney(data.GetFinalCapital());
         UpdateScore(data.FinalScore);
         UpdateGrade(data.Level);
 

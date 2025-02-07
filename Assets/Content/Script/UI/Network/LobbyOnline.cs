@@ -39,7 +39,7 @@ public class LobbyOnline : NetworkBehaviour
 
     #region Initialization
 
-    //FIXME: Reviusar Load Game y reconexion
+    //FIXME: Revisar Load Game y reconexion
 
     public override void OnStartServer()
     {
@@ -62,34 +62,27 @@ public class LobbyOnline : NetworkBehaviour
     {
         base.OnStartClient();
 
-        Debug.Log("Status game:" + RelayService.Instance.gameState);
-        if (RelayService.Instance.IsGameLobby())
-        {
-            lobbyPanel.SetActive(true);
-            SetupContentClient();
-            SetupButtons();
-        }
-        else
-        {
-            lobbyPanel.SetActive(false);
-        }
+        lobbyPanel.SetActive(true);
+        SetupContentClient();
+        SetupButtons();
     }
 
     public override void OnStopClient()
     {
         base.OnStopClient();
-        Debug.Log("Stop client:" + RelayService.Instance.gameState);
-        if (!RelayService.Instance.IsGameLobby()) return;
+        Debug.Log("OnStopClient Lobby");
 
-        lobbyPanel.SetActive(false);
-        if (contentDropdown != null)
+        if (isServer && isClient)
         {
+            Debug.Log("Stop Host");
+            return;
+        }
+        else if (gameObject.activeInHierarchy)
+        {
+            Debug.Log("Stop Client");
+            lobbyPanel.SetActive(false);
             contentDropdown.onValueChanged.RemoveAllListeners();
             contentDropdown.ClearOptions();
-        }
-
-        if (gameObject.activeInHierarchy)
-        {
             MenuManager.Instance.OpenPopupExitOnlineLobby(false);
             MenuManager.Instance.OpenPlayMenu();
         }
@@ -272,6 +265,8 @@ public class LobbyOnline : NetworkBehaviour
         readyLocal = true;
         readyButton.interactable = false;
         returnButton.interactable = false;
+        contentDropdown.interactable = false;
+        yearDropdown.interactable = false;
         CmdReadyPlayer();
     }
 
@@ -330,7 +325,6 @@ public class LobbyOnline : NetworkBehaviour
                 data.playersData.Add(player);
             }
         }
-        RelayService.Instance.GameReady();
         RelayService.Instance.ServerChangeScene(SCENE_GAME);
     }
 
@@ -338,7 +332,6 @@ public class LobbyOnline : NetworkBehaviour
     private void RpcReadyGame()
     {
         returnButton.interactable = false;
-        RelayService.Instance.GameReady();
     }
 
     private void CreateNewGameData()
@@ -346,7 +339,6 @@ public class LobbyOnline : NetworkBehaviour
         data.mode = 3;
         int years = 10 + (selectedYear * 5);
         data.yearsToPlay = years;
-        //data.yearsToPlay = 2; // Para pruebas
     }
 
     #endregion

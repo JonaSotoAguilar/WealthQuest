@@ -265,6 +265,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2674414666351761369}
   - {fileID: 3951840864098198619}
   - {fileID: 7461277590314492791}
   m_Father: {fileID: 6358287590933295116}
@@ -2650,7 +2651,7 @@ RectTransform:
   - {fileID: 5893548128898851783}
   - {fileID: 6154585679784010141}
   - {fileID: 1904174092052971289}
-  m_Father: {fileID: 9124905825175998068}
+  m_Father: {fileID: 89977858834170520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
@@ -3763,7 +3764,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2674414666351761369}
   - {fileID: 627386226803401503}
   - {fileID: 5635706341850301693}
   - {fileID: 1480945962093401760}
@@ -4420,7 +4420,7 @@ GameObject:
   - component: {fileID: 6358287590933295116}
   - component: {fileID: 7702155340295060590}
   - component: {fileID: 6251355029876086403}
-  - component: {fileID: 2010040815320330352}
+  - component: {fileID: 2924023210451010296}
   m_Layer: 5
   m_Name: Lobby
   m_TagString: Untagged
@@ -4471,7 +4471,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.19607843}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4488,7 +4488,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!225 &2010040815320330352
+--- !u!225 &2924023210451010296
 CanvasGroup:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

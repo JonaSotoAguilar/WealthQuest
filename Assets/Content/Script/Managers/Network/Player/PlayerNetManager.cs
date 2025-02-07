@@ -1,11 +1,7 @@
-using System;
 using System.Collections;
 using Mirror;
-using Mirror.BouncyCastle.Asn1.X509;
-using Mirror.Examples.Basic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.InputSystem.InputAction;
 
 public class PlayerNetManager : NetworkBehaviour
 {
@@ -37,7 +33,7 @@ public class PlayerNetManager : NetworkBehaviour
     public void Start()
     {
         GameNetManager.PlayerJoined(this);
-        GameUIManager.InitializeHUD(data.UID, false);
+        GameUIManager.InitializeHUD(data.UID);
 
         if (isOwned)
         {

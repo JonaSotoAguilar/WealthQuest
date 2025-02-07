@@ -13,10 +13,9 @@ public class OptionMenu : MonoBehaviour
     [SerializeField] private GameObject activeFullscreen;
     [SerializeField] private GameObject inactiveFullscreen;
 
-    [Header("Resolution")]
-    [SerializeField] private TextMeshProUGUI resolutionText;
-    [SerializeField] private Resolution[] resolutions;
-    private int resolutionIndex;
+    [Header("Vsync")]
+    [SerializeField] private GameObject activeVsync;
+    [SerializeField] private GameObject inactiveVsync;
 
     [Header("Quality")]
     [SerializeField] private TMP_Dropdown qualityDropdown;
@@ -32,8 +31,8 @@ public class OptionMenu : MonoBehaviour
     public void LoadSettings()
     {
         LoadVolume();
+        LoadVSync();
         LoadQuality();
-        LoadResolution();
         GetScreen();
     }
 
@@ -75,99 +74,50 @@ public class OptionMenu : MonoBehaviour
 
     private void GetScreen()
     {
-        bool isFullscreen = Screen.fullScreen;
+        // Cargar la opción guardada (1 = Fullscreen, 0 = Windowed)
+        bool isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
         SetFullscreen(isFullscreen);
     }
 
     public void SetFullscreen(bool isFullscreen)
     {
+        // Aplicar el modo de pantalla completa
         Screen.fullScreen = isFullscreen;
-        if (isFullscreen)
-        {
-            activeFullscreen.SetActive(true);
-            inactiveFullscreen.SetActive(false);
-        }
-        else
-        {
-            activeFullscreen.SetActive(false);
-            inactiveFullscreen.SetActive(true);
-        }
+
+        // Guardar en PlayerPrefs (1 = Fullscreen, 0 = Windowed)
+        PlayerPrefs.SetInt("Fullscreen", isFullscreen ? 1 : 0);
+        PlayerPrefs.Save();
+
+        // Actualizar la UI
+        activeFullscreen.SetActive(isFullscreen);
+        inactiveFullscreen.SetActive(!isFullscreen);
     }
 
     #endregion
 
-    #region Resolution
+    #region Vsync
 
-    public void LoadResolution()
+    private void LoadVSync()
     {
-        // Filtrar resoluciones para incluir solo las de 1920x1080 o superiores
-        resolutions = FilterResolutions(Screen.resolutions, 1920, 1080);
-
-        resolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", GetCurrentResolutionIndex());
-        SetResolution(false); 
-        UpdateResolutionText();
+        int vSyncEnabled = PlayerPrefs.GetInt("VSync", 1); // 1 = Activado, 0 = Desactivado
+        SetVSync(vSyncEnabled == 1);
     }
 
-    private Resolution[] FilterResolutions(Resolution[] allResolutions, int minWidth, int minHeight)
+    public void SetVSync(bool isEnabled)
     {
-        List<Resolution> filtered = new List<Resolution>();
+        QualitySettings.vSyncCount = isEnabled ? 1 : 0; // 1 = Activado (1 sincronización por frame), 0 = Desactivado
 
-        foreach (Resolution res in allResolutions)
-        {
-            if (res.width >= minWidth && res.height >= minHeight)
-            {
-                filtered.Add(res);
-            }
-        }
+        // Guardar en PlayerPrefs
+        PlayerPrefs.SetInt("VSync", isEnabled ? 1 : 0);
+        PlayerPrefs.Save();
 
-        return filtered.ToArray();
-    }
-
-    private int GetCurrentResolutionIndex()
-    {
-        for (int i = 0; i < resolutions.Length; i++)
-        {
-            if (resolutions[i].width == Screen.currentResolution.width &&
-                resolutions[i].height == Screen.currentResolution.height)
-            {
-                return i;
-            }
-        }
-
-        // Si no se encuentra una coincidencia, usar la última resolución (más alta disponible)
-        return resolutions.Length - 1;
-    }
-
-    public void NextResolution()
-    {
-        resolutionIndex = (resolutionIndex + 1) % resolutions.Length;
-        SetResolution();
-    }
-
-    public void PreviousResolution()
-    {
-        resolutionIndex = (resolutionIndex - 1 + resolutions.Length) % resolutions.Length;
-        SetResolution();
-    }
-
-    private void SetResolution(bool save = true)
-    {
-        Resolution selectedResolution = resolutions[resolutionIndex];
-        Screen.SetResolution(selectedResolution.width, selectedResolution.height, Screen.fullScreen);
-        if (save)
-        {
-            PlayerPrefs.SetInt("ResolutionIndex", resolutionIndex);
-            PlayerPrefs.Save();
-        }
-        UpdateResolutionText();
-    }
-    private void UpdateResolutionText()
-    {
-        Resolution currentResolution = resolutions[resolutionIndex];
-        resolutionText.text = $"{currentResolution.width}x{currentResolution.height}";
+        // Activar/Desactivar los indicadores en la UI
+        activeVsync.SetActive(isEnabled);
+        inactiveVsync.SetActive(!isEnabled);
     }
 
     #endregion
+
 
     #region Quality
 

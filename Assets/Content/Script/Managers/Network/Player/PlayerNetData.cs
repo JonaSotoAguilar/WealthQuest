@@ -101,7 +101,7 @@ public class PlayerNetData : NetworkBehaviour
         double pointsMoney;
         int finalMoney = GetFinalCapital();
 
-        if (finalMoney <= 0) pointsMoney = -Math.Log10(-finalMoney + 1);
+        if (finalMoney <= 0) pointsMoney = 0;
         else pointsMoney = Math.Log10(finalMoney + 1);
 
         finalScore = (int)Math.Round(points + pointsMoney, 2);

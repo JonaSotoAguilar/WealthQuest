@@ -26,15 +26,15 @@ public class RelayService : NetworkManager
 
     // Scenes
     private const string SCENE_MENU = "Menu";
-    private const string SCENE_GAME = "OnlineBoard";
 
     [Header("Relay Settings")]
     public string relayJoinCode = "";
+    public bool exitNetwork = false;
+    private bool finishGame = false;
 
     [Header("Data")]
     [SerializeField] private GameData data;
     [SerializeField] private CharactersDatabase charactersDB;
-    public GameState gameState = GameState.Lobby;
 
     [Header("Game Settings")]
     [SerializeField] private GameObject playerGamePrefab;
@@ -77,27 +77,13 @@ public class RelayService : NetworkManager
 
     public void DefaultServer()
     {
-        gameState = GameState.Lobby;
+        finishGame = false;
+        exitNetwork = false;
         connBanners = 0;
         connPlayers = 0;
         connBannersDisconnected = 0;
         bannersDisconnected.Clear();
         clientPanels.Clear();
-    }
-
-    public bool IsGameLobby()
-    {
-        return gameState == GameState.Lobby;
-    }
-
-    public void GameReady()
-    {
-        gameState = GameState.InProgress;
-    }
-
-    public void GameFinished()
-    {
-        gameState = GameState.Finished;
     }
 
     #endregion
@@ -119,12 +105,7 @@ public class RelayService : NetworkManager
         base.OnServerSceneChanged(sceneName);
         Debug.Log("Server scene changed.");
 
-        if (sceneName.Equals(SCENE_MENU))
-        {
-            Debug.Log("Server scene changed to Menu.");
-            StopHost();
-        }
-        else if (sceneName.Equals(SCENE_GAME))
+        if (!sceneName.Equals(SCENE_MENU))
         {
             Debug.Log("Server scene changed to Game.");
             playerPrefab = playerGamePrefab;
@@ -146,18 +127,15 @@ public class RelayService : NetworkManager
         base.OnServerReady(conn);
         Debug.Log("Server Client ready.");
 
-        if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
+        if (SceneManager.GetActiveScene().name.Equals(SCENE_MENU))
+        {
+            SetupBanner(conn);
+            connBanners++;
+        }
+        else
         {
             SetupPlayer(conn);
             connPlayers++;
-        }
-        else if (SceneManager.GetActiveScene().name.Equals(SCENE_MENU))
-        {
-            if (gameState == GameState.Lobby)
-            {
-                SetupBanner(conn);
-                connBanners++;
-            }
         }
     }
 
@@ -173,23 +151,37 @@ public class RelayService : NetworkManager
     public override void OnServerDisconnect(NetworkConnectionToClient conn)
     {
         base.OnServerDisconnect(conn);
-        Debug.Log($"Server disconnected. Active scene: {SceneManager.GetActiveScene().name}");
+        Debug.Log($"Cliente desconectado del servidor: {conn.connectionId}");
 
         if (SceneManager.GetActiveScene().name.Equals(SCENE_MENU))
         {
             RemoveBanner(conn);
             connBanners--;
         }
-        else if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
+        else
         {
             connPlayers--;
-            Debug.Log($"Remaining players: {connPlayers}");
 
-            // FIXME: Solucion hasta implementar sistema de reconexión
-            if (NetworkServer.active)
-            {
-                ServerChangeScene(SCENE_MENU);
-            }
+            // Si cualquier jugador se desconecta, finalizar la partida inmediatamente.
+            Debug.Log("Un jugador se ha desconectado. Finalizando la partida...");
+            if (!finishGame) FinishGame();
+        }
+    }
+
+    public override void OnStopHost()
+    {
+        base.OnStopHost();
+        Debug.Log("Host detenido.");
+    }
+
+    public override void OnStopServer()
+    {
+        base.OnStopServer();
+        Debug.Log("Server detenido.");
+
+        if (SceneManager.GetActiveScene().path == offlineScene)
+        {
+            exitNetwork = true;
         }
     }
 
@@ -231,18 +223,24 @@ public class RelayService : NetworkManager
     public override void OnClientDisconnect()
     {
         base.OnClientDisconnect();
-        Debug.Log("Client disconnected.");
+        Debug.Log("Cliente desconectado.");
 
-        if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME) && gameState != GameState.Finished)
+        // Si el host sigue activo, no hacer nada
+        if (NetworkServer.active)
         {
-            SceneManager.sceneLoaded += ServerDown;
-            SceneManager.LoadScene(SCENE_MENU);
+            Debug.Log("El host sigue activo, no se cambiará de escena.");
+            return;
         }
-        else
+
+        // Si el cliente está en el juego, cambiarlo a la escena del menú
+        if (SceneManager.GetActiveScene().path != offlineScene)
         {
-            Debug.Log("Client disconnected from Menu.");
+            Debug.Log("Cliente desconectado de la partida. Volviendo al menú...");
+            SceneManager.LoadScene(offlineScene);
         }
     }
+
+
 
     #endregion
 
@@ -341,29 +339,14 @@ public class RelayService : NetworkManager
         GameNetManager.InitializeGame();
     }
 
-    private void ServerDown(Scene scene, LoadSceneMode mode)
+    public void FinishGame()
     {
-        if (scene.name == SCENE_MENU)
-        {
-            SceneManager.sceneLoaded -= ServerDown;
-            StartCoroutine(MessagePopup("Se ha perdido la conexión con el servidor."));
-        }
-    }
+        Debug.Log("Cerrando la partida...");
 
-    public void FinishGame(bool isHost = false)
-    {
-        gameState = GameState.Finished;
-        if (SceneManager.GetActiveScene().name.Equals(SCENE_GAME))
+        if (NetworkServer.active)
         {
-            if (!isHost)
-            {
-                StopClient();
-                SceneManager.LoadScene(SCENE_MENU);
-            }
-            else if (NetworkServer.active)
-            {
-                ServerChangeScene(SCENE_MENU);
-            }
+            finishGame = true;
+            StopHost();
         }
     }
 
@@ -411,8 +394,17 @@ public class RelayService : NetworkManager
             // Inicializar Unity Services
             await UnityServices.InitializeAsync();
 
-            // Iniciar sesión anónima
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            // Verificar si ya está autenticado
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                Debug.Log("Signing in anonymously...");
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            }
+            else
+            {
+                Debug.Log("Player is already signed in.");
+            }
+
             Debug.Log("Relay setup complete.");
         }
         catch (Exception e)

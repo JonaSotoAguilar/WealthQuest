@@ -7,13 +7,13 @@ using Mirror.BouncyCastle.Bcpg;
 using Unity.Services.Relay;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GameNetManager : NetworkBehaviour
 {
     private static GameNetManager instance;
-    enum GameStatus { None, Playing, Finish }
 
     [Header("Components")]
     [SerializeField] private CameraManager _camera;
@@ -21,7 +21,6 @@ public class GameNetManager : NetworkBehaviour
 
     [Header("Status")]
     [SerializeField] private GameData gameData;
-    private GameStatus status = GameStatus.None;
     private DateTime currentTime;
 
     [Header("Animations")]
@@ -36,7 +35,7 @@ public class GameNetManager : NetworkBehaviour
     [SyncVar] private string content = "Default";
     [SyncVar] private string timePlayed = "00:00:00";
     [SyncVar(hook = nameof(OnChangeYear))] private int currentYear = 0;
-    [SyncVar] private int turnPlayer = 0;
+    [SyncVar] private bool isClosed = false;
     private int readyPlayer = 0;
 
     # region Getters
@@ -45,7 +44,7 @@ public class GameNetManager : NetworkBehaviour
     public static List<PlayerNetManager> Players { get => instance.playersNet; }
     public static PlayerNetManager CurrentPlayer { get => instance.currPlayer; }
     public static PlayerNetManager GetPlayer(string clientID) => instance.playersNet.Find(player => player.Data.UID == clientID);
-    public static int CurrentYear { get => instance.currentYear; }
+    public static bool IsHost => instance.isServer && instance.isClient;
 
     #endregion
 
@@ -60,6 +59,7 @@ public class GameNetManager : NetworkBehaviour
         }
 
         instance = this;
+        GameUIManager.SetLocal(false);
     }
 
     private void OnDestroy()
@@ -100,7 +100,6 @@ public class GameNetManager : NetworkBehaviour
         instance.InitializePosition();
 
         // 2. Status game
-        instance.status = GameStatus.Playing;
         instance.currPlayer = instance.playersNet[Data.turnPlayer];
 
         // 3. Camera
@@ -150,9 +149,12 @@ public class GameNetManager : NetworkBehaviour
         if (instance == null) return;
 
         instance.UpdateTime();
-        instance.NextYear();
+        instance.NextTurn();
+    }
 
-        if (instance.status == GameStatus.Finish) return;
+    [Server]
+    public static void UpdateNextTurn()
+    {
         instance.NextPlayer();
         instance.SaveGame();
         instance._camera.CurrentCamera(instance.currPlayer.transform);
@@ -169,29 +171,35 @@ public class GameNetManager : NetworkBehaviour
     }
 
     [Server]
-    private void NextYear()
+    private void NextTurn()
     {
-        if (instance == null) return;
-
         int nextTurn = (gameData.turnPlayer + 1) % gameData.playersData.Count;
-        if (nextTurn != gameData.initialPlayerIndex) return;
+        if (nextTurn != gameData.initialPlayerIndex)
+        {
+            UpdateNextTurn();
+        }
+        else
+        {
+            NextYearProcess();
+        }
+    }
 
+    [Server]
+    private void NextYearProcess()
+    {
         int newYear = gameData.currentYear + 1;
-
         if (newYear > gameData.yearsToPlay)
         {
-            status = GameStatus.Finish;
-            instance.FinishGame();
-            return;
+            FinishGame();
         }
-        foreach (var player in playersNet)
-            player.Data.ProccessFinances();
+        else
+        {
+            foreach (var player in playersNet)
+                player.Data.ProccessFinances();
 
-        RpcNextYear();
-        UpdateYear(newYear);
-        while (instance.readyPlayer < instance.playersNet.Count) { }
-        Debug.Log("Ready Year");
-        readyPlayer = 0;
+            RpcNextYear();
+            UpdateYear(newYear);
+        }
     }
 
     [Server]
@@ -202,12 +210,6 @@ public class GameNetManager : NetworkBehaviour
 
         // 2. Finish Game
         RpcFinishGame();
-    }
-
-    public void ExitGame()
-    {
-        bool isHost = isClient && isServer;
-        RelayService.Instance.FinishGame(isHost);
     }
 
     [Server]
@@ -252,12 +254,11 @@ public class GameNetManager : NetworkBehaviour
     private void RpcFinishGame()
     {
         SaveHistory();
-        _ = GameUIManager.ShowFinishGame(false);
+        _ = GameUIManager.ShowFinishGame();
     }
 
     private void SaveHistory()
     {
-        RelayService.Instance.GameFinished();
         int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
         FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score);
         ProfileUser.SaveGame(finishData, 3);
@@ -282,12 +283,12 @@ public class GameNetManager : NetworkBehaviour
     [Client]
     private async Task ReadyNextPlayer(string clientID)
     {
-        await GameUIManager.SetPlayerTurn(clientID, true, false);
-        CmdReadyNextPlayer(clientID);
+        await GameUIManager.SetPlayerTurn(clientID, true);
+        CmdReadyNextPlayer();
     }
 
     [Command(requiresAuthority = false)]
-    private void CmdReadyNextPlayer(string clientID)
+    private void CmdReadyNextPlayer()
     {
         readyPlayer++;
 
@@ -315,6 +316,12 @@ public class GameNetManager : NetworkBehaviour
     private void CmdReadyNextYear()
     {
         readyPlayer++;
+
+        if (readyPlayer == playersNet.Count)
+        {
+            readyPlayer = 0;
+            UpdateNextTurn();
+        }
     }
 
     [ClientRpc]
@@ -369,7 +376,6 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     private void UpdateTurnPlayer(int newTurn)
     {
-        turnPlayer = newTurn;
         gameData.turnPlayer = newTurn;
     }
 
@@ -388,6 +394,7 @@ public class GameNetManager : NetworkBehaviour
     {
         if (cinematicDirector != null)
         {
+            RpcPauseDisable(true);
             instance.RpcActiveUI(false);
             cinematicDirector.Play();
             cinematicDirector.stopped += OnIntroCinematicEnd;
@@ -403,6 +410,7 @@ public class GameNetManager : NetworkBehaviour
     {
         if (director == cinematicDirector)
         {
+            RpcPauseDisable(false);
             cinematicDirector.stopped -= OnIntroCinematicEnd;
             instance.RpcActiveUI(true);
             StartGame();
@@ -486,6 +494,12 @@ public class GameNetManager : NetworkBehaviour
         StartIntroCinematic();
     }
 
+    [ClientRpc]
+    private void RpcPauseDisable(bool active)
+    {
+        PauseMenu.SetPauseDisabled(active);
+    }
+
     #endregion
 
     #region Audio
@@ -500,6 +514,49 @@ public class GameNetManager : NetworkBehaviour
     private void StopRpcSoundArrow()
     {
         AudioManager.StopSoundSFX();
+    }
+
+    #endregion
+
+    #region Network loss'
+
+    public static void Return()
+    {
+        if (instance.isClient && instance.isServer)
+        {
+            instance.ServerClose();
+        }
+        else if (instance.isClient)
+        {
+            instance.ServerClose();
+        }
+    }
+
+    public void ServerClose()
+    {
+        CmdServerClose();
+    }
+
+    [Command(requiresAuthority = false)]
+    private void CmdServerClose()
+    {
+        if (isClosed) return;
+        isClosed = true;
+        StartCoroutine(ServerCloseProcess());
+    }
+
+    [Server]
+    private IEnumerator ServerCloseProcess()
+    {
+        RpcMessageClose();
+        yield return new WaitForSeconds(1.2f);
+        RelayService.Instance.FinishGame();
+    }
+
+    [ClientRpc]
+    private void RpcMessageClose()
+    {
+        GameUIManager.OpenMessagePopup("El servidor ha cerrado la conexión.\nVolviendo al menú principal.");
     }
 
     #endregion

@@ -71,11 +71,29 @@ public class MenuManager : MonoBehaviour
         }
 
         Instance = this;
+        activeMenu = loginMenu;
     }
 
     public void ExitGame()
     {
         Application.Quit();
+    }
+
+    public void OpenGameMenu()
+    {
+        if (RelayService.Instance.exitNetwork)
+        {
+            RelayService.Instance.exitNetwork = false;
+            OpenPlayOnlineMenu();
+        }
+        else if (ProfileUser.ApplyTest())
+        {
+            OpenTestMenu();
+        }
+        else
+        {
+            OpenStartMenu();
+        }
     }
 
     #endregion
@@ -85,7 +103,7 @@ public class MenuManager : MonoBehaviour
     public void OpenLoginMenu()
     {
         LoginManager.Instance.ResetLoginFields();
-        if (activeMenu != null) activeMenu.SetActive(false);
+        activeMenu.SetActive(false);
         loginMenu.SetActive(true);
         activeMenu = loginMenu;
     }
@@ -110,18 +128,6 @@ public class MenuManager : MonoBehaviour
 
     #region Main Menus
 
-    public void OpenGameMenu()
-    {
-        if (ProfileUser.ApplyTest())
-        {
-            OpenTestMenu();
-        }
-        else
-        {
-            OpenStartMenu();
-        }
-    }
-
     private void OpenTestMenu()
     {
         activeMenu.SetActive(false);
@@ -131,7 +137,7 @@ public class MenuManager : MonoBehaviour
 
     public void OpenStartMenu()
     {
-        if (activeMenu != null) activeMenu.SetActive(false);
+        activeMenu.SetActive(false);
         startMenu.SetActive(true);
         activeMenu = startMenu;
     }

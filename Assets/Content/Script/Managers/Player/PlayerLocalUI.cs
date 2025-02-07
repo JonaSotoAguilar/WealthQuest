@@ -220,28 +220,18 @@ public class PlayerLocalUI : MonoBehaviour
         ui.OnCardSelected -= OnCardSelected;
         int index = -1;
         if (card != null) index = selectedCards.IndexOf(card);
-        CardSelected(index);
-    }
-
-    private void CardSelected(int index)
-    {
-        if (index < 0)
-        {
-            ui.CloseCards();
-            SubmitCard();
-        }
-        else
-        {
-            _ = TaskCardSelected(index);
-        }
+        _ = TaskCardSelected(index);
     }
 
     private async Task TaskCardSelected(int index)
     {
-        Card selectedCard = selectedCards[index];
-        int capital = 0;
-        if (selectedCard is InvestmentCard) capital = ui.AmountInvest;
-        selectedCard.ApplyEffect(capital);
+        Debug.Log($"Card selected: {index}");
+        if (index >= 0) {
+            Card selectedCard = selectedCards[index];
+            int capital = 0;
+            if (selectedCard is InvestmentCard) capital = ui.AmountInvest;
+            selectedCard.ApplyEffect(capital);
+        }
 
         await ui.CardSelected(index);
         SubmitCard();

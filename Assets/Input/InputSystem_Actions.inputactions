@@ -60,6 +60,17 @@
                 },
                 {
                     "name": "",
+                    "id": "453e56ba-aecc-4a98-a63f-7771e7bf338e",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Throw",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "cc39e1e4-d881-4dbb-a197-5898873d5748",
                     "path": "<Gamepad>/start",
                     "interactions": "",

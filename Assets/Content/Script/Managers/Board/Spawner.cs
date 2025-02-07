@@ -94,7 +94,7 @@ public class Spawner : MonoBehaviour
         playerManager.Initialize(gameData.playersData[index], input);
         GameLocalManager.PlayerJoined(playerManager);
         // 5. Inicializo HUD
-        GameUIManager.InitializeHUD(playerManager.Data.UID, true);
+        GameUIManager.InitializeHUD(playerManager.Data.UID);
     }
 
     private GameObject SpawnPrefab()

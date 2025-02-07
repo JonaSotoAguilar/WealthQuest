@@ -13,6 +13,7 @@ public class SettingsLoad : MonoBehaviour
         SetFullscreen();
         LoadResolution();
         LoadQuality();
+        LoadVSync();
     }
 
     private void LoadLocalContent()
@@ -22,52 +23,52 @@ public class SettingsLoad : MonoBehaviour
 
     private void SetFullscreen()
     {
-        bool isFullscreen = Screen.fullScreen;
+        // Cargar la opción guardada (1 = Fullscreen, 0 = Windowed), por defecto Fullscreen activado
+        bool isFullscreen = PlayerPrefs.GetInt("Fullscreen", 1) == 1;
+
+        // Aplicar la configuración
         Screen.fullScreen = isFullscreen;
+
+        // Guardar la opción en PlayerPrefs para futuras sesiones
+        PlayerPrefs.SetInt("Fullscreen", isFullscreen ? 1 : 0);
+        PlayerPrefs.Save();
     }
 
     private void LoadResolution()
     {
-        // Filtrar resoluciones desde 1920x1080 en adelante
-        Resolution[] resolutions = FilterResolutions(Screen.resolutions, 1920, 1080);
+        // Obtener todas las resoluciones disponibles
+        Resolution[] resolutions = Screen.resolutions;
 
         if (resolutions.Length == 0)
         {
-            Debug.LogError("No se encontraron resoluciones iguales o superiores a 1920x1080.");
+            Debug.LogError("No se encontraron resoluciones disponibles.");
             return;
         }
 
-        int resolutionIndex = PlayerPrefs.GetInt("ResolutionIndex", -1);
-        if (resolutionIndex == -1 || resolutionIndex >= resolutions.Length)
-        {
-            resolutionIndex = resolutions.Length - 1; // Seleccionar la más alta disponible
-            PlayerPrefs.SetInt("ResolutionIndex", resolutionIndex);
-        }
+        // Seleccionar la resolución más alta disponible
+        Resolution highestResolution = resolutions[resolutions.Length - 1];
 
-        // Establecer la resolución
-        Resolution resolution = resolutions[resolutionIndex];
-        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
-    }
+        // Guardar el índice en PlayerPrefs
+        PlayerPrefs.SetInt("ResolutionIndex", resolutions.Length - 1);
 
-    private Resolution[] FilterResolutions(Resolution[] allResolutions, int minWidth, int minHeight)
-    {
-        // Filtrar resoluciones que cumplan con los requisitos mínimos
-        System.Collections.Generic.List<Resolution> filtered = new System.Collections.Generic.List<Resolution>();
-
-        foreach (Resolution res in allResolutions)
-        {
-            if (res.width >= minWidth && res.height >= minHeight)
-            {
-                filtered.Add(res);
-            }
-        }
-
-        return filtered.ToArray();
+        // Aplicar la resolución
+        Screen.SetResolution(highestResolution.width, highestResolution.height, Screen.fullScreen);
     }
 
     private void LoadQuality()
     {
         int qualityIndex = PlayerPrefs.GetInt("QualityIndex", 2);
         QualitySettings.SetQualityLevel(qualityIndex);
+    }
+
+    private void LoadVSync()
+    {
+        int vSyncEnabled = PlayerPrefs.GetInt("VSync", 1); // 1 = Activado, 0 = Desactivado
+        SetVSync(vSyncEnabled == 1);
+    }
+
+    public void SetVSync(bool isEnabled)
+    {
+        QualitySettings.vSyncCount = isEnabled ? 1 : 0; // 1 = Activado (1 sincronización por frame), 0 = Desactivado
     }
 }

@@ -63,7 +63,7 @@ public class AudioManager : MonoBehaviour
 
     private void LoadVolume()
     {
-        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.25f);
+        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.10f);
         float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.75f);
 
         musicMenuSource.ignoreListenerPause = true;
@@ -166,7 +166,7 @@ public class AudioManager : MonoBehaviour
         Instance.sfxMenuSource.PlayOneShot(Instance.openCardClip);
     }
 
-    public static void PlaySoundSquare(SquareType square)
+    public static void PlaySoundCard(SquareType square)
     {
         switch (square)
         {

@@ -39,6 +39,7 @@ public class PlayerNetUI : NetworkBehaviour
         if (!isOwned)
         {
             ui.DesactiveCanvaGroup();
+            ui.NotOwnerInvest();
         }
     }
 
@@ -313,20 +314,15 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void CardSelected(int index)
     {
-        if (index < 0)
-        {
-            RpcCloseCards();
-            SubmitCard();
-        }
-        else
+        if (index >= 0)
         {
             Card selectedCard = selectedCards[index];
             int capital = 0;
             if (selectedCard is InvestmentCard) capital = amountInvest;
             selectedCard.ApplyEffect(capital, false);
-
-            RpcCardSelected(index);
         }
+
+        RpcCardSelected(index);
     }
 
     [ClientRpc]

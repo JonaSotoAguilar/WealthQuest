@@ -29,7 +29,7 @@ public class Square : MonoBehaviour
             case SquareType.Income:
                 return data.GetRandomIncomeCards(2).Cast<Card>().ToList();
             case SquareType.Investment:
-                return data.GetRandomInvestmentCards(3).Cast<Card>().ToList();
+                return data.GetRandomInvestmentCards(2).Cast<Card>().ToList();
             default:
                 return new List<Card>();
         }
