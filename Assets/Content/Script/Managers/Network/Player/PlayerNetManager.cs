@@ -63,10 +63,7 @@ public class PlayerNetManager : NetworkBehaviour
     [Server]
     public void StartTurn()
     {
-        //1. Center player
-        movement.CenterPlayer(data.Position);
-
-        //2. Initialize Question
+        //1. Initialize Question
         RpcActiveMenu(netIdentity.connectionToClient, true);
         RpcActiveUIActions(netIdentity.connectionToClient, true);
         ui.CreateQuestion();
@@ -104,6 +101,10 @@ public class PlayerNetManager : NetworkBehaviour
                 GameUIManager.ActiveThrowActions(true);
                 StartCoroutine(dice.RotateDiceRoutine());
             }
+            else
+            {
+                StartCoroutine(dice.SoundDice());
+            }
         }
         else
         {
@@ -115,6 +116,7 @@ public class PlayerNetManager : NetworkBehaviour
     private IEnumerator StopDice()
     {
         if (isOwned) StartCoroutine(dice.StopDice());
+        else StartCoroutine(dice.StopSpin());
         yield return new WaitForSeconds(2.5f);
         dice.ShowDice(false);
         if (isOwned) CmdMove(dice.DiceRoll);
@@ -151,7 +153,6 @@ public class PlayerNetManager : NetworkBehaviour
     {
         RpcActiveUIActions(netIdentity.connectionToClient, false);
         RpcActiveThrowActions(netIdentity.connectionToClient, false);
-        movement.CornerPlayer(data.Position);
         GameNetManager.FinishTurn();
     }
 

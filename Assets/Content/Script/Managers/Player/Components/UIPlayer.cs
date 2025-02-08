@@ -297,15 +297,14 @@ public class UIPlayer : MonoBehaviour
         Button cardButton = cardInstance.GetComponent<Button>();
         cardButton.onClick.AddListener(() => HandleOptionSelected(card));
         cardButtons.Add(cardButton);
+        selectedCardType = card.GetCardType();
     }
 
     public void HandleOptionSelected(Card selectedCard)
     {
-        Debug.Log("Selected card: " + selectedCard.title);
         foreach (Button button in cardButtons)
             button.interactable = false;
 
-        selectedCardType = selectedCard.GetCardType();
         OnCardSelected?.Invoke(selectedCard);
     }
 
@@ -356,7 +355,6 @@ public class UIPlayer : MonoBehaviour
 
     public async Task CardSelected(int index)
     {
-        Debug.Log("Selected card: " + index);
         investPanel.SetActive(false);
 
         if (index < 0 && isInvestmentCard)
@@ -364,7 +362,6 @@ public class UIPlayer : MonoBehaviour
             GameObject cardInstance = Instantiate(notInvestCardPrefab, cardGrid);
             Button cardButton = cardInstance.GetComponent<Button>();
             cardButtons.Add(cardButton);
-            selectedCardType = SquareType.Investment;
             index = cardButtons.Count - 1;
         }
 

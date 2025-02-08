@@ -8,7 +8,7 @@ public class Dice : MonoBehaviour
     private int diceRoll;
     private bool isSpinning = false;
     private Vector3 initialPosition;
-    private Vector3 rotationDirection = new Vector3(350f, 350f, 350f);
+    private Vector3 rotationDirection = new Vector3(450f, 450f, 450f);
 
     public int DiceRoll { get => diceRoll; }
 
@@ -40,7 +40,7 @@ public class Dice : MonoBehaviour
 
     public IEnumerator RotateDiceRoutine()
     {
-        isSpinning = true;
+        StartCoroutine(SoundDice());
         StartCoroutine(ChangeRotationDirection());
         while (isSpinning)
         {
@@ -50,6 +50,24 @@ public class Dice : MonoBehaviour
         yield break;
     }
 
+    public IEnumerator SoundDice()
+    {
+        isSpinning = true;
+        AudioManager.PlaySoundDice();
+
+        while (isSpinning)
+        {
+            yield return null;
+        }
+
+        AudioManager.StopSoundSFX();
+    }
+
+    public IEnumerator StopSpin()
+    {
+        yield return new WaitForSeconds(1.1f);
+        isSpinning = false;
+    }
 
     // Rotar el dado
     private void RotateDice()
@@ -64,7 +82,7 @@ public class Dice : MonoBehaviour
         while (isSpinning)
         {
             // Esperar un tiempo aleatorio antes de cambiar la dirección
-            yield return new WaitForSeconds(Random.Range(0.5f, 1.5f));
+            yield return new WaitForSeconds(Random.Range(0.2f, 0.6f));
 
             // Cambiar la dirección de la rotación aleatoriamente (invirtiendo los ejes)
             rotationDirection = new Vector3(
@@ -123,4 +141,5 @@ public class Dice : MonoBehaviour
     {
         gameObject.SetActive(show);
     }
+
 }

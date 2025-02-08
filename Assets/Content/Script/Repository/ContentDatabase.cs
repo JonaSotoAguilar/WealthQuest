@@ -1,14 +1,16 @@
-using UnityEngine;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Collections;
-using UnityEngine.Networking;
 using System.Linq;
-using System;
+using UnityEngine;
+using UnityEngine.Networking;
 
 public static class ContentDatabase
 {
-    public static readonly string GitHubContentUrl = "https://github.com/JonaSotoAguilar/WealthQuest/raw/Assets/Content";
+    public static readonly string GitHubContentUrl = "https://github.com/JonaSotoAguilar/bGames-FintualSensor/raw/Content/Content";
+    public static readonly string GitHubContentApiUrl = "https://api.github.com/repos/JonaSotoAguilar/bGames-FintualSensor/contents/Content?ref=Content";
+
 
     // Contenidos local
     [SerializeField] public static List<Content> contentList = new List<Content>();
@@ -40,10 +42,7 @@ public static class ContentDatabase
     {
         remoteContentList.Clear();
 
-        // URL de la API para obtener el contenido de la carpeta "Content" en la rama "Assets"
-        string apiUrl = "https://api.github.com/repos/JonaSotoAguilar/WealthQuest/contents/Content?ref=Assets";
-
-        using (UnityWebRequest request = UnityWebRequest.Get(apiUrl))
+        using (UnityWebRequest request = UnityWebRequest.Get(GitHubContentApiUrl))
         {
             request.SetRequestHeader("User-Agent", "UnityWebRequest");
 

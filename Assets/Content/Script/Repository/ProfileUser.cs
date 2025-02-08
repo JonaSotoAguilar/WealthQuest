@@ -14,7 +14,6 @@ public static class ProfileUser
     public static int bestScore;
     public static int playedGames;
     public static int financeLevel;
-    public static string role;
 
     // BGames
     public static BGamesProfile bGamesProfile;
@@ -46,11 +45,11 @@ public static class ProfileUser
         bestScore = PlayerPrefs.GetInt("bestScoreUser", 0);
         playedGames = PlayerPrefs.GetInt("playedGames", 0);
         financeLevel = PlayerPrefs.GetInt("financeLevel", 1);
-        role = PlayerPrefs.GetString("role", "Player");
     }
 
     public static void LoadFirebaseProfile(string userId, string displayName, ProfileData data)
     {
+        DeleteProfile();
         uid = userId;
         username = displayName;
         level = data.Level;
@@ -59,7 +58,6 @@ public static class ProfileUser
         bestScore = data.BestScore;
         playedGames = data.PlayedGames;
         financeLevel = data.FinanceLevel;
-        role = data.Role;
         LogoutBGames();
         SaveProfile();
     }
@@ -73,8 +71,30 @@ public static class ProfileUser
         PlayerPrefs.SetInt("bestScoreUser", bestScore);
         PlayerPrefs.SetInt("playedGames", playedGames);
         PlayerPrefs.SetInt("financeLevel", financeLevel);
-        PlayerPrefs.SetString("role", role);
         PlayerPrefs.Save();
+    }
+
+    public static void DeleteProfile()
+    {
+        PlayerPrefs.DeleteAll();
+        history.Clear();
+    }
+
+    public static string GetGrade(int level)
+    {
+        switch (level)
+        {
+            case 1:
+                return "Principiante";
+            case 2:
+                return "Intermedio Bajo";
+            case 3:
+                return "Intermedio Alto";
+            case 4:
+                return "Avanzado";
+            default:
+                return "Principiante";
+        }
     }
 
     #endregion
@@ -208,12 +228,6 @@ public static class ProfileUser
         PlayerPrefs.SetInt("financeLevel", financeLevel);
     }
 
-    public static void UpdateRole(RoleType newRole)
-    {
-        role = newRole.ToString();
-        PlayerPrefs.SetString("role", role);
-    }
-
     #endregion
 
     #region History
@@ -225,36 +239,47 @@ public static class ProfileUser
         await SaveService.SaveHistory(data, slotData);
         // 2. Guarda en Firebase
         await FirebaseService.Instance.SaveGameHistory(uid, data);
+        // 3. Actualiza perfil
+        UpdateStats(data);
     }
 
     public static async void LoadHistory()
     {
         // 1. Cargar historial local
         await SaveService.LoadHistory();
+        OrderHistory(history);
         // 2. Cargar historial Firebase
         List<FinishGameData> historyFirebase = await FirebaseService.Instance.LoadGameHistory(uid);
+        OrderHistory(historyFirebase);
         // 3. Actualizar historiales
         await FirebaseService.Instance.UpdateHistory(uid, historyFirebase);
+    }
+
+    public static void OrderHistory(List<FinishGameData> historyGames)
+    {
+        // Ordenar la lista `history` por `gameID` de menor a mayor
+        historyGames.Sort((a, b) => a.gameID.CompareTo(b.gameID));
     }
 
     #endregion
 
     #region Test
 
-    public static bool ApplyTest()
+    public static async Task<bool> ApplyTest()
     {
-        int testApplied = PlayerPrefs.GetInt("testApplied", 0);
-        if (financeLevel >= 3) return false;
-        else if (testApplied == 0) return true;
-        else if (testApplied % 5 == 0) return true;
-        else return false;
-    }
+        // 1. Si es nivel 3 de finanzas, no aplicar test
+        if (financeLevel >= 4) return false;
 
-    public static void UpdateTestApplied()
-    {
-        int testApplied = PlayerPrefs.GetInt("testApplied", 0);
-        PlayerPrefs.SetInt("testApplied", testApplied + 1);
-        PlayerPrefs.Save();
+        // 2. Si no tiene conexión a internet, no aplicar test
+        if (!Application.internetReachability.Equals(NetworkReachability.ReachableViaLocalAreaNetwork) &&
+            !Application.internetReachability.Equals(NetworkReachability.ReachableViaCarrierDataNetwork))
+            return false;
+
+        // 3. Aplica cada 5 partidas
+        int countTest = await FirebaseService.Instance.GetTestResultsCountAsync();
+        int countTestApplied = playedGames / 5 + 1;
+        if (countTestApplied > countTest) return true;
+        else return false;
     }
 
     #endregion

@@ -82,19 +82,20 @@ public class TestManager : MonoBehaviour
 
         DateTime date = DateTime.Now;
         testResults.Date = date.ToString("dd/MM/yyyy HH:mm:ss");
-        ProfileUser.UpdateTestApplied();
         FirebaseService.Instance.SaveTestResults(testResults);
         MenuManager.Instance.OpenStartMenu();
     }
 
     public int CalculateLevel(int correctAnswers)
     {
-        if (correctAnswers <= 2)
+        if (correctAnswers <= 3)
             return 1;
-        else if (correctAnswers <= 5)
+        else if (correctAnswers <= 4)
             return 2;
-        else
+        else if (correctAnswers <= 5)
             return 3;
+        else
+            return 4;
     }
 
 }

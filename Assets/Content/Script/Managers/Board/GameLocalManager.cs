@@ -69,22 +69,21 @@ public class GameLocalManager : MonoBehaviour
         instance.UpdateYear(Data.currentYear);
         GameUIManager.ShowPanel(true);
 
-        // StartGame(); // Para pruebas
         if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count > 1)
             instance.StartSelection();
         else
-            StartGame();
+            instance.StartIntroCinematic();
     }
 
     private static void StartGame()
     {
         if (instance == null) return;
 
-        // 1. Position players
-        instance.InitializePosition();
-
-        // 2. Status game
+        // 1.  Player turn
         instance.currPlayer = instance.playersLocal[Data.turnPlayer];
+
+        // 2. Position players
+        instance.InitializePosition();
 
         // 3. Camera
         instance._camera.CurrentCamera(instance.currPlayer.transform);
@@ -96,23 +95,15 @@ public class GameLocalManager : MonoBehaviour
 
     private void InitializePosition()
     {
-        List<Square> squares = new List<Square>();
-        List<int> positions = new List<int>();
+        int position;
         foreach (var player in playersLocal)
         {
-            int pos = player.Data.Position;
-            Square currSquare = SquareManager.Squares[pos];
-            currSquare.Players.Add(player.Movement);
-            positions.Add(pos);
-            if (!squares.Contains(currSquare)) squares.Add(currSquare);
+            position = player.Data.Position;
+            SquareManager.Squares[position].AddPlayer(player.gameObject);
         }
 
-        int index = 0;
-        foreach (var square in squares)
-        {
-            square.UpdateCornerPositions(positions[index]);
-            index++;
-        }
+        position = currPlayer.Data.Position;
+        SquareManager.Squares[position].RemovePlayer(currPlayer.gameObject);
     }
 
     #endregion
@@ -130,27 +121,34 @@ public class GameLocalManager : MonoBehaviour
         if (instance == null) return;
 
         instance.UpdateTime();
-        // Esperar a que NextYear termine antes de continuar
         instance.NextYear();
     }
 
     private static void UpdateNextTurn()
     {
-        // Si el juego ha terminado, detener la ejecución
         instance.NextPlayer();
         instance.SaveGame();
-        instance._camera.CurrentCamera(instance.currPlayer.transform);
-
-        // Esperar a que StartTurn termine antes de continuar
         _ = instance.StartTurn();
     }
 
     private void NextPlayer()
     {
+        // 1. Posicionar jugador en esquina
+        int position = currPlayer.Data.Position;
+        SquareManager.Squares[position].AddPlayer(currPlayer.gameObject);
+
+        // 2. Obtiene el siguiente jugador
         GameUIManager.ResetPlayerTurn(currPlayer.Data.UID);
         int nexTurn = (gameData.turnPlayer + 1) % gameData.playersData.Count;
         UpdateTurnPlayer(nexTurn);
         currPlayer = playersLocal[nexTurn];
+
+        // 3. Posiciona en el centro al siguiente jugador
+        position = currPlayer.Data.Position;
+        SquareManager.Squares[position].RemovePlayer(currPlayer.gameObject);
+
+        // 4. Centrar la cámara en el jugador actual
+        instance._camera.CurrentCamera(instance.currPlayer.transform);
     }
 
     private void NextYear()
@@ -208,22 +206,39 @@ public class GameLocalManager : MonoBehaviour
             player.Data.SetFinalScore();
         }
 
-        // Ordenar jugadores por puntaje (de mayor a menor)
+        // Ordenar jugadores por criterios: FinalScore, Points y Money
         List<PlayerLocalManager> sortedPlayers = new List<PlayerLocalManager>(playersLocal);
-        sortedPlayers.Sort((a, b) => b.Data.FinalScore.CompareTo(a.Data.FinalScore));
+        sortedPlayers.Sort((a, b) =>
+        {
+            // Comparar FinalScore (mayor a menor)
+            int finalScoreComparison = b.Data.FinalScore.CompareTo(a.Data.FinalScore);
+            if (finalScoreComparison != 0) return finalScoreComparison;
+
+            // Si hay empate en FinalScore, comparar Points (mayor a menor)
+            int pointsComparison = b.Data.Points.CompareTo(a.Data.Points);
+            if (pointsComparison != 0) return pointsComparison;
+
+            // Si hay empate en Points, comparar Money (mayor a menor)
+            return b.Data.Money.CompareTo(a.Data.Money);
+        });
 
         // Asignar posiciones considerando empates
         int currentRank = 1; // Comenzar desde la posición 1
         int playersAtRank = 0; // Número de jugadores en la posición actual
-        int previousScore = sortedPlayers[0].Data.FinalScore; // Puntaje del primer jugador
+        int previousFinalScore = sortedPlayers[0].Data.FinalScore;
+        int previousPoints = sortedPlayers[0].Data.Points;
+        int previousMoney = sortedPlayers[0].Data.Money;
 
         for (int i = 0; i < sortedPlayers.Count; i++)
         {
             var player = sortedPlayers[i];
 
-            if (player.Data.FinalScore < previousScore)
+            // Verificar si se rompe el empate al comparar criterios
+            if (player.Data.FinalScore < previousFinalScore ||
+                (player.Data.FinalScore == previousFinalScore && player.Data.Points < previousPoints) ||
+                (player.Data.FinalScore == previousFinalScore && player.Data.Points == previousPoints && player.Data.Money < previousMoney))
             {
-                // Si el puntaje cambia, avanzar en el ranking
+                // Avanzar en el ranking si hay diferencia en algún criterio
                 currentRank += playersAtRank;
                 playersAtRank = 0; // Reiniciar el contador de jugadores en la posición actual
             }
@@ -231,7 +246,11 @@ public class GameLocalManager : MonoBehaviour
             // Asignar la posición actual al jugador
             player.Data.SetResultPosition(currentRank);
             playersAtRank++;
-            previousScore = player.Data.FinalScore;
+
+            // Actualizar los criterios previos
+            previousFinalScore = player.Data.FinalScore;
+            previousPoints = player.Data.Points;
+            previousMoney = player.Data.Money;
         }
     }
 
@@ -243,7 +262,8 @@ public class GameLocalManager : MonoBehaviour
     private void SaveHistory()
     {
         int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
-        FinishGameData finishData = new FinishGameData(gameData.currentYear, gameData.timePlayed, gameData.content, score);
+        int level = GetPlayer(ProfileUser.uid).Data.Level;
+        FinishGameData finishData = new FinishGameData(gameData.currentYear, gameData.timePlayed, gameData.content, score, level);
         int slotData = gameData.mode == 0 ? 1 : 2;
         ProfileUser.SaveGame(finishData, slotData);
     }
@@ -293,11 +313,16 @@ public class GameLocalManager : MonoBehaviour
 
     private void StartIntroCinematic()
     {
-        if (cinematicDirector != null)
+        if (cinematicDirector != null && cinematicDirector.playableAsset != null)
         {
             PauseMenu.SetPauseDisabled(true);
             GameUIManager.ShowPanel(false);
-            cinematicDirector.Play(); // Reproduce la cinemática
+
+            // Reproducir la cinemática
+            cinematicDirector.Play();
+
+            // Ajustar la velocidad del Timeline después de asegurarse de que el gráfico esté válido
+            StartCoroutine(AdjustTimelineSpeed());
 
             // Registrar un evento para cuando termine
             cinematicDirector.stopped += OnIntroCinematicEnd;
@@ -307,6 +332,16 @@ public class GameLocalManager : MonoBehaviour
             StartGame(); // Si no hay cinemática, comienza el juego directamente
         }
     }
+
+    private IEnumerator AdjustTimelineSpeed()
+    {
+        // Esperar hasta que el PlayableGraph esté inicializado y válido
+        yield return new WaitUntil(() => cinematicDirector.playableGraph.IsValid());
+
+        // Aumentar la velocidad de reproducción
+        cinematicDirector.playableGraph.GetRootPlayable(0).SetSpeed(1.5f);
+    }
+
 
     private void OnIntroCinematicEnd(PlayableDirector director)
     {
@@ -324,16 +359,6 @@ public class GameLocalManager : MonoBehaviour
 
     private void StartSelection()
     {
-        if (playersLocal.Count == 0)
-        {
-            Debug.LogError("No hay jugadores configurados.");
-            return;
-        }
-        else if (playersLocal.Count == 1)
-        {
-            StartIntroCinematic();
-        }
-
         // Spawnear la flecha
         spawnedArrow = Instantiate(arrowPrefab);
 

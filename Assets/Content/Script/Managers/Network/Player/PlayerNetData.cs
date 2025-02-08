@@ -98,13 +98,12 @@ public class PlayerNetData : NetworkBehaviour
     [Server]
     public void SetFinalScore()
     {
-        double pointsMoney;
-        int finalMoney = GetFinalCapital();
+        double pointsCapital = 0;
+        int capital = GetFinalCapital();
 
-        if (finalMoney <= 0) pointsMoney = 0;
-        else pointsMoney = Math.Log10(finalMoney + 1);
+        if (capital > 0) Math.Log(capital + 1);
 
-        finalScore = (int)Math.Round(points + pointsMoney, 2);
+        finalScore = (int) Math.Round(points + pointsCapital, 2);
         playerData.FinalScore = finalScore;
     }
 

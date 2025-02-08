@@ -20,10 +20,12 @@ public class ProfileMenu : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreAverage;
     [SerializeField] private TextMeshProUGUI bestScore;
     [SerializeField] private TextMeshProUGUI playedGames;
+    [SerializeField] private TextMeshProUGUI financeLevel;
 
     [Header("Config")]
     [SerializeField] private Button configButton;
     [SerializeField] private GameObject configPanel;
+    [SerializeField] private Button configChangeNameButton;
     [SerializeField] private Button loginButton;
     [SerializeField] private Button logoutButton;
 
@@ -56,6 +58,7 @@ public class ProfileMenu : MonoBehaviour
     private void OnDisable()
     {
         ClearScrollView();
+        if (configPanel.activeSelf) CloseConfigPanel();
     }
 
     public void ShowPanel(bool show)
@@ -83,6 +86,7 @@ public class ProfileMenu : MonoBehaviour
         scoreAverage.text = ProfileUser.averageScore.ToString();
         bestScore.text = ProfileUser.bestScore.ToString();
         playedGames.text = ProfileUser.playedGames.ToString();
+        financeLevel.text = "Nivel Financiero: " + ProfileUser.GetGrade(ProfileUser.financeLevel);
     }
 
     private void LoadLevel()
@@ -130,7 +134,7 @@ public class ProfileMenu : MonoBehaviour
 
     public void ShowConfigPanel()
     {
-        configButton.interactable = false;
+        ActiveConfigButton(false);
 
         bool show = !configPanel.activeSelf;
         CanvasGroup canvasGroup = configPanel.GetComponent<CanvasGroup>();
@@ -151,6 +155,7 @@ public class ProfileMenu : MonoBehaviour
                 .setEase(LeanTweenType.easeOutBack)
                 .setOnComplete(() =>
                 {
+                    ActiveConfigButton(true);
                     configButton.interactable = true;
                 });
         }
@@ -172,6 +177,21 @@ public class ProfileMenu : MonoBehaviour
         }
     }
 
+    private void CloseConfigPanel()
+    {
+        configPanel.SetActive(false);
+        configButton.interactable = true;
+        configPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 120);
+    }
+
+    private void ActiveConfigButton(bool active)
+    {
+        configButton.interactable = active;
+        loginButton.interactable = active;
+        logoutButton.interactable = active;
+        configChangeNameButton.interactable = active;
+    }
+
     #endregion
 
     #region History
@@ -179,6 +199,8 @@ public class ProfileMenu : MonoBehaviour
     private void CreateGamePanel()
     {
         List<FinishGameData> finishGameData = ProfileUser.history;
+        finishGameData.Reverse();
+
         foreach (FinishGameData game in finishGameData)
         {
             GameObject newPanel = Instantiate(gamePrefab, container);
@@ -189,6 +211,7 @@ public class ProfileMenu : MonoBehaviour
             statsPanel.transform.Find("TimePlayed").GetComponent<TextMeshProUGUI>().text = game.timePlayed;
             statsPanel.transform.Find("Content").GetComponent<TextMeshProUGUI>().text = game.content;
             statsPanel.transform.Find("Score").GetComponent<TextMeshProUGUI>().text = game.score.ToString();
+            statsPanel.transform.Find("Grade").GetComponent<TextMeshProUGUI>().text = game.grade;
 
             newPanel.SetActive(true);
         }

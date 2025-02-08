@@ -312,7 +312,6 @@ public class LobbyOnline : NetworkBehaviour
         RpcReadyGame();
         data.LoadContent(content);
 
-        //FIXME: Revisar NewGame y LoadGame
         if (!data.DataExists())
         {
             CreateNewGameData();

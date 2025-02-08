@@ -27,16 +27,6 @@ public class Question
         this.level = level;
     }
 
-    public Question(QuestionData questionData)
-    {
-        this.question = questionData.Question;
-        this.answers = questionData.Answers;
-        this.indexCorrectAnswer = questionData.IndexCorrectAnswer;
-        this.topic = questionData.Topic;
-        this.subTopic = questionData.SubTopic;
-        this.level = questionData.Level;
-    }
-
     #region Write and Read
 
     public static void WriteQuestionData(NetworkWriter writer, Question questionData)

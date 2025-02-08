@@ -1,11 +1,11 @@
-using UnityEngine;
-using TMPro;
-using System.Collections;
-using UnityEngine.UI;
-using SFB;
-using System.IO;
-using System.Collections.Generic;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using SFB;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class ContentMenu : MonoBehaviour
 {
@@ -85,7 +85,6 @@ public class ContentMenu : MonoBehaviour
         GameObject downloadedButton = newPanel.transform.Find("Downloaded").gameObject;
         GameObject deleteButton = newPanel.transform.Find("Delete").gameObject;
         GameObject updateButton = newPanel.transform.Find("Update").gameObject;
-        //GameObject uploadButton = newPanel.transform.Find("Upload").gameObject;
 
         GameObject changeButton = newPanel.transform.Find("Change").gameObject;
         GameObject exportButton = newPanel.transform.Find("Export").gameObject;
@@ -101,9 +100,6 @@ public class ContentMenu : MonoBehaviour
             downloadedButton.SetActive(false);
             updateButton.SetActive(true);
             exportButton.SetActive(false);
-
-            //FIXME
-            //uploadButton.SetActive(false);
         }
         else
         {
@@ -117,9 +113,6 @@ public class ContentMenu : MonoBehaviour
             downloadedButton.SetActive(isLocal);
             updateButton.SetActive(false);
             exportButton.SetActive(isLocal);
-
-            //FIXME
-            //uploadButton.SetActive(true);
         }
 
         downloadButton.GetComponent<Button>().onClick.AddListener(() =>
@@ -148,11 +141,6 @@ public class ContentMenu : MonoBehaviour
             SaveService.ExportContentFile(name);
             MenuManager.Instance.OpenMessagePopup("Contenido exportado con éxito en Descargas.");
         });
-
-        // uploadButton.GetComponent<Button>().onClick.AddListener(() =>
-        // {
-        //     FirebaseService.Instance.UploadContent(content);
-        // });
 
         ShowContent(isLocal, isUpdate, newPanel, searchInput.text.ToLower(), name.ToLower());
     }
@@ -323,7 +311,6 @@ public class ContentMenu : MonoBehaviour
             else if (selectedFilePath.EndsWith(".content"))
             {
                 ContentDatabase.ImportContentFile(selectedFilePath);
-
             }
             else
             {

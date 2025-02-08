@@ -22,7 +22,6 @@ public class LoginManager : MonoBehaviour
     public TextMeshProUGUI warningRegisterText;
     public TMP_Dropdown genderDropdown;
     public TMP_InputField birthDatePicker;
-    public TMP_Dropdown roleDropdown;
     public TextMeshProUGUI roleText;
 
     [Space, Header("Forgot Password")]
@@ -73,9 +72,6 @@ public class LoginManager : MonoBehaviour
             emailForgotField.text = value.ToLower();
             ValidateForgotFields();
         });
-
-        // Dropdown listeners
-        roleDropdown.onValueChanged.AddListener(UpdateRoleMessage);
 
         // Disable buttons initially
         loginButton.interactable = false;
@@ -162,7 +158,6 @@ public class LoginManager : MonoBehaviour
         warningRegisterText.text = "";
         birthDatePicker.text = "";
         genderDropdown.value = 0;
-        roleDropdown.value = 0;
     }
 
     private void UpdateRoleMessage(int roleIndex)

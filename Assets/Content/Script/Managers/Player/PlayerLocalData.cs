@@ -43,13 +43,13 @@ public class PlayerLocalData : MonoBehaviour
 
     public void SetFinalScore()
     {
-        double pointsMoney;
-        int finalMoney = GetFinalCapital();
+        double pointsCapital = 0;
+        int capital = GetFinalCapital();
 
-        if (finalMoney <= 0) pointsMoney = 0;
-        else pointsMoney = Math.Log10(finalMoney + 1);
+        if (capital > 0) Math.Log(capital + 1);
 
-        FinalScore = (int)Math.Round(Points + pointsMoney, 2);
+        FinalScore = (int)Math.Round(Points + pointsCapital, 2);
+        playerData.FinalScore = FinalScore;
     }
 
     public int GetFinalCapital()
@@ -277,4 +277,5 @@ public class PlayerLocalData : MonoBehaviour
     }
 
     #endregion
+
 }

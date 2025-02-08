@@ -225,7 +225,6 @@ public class PlayerLocalUI : MonoBehaviour
 
     private async Task TaskCardSelected(int index)
     {
-        Debug.Log($"Card selected: {index}");
         if (index >= 0) {
             Card selectedCard = selectedCards[index];
             int capital = 0;

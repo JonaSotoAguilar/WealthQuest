@@ -91,7 +91,7 @@ public class Result : MonoBehaviour
 
     public void UpdateGrade(int level)
     {
-        string newGrade = GetGrade(level);
+        string newGrade = ProfileUser.GetGrade(level);
         LeanTween.value(0, 1, 1.5f).setOnUpdate((float val) =>
         {
             grade.text = newGrade;
@@ -117,23 +117,6 @@ public class Result : MonoBehaviour
     {
         bool active = resultPosition == 1;
         winnerIcon.SetActive(active);
-    }
-
-    private string GetGrade(int level)
-    {
-        switch (level)
-        {
-            case 1:
-                return "Principiante";
-            case 2:
-                return "Intermedio Bajo";
-            case 3:
-                return "Intermedio Alto";
-            case 4:
-                return "Avanzado";
-            default:
-                return "Principiante";
-        }
     }
 
 }

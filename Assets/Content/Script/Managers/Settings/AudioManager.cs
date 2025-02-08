@@ -64,7 +64,7 @@ public class AudioManager : MonoBehaviour
     private void LoadVolume()
     {
         float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.10f);
-        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.75f);
+        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.25f);
 
         musicMenuSource.ignoreListenerPause = true;
         sfxMenuSource.ignoreListenerPause = true;
@@ -196,6 +196,13 @@ public class AudioManager : MonoBehaviour
     {
         //Sonido en bucle
         Instance.sfxMenuSource.clip = Instance.timerClip;
+        Instance.sfxMenuSource.loop = true;
+        Instance.sfxMenuSource.Play();
+    }
+
+    public static void PlaySoundDice()
+    {
+        Instance.sfxMenuSource.clip = Instance.diceClip;
         Instance.sfxMenuSource.loop = true;
         Instance.sfxMenuSource.Play();
     }

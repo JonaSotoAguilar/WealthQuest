@@ -85,7 +85,7 @@ public class GameNetManager : NetworkBehaviour
         instance.UpdateYear(Data.currentYear);
         instance.RpcActiveUI(true);
 
-        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count >= 1)
+        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count > 1)
             instance.StartSelection();
         else
             StartGame();
@@ -96,11 +96,11 @@ public class GameNetManager : NetworkBehaviour
     {
         if (instance == null) return;
 
-        // 1. Position players
-        instance.InitializePosition();
-
-        // 2. Status game
+        // 1. Player turn
         instance.currPlayer = instance.playersNet[Data.turnPlayer];
+
+        // 2. Position players
+        instance.InitializePosition();
 
         // 3. Camera
         instance._camera.CurrentCamera(instance.currPlayer.transform);
@@ -114,25 +114,16 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     private void InitializePosition()
     {
-        List<Square> squares = new List<Square>();
-        List<int> positions = new List<int>();
+        int position;
         foreach (var player in playersNet)
         {
-            int pos = player.Data.Position;
-            Square currSquare = SquareManager.Squares[pos];
-            currSquare.Players.Add(player.Movement);
-            positions.Add(pos);
-            if (!squares.Contains(currSquare)) squares.Add(currSquare);
+            position = player.Data.Position;
+            SquareManager.Squares[position].AddPlayer(player.gameObject);
         }
 
-        int index = 0;
-        foreach (var square in squares)
-        {
-            square.UpdateCornerPositions(positions[index]);
-            index++;
-        }
+        position = currPlayer.Data.Position;
+        SquareManager.Squares[position].RemovePlayer(currPlayer.gameObject);
     }
-
     #endregion
 
     #region Turn Management
@@ -157,17 +148,28 @@ public class GameNetManager : NetworkBehaviour
     {
         instance.NextPlayer();
         instance.SaveGame();
-        instance._camera.CurrentCamera(instance.currPlayer.transform);
         instance.StartTurn();
     }
 
     [Server]
     private void NextPlayer()
     {
+        // 1. Posiciona en esquina al jugador actual
+        int position = currPlayer.Data.Position;
+        SquareManager.Squares[position].RemovePlayer(currPlayer.gameObject);
+
+        // 2. Obtiene el siguiente jugador
         RpcResetPlayerHUD(currPlayer.Data.UID);
         int nexTurn = (gameData.turnPlayer + 1) % gameData.playersData.Count;
         UpdateTurnPlayer(nexTurn);
         currPlayer = playersNet[nexTurn];
+
+        // 3. Posiciona en esquina y centro el centro al siguiente jugador
+        position = currPlayer.Data.Position;
+        SquareManager.Squares[position].RemovePlayer(currPlayer.gameObject);
+
+        // 4. Centrar la cámara en el jugador actual
+        instance._camera.CurrentCamera(instance.currPlayer.transform);
     }
 
     [Server]
@@ -221,22 +223,39 @@ public class GameNetManager : NetworkBehaviour
             player.Data.SetFinalScore();
         }
 
-        // Ordenar jugadores por puntaje (de mayor a menor)
+        // Ordenar jugadores por criterios: FinalScore, Points y Money
         List<PlayerNetManager> sortedPlayers = new List<PlayerNetManager>(playersNet);
-        sortedPlayers.Sort((a, b) => b.Data.FinalScore.CompareTo(a.Data.FinalScore));
+        sortedPlayers.Sort((a, b) =>
+        {
+            // Comparar FinalScore (mayor a menor)
+            int finalScoreComparison = b.Data.FinalScore.CompareTo(a.Data.FinalScore);
+            if (finalScoreComparison != 0) return finalScoreComparison;
+
+            // Si hay empate en FinalScore, comparar Points (mayor a menor)
+            int pointsComparison = b.Data.Points.CompareTo(a.Data.Points);
+            if (pointsComparison != 0) return pointsComparison;
+
+            // Si hay empate en Points, comparar Money (mayor a menor)
+            return b.Data.Money.CompareTo(a.Data.Money);
+        });
 
         // Asignar posiciones considerando empates
         int currentRank = 1; // Comenzar desde la posición 1
         int playersAtRank = 0; // Número de jugadores en la posición actual
-        int previousScore = sortedPlayers[0].Data.FinalScore; // Puntaje del primer jugador
+        int previousFinalScore = sortedPlayers[0].Data.FinalScore;
+        int previousPoints = sortedPlayers[0].Data.Points;
+        int previousMoney = sortedPlayers[0].Data.Money;
 
         for (int i = 0; i < sortedPlayers.Count; i++)
         {
             var player = sortedPlayers[i];
 
-            if (player.Data.FinalScore < previousScore)
+            // Verificar si se rompe el empate al comparar criterios
+            if (player.Data.FinalScore < previousFinalScore ||
+                (player.Data.FinalScore == previousFinalScore && player.Data.Points < previousPoints) ||
+                (player.Data.FinalScore == previousFinalScore && player.Data.Points == previousPoints && player.Data.Money < previousMoney))
             {
-                // Si el puntaje cambia, avanzar en el ranking
+                // Avanzar en el ranking si hay diferencia en algún criterio
                 currentRank += playersAtRank;
                 playersAtRank = 0; // Reiniciar el contador de jugadores en la posición actual
             }
@@ -244,11 +263,13 @@ public class GameNetManager : NetworkBehaviour
             // Asignar la posición actual al jugador
             player.Data.SetResultPosition(currentRank);
             playersAtRank++;
-            previousScore = player.Data.FinalScore;
+
+            // Actualizar los criterios previos
+            previousFinalScore = player.Data.FinalScore;
+            previousPoints = player.Data.Points;
+            previousMoney = player.Data.Money;
         }
-
     }
-
 
     [ClientRpc]
     private void RpcFinishGame()
@@ -259,8 +280,10 @@ public class GameNetManager : NetworkBehaviour
 
     private void SaveHistory()
     {
+        Debug.Log("Profile UID: " + ProfileUser.uid);
         int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
-        FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score);
+        int level = GetPlayer(ProfileUser.uid).Data.Level;
+        FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score, level);
         ProfileUser.SaveGame(finishData, 3);
     }
 
@@ -396,13 +419,29 @@ public class GameNetManager : NetworkBehaviour
         {
             RpcPauseDisable(true);
             instance.RpcActiveUI(false);
+
+            // Reproducir la cinemática
             cinematicDirector.Play();
+
+            // Ajustar la velocidad de reproducción del Timeline
+            StartCoroutine(AdjustTimelineSpeed());
+
+            // Registrar un evento para cuando termine
             cinematicDirector.stopped += OnIntroCinematicEnd;
         }
         else
         {
             if (isClient && isServer) StartGame();
         }
+    }
+
+    private IEnumerator AdjustTimelineSpeed()
+    {
+        // Esperar hasta que el PlayableGraph esté inicializado y válido
+        yield return new WaitUntil(() => cinematicDirector.playableGraph.IsValid());
+
+        // Aumentar la velocidad de reproducción
+        cinematicDirector.playableGraph.GetRootPlayable(0).SetSpeed(1.5f);
     }
 
     [Server]

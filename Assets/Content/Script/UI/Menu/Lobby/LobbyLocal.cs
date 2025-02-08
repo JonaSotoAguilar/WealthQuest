@@ -1,14 +1,14 @@
-using UnityEngine;
-using TMPro;
-using System.IO;
-using System.Collections.Generic;
-using UnityEngine.InputSystem;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using Unity.VisualScripting;
-using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TMPro;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class LobbyLocal : MonoBehaviour
 {
@@ -142,11 +142,12 @@ public class LobbyLocal : MonoBehaviour
         yearDropdown.interactable = false;
         // Cargar jugadores 
         if (mode != 0) CreatePlayers();
+        else LoadMainPlayer();
     }
 
     private void CreatePlayers()
     {
-        MainPlayer();
+        LoadMainPlayer();
         int maxPlayers = gameData.playersData.Count;
         for (int i = bannersPanel.Count - 1; i >= maxPlayers; i--)
         {
@@ -166,7 +167,7 @@ public class LobbyLocal : MonoBehaviour
         }
     }
 
-    private void MainPlayer()
+    private void LoadMainPlayer()
     {
         characters[0].UpdateName(gameData.playersData[0].Nickname);
         characters[0].LoadCharacter(gameData.playersData[0].CharacterID);
@@ -316,7 +317,7 @@ public class LobbyLocal : MonoBehaviour
     {
         gameData.mode = mode;
         int years = 10 + (yearDropdown.value * 5);
-        gameData.yearsToPlay = years;
+        gameData.yearsToPlay = 2;
         SavePlayer();
     }
 

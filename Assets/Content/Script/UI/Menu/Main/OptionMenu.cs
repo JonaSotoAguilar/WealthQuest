@@ -42,8 +42,8 @@ public class OptionMenu : MonoBehaviour
 
     public void LoadVolume()
     {
-        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.75f);
-        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.75f);
+        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.10f);
+        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.25f);
 
         musicSlider.value = musicVolume;
         musicSlider.onValueChanged.AddListener(SetMusicVolume);

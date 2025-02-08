@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -86,7 +87,16 @@ public class MenuManager : MonoBehaviour
             RelayService.Instance.exitNetwork = false;
             OpenPlayOnlineMenu();
         }
-        else if (ProfileUser.ApplyTest())
+        else
+        {
+            _ = ApplyTest();
+        }
+    }
+
+    private async Task ApplyTest()
+    {
+        bool applyTest = await ProfileUser.ApplyTest();
+        if (applyTest)
         {
             OpenTestMenu();
         }

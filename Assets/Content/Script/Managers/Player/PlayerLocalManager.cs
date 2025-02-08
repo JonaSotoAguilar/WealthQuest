@@ -77,9 +77,6 @@ public class PlayerLocalManager : MonoBehaviour
 
     public void StartTurn()
     {
-        // Centrar jugador
-        movement.CenterPlayer(data.Position);
-
         // Crear pregunta
         if (input != null) GameUIManager.ChangeScheme(isGamepad);
         GameUIManager.ActiveMenu();
@@ -148,7 +145,6 @@ public class PlayerLocalManager : MonoBehaviour
     {
         GameUIManager.ActiveUIActions(false);
         GameUIManager.ActiveThrowActions(false);
-        movement.CornerPlayer(data.Position);
         GameLocalManager.FinishTurn();
     }
 

@@ -24,16 +24,6 @@ public class Content
         this.questions = questions;
     }
 
-    public Content(ContentData contentData, string uid)
-    {
-        this.uid = uid;
-        uidAuthor = contentData.UIDAuthor;
-        name = contentData.Name;
-        version = contentData.Version;
-        downloadCount = contentData.DownloadCount;
-        //questions = contentData.Questions;
-    }
-
     public string GenerateUID()
     {
         return System.Guid.NewGuid().ToString();

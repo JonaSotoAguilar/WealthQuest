@@ -198,6 +198,7 @@ public class FirebaseService : MonoBehaviour
             {
                 if (success)
                 {
+                    SaveService.DeleteAllSavedData(); // Borrar datos locales para el nuevo perfil 
                     ProfileUser.LoadFirebaseProfile(user.UserId, user.DisplayName, profileServer);
                     ProfileUser.LoadProfile(user.UserId);
                     loggedIn = true;
@@ -389,9 +390,6 @@ public class FirebaseService : MonoBehaviour
                 // Comparar y sincronizar datos
                 if (ProfileUser.username != user.DisplayName)
                     StartCoroutine(UpdateDisplayName(ProfileUser.username));
-
-                if (ProfileUser.role != profileServer.Role)
-                    updates.Add("Role", ProfileUser.role);
 
                 if (ProfileUser.level > profileServer.Level)
                     updates.Add("Level", ProfileUser.level);
@@ -614,46 +612,6 @@ public class FirebaseService : MonoBehaviour
 
     #endregion
 
-    #region Sync Content
-
-    public void UploadContent(Content content)
-    {
-        // Convertir Content a ContentData
-        ContentData contentData = new ContentData(content);
-
-        // Referencia al documento principal (Content)
-        DocumentReference contentDocRef = FirebaseFirestore.DefaultInstance
-            .Collection("contents")
-            .Document(content.uid);
-
-        // Subir el documento ContentData, incluyendo las preguntas
-        contentDocRef.SetAsync(contentData).ContinueWith(task =>
-        {
-            if (task.IsCompletedSuccessfully)
-            {
-                Debug.Log($"Content with ID '{content.uid}' uploaded successfully.");
-            }
-            else
-            {
-                Debug.LogError($"Error uploading content: {task.Exception}");
-            }
-        });
-    }
-
-    // Descargar contenido y preguntas
-
-
-    // Obtener todos los contenidos
-
-
-
-
-    // Actualizar el contenido y las preguntas
-
-    // Sumar una descarga al contenido
-
-    #endregion
-
     #region Diagnostic Test
 
     // Obtener un test aleatorio de Firestore
@@ -666,7 +624,6 @@ public class FirebaseService : MonoBehaviour
             CollectionReference testCollection = firestore.Collection("diagnosticTest");
             QuerySnapshot snapshot = await testCollection.GetSnapshotAsync();
 
-            Debug.Log($"Se han encontrado {snapshot.Count} test(s) en Firestore.");
             foreach (DocumentSnapshot document in snapshot.Documents)
             {
                 Debug.Log($"Document ID: {document.Id}");
@@ -675,8 +632,6 @@ public class FirebaseService : MonoBehaviour
                 Debug.Log($"Test: {test.Questions.Count} questions");
                 testList.Add(test);
             }
-
-            Debug.Log($"Se han obtenido {testList.Count} test(s) de Firestore.");
 
             if (testList.Count > 0)
             {
@@ -724,6 +679,32 @@ public class FirebaseService : MonoBehaviour
                 Debug.Log("Test results uploaded successfully.");
             }
         });
+    }
+
+    // Obtener cantidad de tests realizados
+    public async Task<int> GetTestResultsCountAsync()
+    {
+        string userId = auth.CurrentUser.UserId;
+        int testResultsCount = 0;
+
+        try
+        {
+            CollectionReference testResultsCollection = firestore
+                .Collection("users")
+                .Document(userId)
+                .Collection("testResults");
+
+            QuerySnapshot snapshot = await testResultsCollection.GetSnapshotAsync();
+            testResultsCount = snapshot.Count;
+
+            Debug.Log($"Se han encontrado {testResultsCount} test(s) en Firestore.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error al obtener los tests: {ex.Message}");
+        }
+
+        return testResultsCount;
     }
 
 

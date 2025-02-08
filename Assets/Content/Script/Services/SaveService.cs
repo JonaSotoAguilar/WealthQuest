@@ -1,15 +1,15 @@
-using UnityEngine;
-using System.IO;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Linq;
-using System.Collections.Generic;
-using UnityEngine.InputSystem;
-using System;
-using Mirror;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Mirror;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public static class SaveService
 {
@@ -138,12 +138,7 @@ public static class SaveService
         // Eliminar el guardado anterior (si aplica)
         DeleteSave(slotData);
 
-        // Actualizar estadísticas del usuario
-        if (slotData != 0)
-        {
-            PlayerPrefs.SetInt("gameId", finishGameData.gameID);
-            ProfileUser.UpdateStats(finishGameData);
-        }
+        PlayerPrefs.SetInt("gameId", finishGameData.gameID);
     }
 
     public static async Task LoadHistory()
@@ -153,17 +148,68 @@ public static class SaveService
             // Obtener todos los archivos .save
             string[] files = Directory.GetFiles(historyDirectory, "*.save");
 
-            // Invertir el orden de los archivos
-            Array.Reverse(files);
-
             // Leer y desencriptar cada archivo
             foreach (string file in files)
             {
                 byte[] encryptedData = await Task.Run(() => File.ReadAllBytes(file));
                 string decryptedData = DecryptStringFromBytes_Aes(encryptedData);
+
+                // Deserializar el archivo
                 FinishGameData finishGameData = JsonUtility.FromJson<FinishGameData>(decryptedData);
-                ProfileUser.history.Add(finishGameData);
+
+                // Verificar si el userId coincide con el usuario actual
+                if (finishGameData.userId == ProfileUser.uid)
+                {
+                    // Agregar el archivo a la lista si el userId es válido
+                    ProfileUser.history.Add(finishGameData);
+                }
+                else
+                {
+                    // Eliminar el archivo si el userId no coincide
+                    Debug.LogWarning($"Archivo eliminado por ID no coincidente: {file}");
+                    await Task.Run(() => File.Delete(file));
+                }
             }
+        }
+    }
+
+    public static void DeleteAllSavedData()
+    {
+        try
+        {
+            // Eliminar todos los archivos de historial de la carpeta
+            if (Directory.Exists(historyDirectory))
+            {
+                string[] historyFiles = Directory.GetFiles(historyDirectory, "*.save");
+                foreach (string file in historyFiles)
+                {
+                    File.Delete(file);
+                }
+                Debug.Log("Historial eliminado correctamente.");
+            }
+
+            // Eliminar los archivos de los slots de guardado
+            if (File.Exists(savePathSlotSingle))
+            {
+                File.Delete(savePathSlotSingle);
+                Debug.Log("Slot 1 (Single Player) eliminado.");
+            }
+
+            if (File.Exists(savePathSlotLocalMulti))
+            {
+                File.Delete(savePathSlotLocalMulti);
+                Debug.Log("Slot 2 (Multijugador Local) eliminado.");
+            }
+
+            if (File.Exists(savePathSlotOnline))
+            {
+                File.Delete(savePathSlotOnline);
+                Debug.Log("Slot 3 (Online) eliminado.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error al eliminar los datos guardados: {ex.Message}");
         }
     }
 
