@@ -328,7 +328,6 @@ public class FirebaseService : MonoBehaviour
     private void CreateProfile(string userId, string birthDate, string gender)
     {
         int age = CalculateAge(birthDate);
-        //int role = LoginManager.Instance.roleDropdown.value;
         ProfileData profileData = new ProfileData(birthDate, gender, age);
 
         firestore.Collection("users").Document(userId).SetAsync(profileData).ContinueWith(task =>

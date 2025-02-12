@@ -22,7 +22,6 @@ public class LoginManager : MonoBehaviour
     public TextMeshProUGUI warningRegisterText;
     public TMP_Dropdown genderDropdown;
     public TMP_InputField birthDatePicker;
-    public TextMeshProUGUI roleText;
 
     [Space, Header("Forgot Password")]
     public TMP_InputField emailForgotField;
@@ -158,22 +157,6 @@ public class LoginManager : MonoBehaviour
         warningRegisterText.text = "";
         birthDatePicker.text = "";
         genderDropdown.value = 0;
-    }
-
-    private void UpdateRoleMessage(int roleIndex)
-    {
-        switch (roleIndex)
-        {
-            case 0:
-                roleText.text = "Acceso a funciones básicas del juego.";
-                break;
-            case 1:
-                roleText.text = "Acceso a funciones básicas del juego y herramientas de creación.";
-                break;
-            default:
-                roleText.text = "Selecciona un rol válido.";
-                break;
-        }
     }
 
     public void ResetForgotFields()

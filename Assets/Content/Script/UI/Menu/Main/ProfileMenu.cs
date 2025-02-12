@@ -198,7 +198,7 @@ public class ProfileMenu : MonoBehaviour
 
     private void CreateGamePanel()
     {
-        List<FinishGameData> finishGameData = ProfileUser.history;
+        List<FinishGameData> finishGameData = new List<FinishGameData>(ProfileUser.history);
         finishGameData.Reverse();
 
         foreach (FinishGameData game in finishGameData)

@@ -9,7 +9,8 @@ public class BannerNetwork : NetworkBehaviour
     [SyncVar(hook = nameof(OnChangePosition))] public Vector2 position = Vector2.zero;
     [SyncVar(hook = nameof(OnChangeUsername))] private string username = "Jugador_1";
     [SyncVar(hook = nameof(OnChangeCharacter))] private int character = 0;
-    [SyncVar] private int financeLevel = 1;
+    private int financeLevel = 1;
+    [SyncVar(hook = nameof(OnChangeStatus))] private string status = "Conectado";
 
     [Header("Panel Player")]
     [SerializeField] private GameObject panelPlayer;
@@ -41,7 +42,12 @@ public class BannerNetwork : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        if (!isOwned) return;
+        if (!isOwned)
+        {
+            BlockCharacterButtons(false);
+            return;
+        }
+        else BlockCharacterButtons(true);
 
         string uid = ProfileUser.uid;
         string name = ProfileUser.username;
@@ -56,6 +62,7 @@ public class BannerNetwork : NetworkBehaviour
         uid = uidProfile;
         username = nameProfile;
         financeLevel = level;
+        status = "Conectado";
     }
 
     #endregion
@@ -76,6 +83,34 @@ public class BannerNetwork : NetworkBehaviour
         CmdUpdateCharacter(previousCharacter);
     }
 
+    [Server]
+    public void ReadyPlayer(bool enable)
+    {
+        if (enable)
+        {
+            status = "Listo";
+            RpcBlockCharacterButtons(false);
+        }
+        else
+        {
+            status = "Conectado";
+            RpcBlockCharacterButtons(true);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcBlockCharacterButtons(bool block)
+    {
+        if (!isOwned) return;
+        BlockCharacterButtons(block);
+    }
+
+    private void BlockCharacterButtons(bool block)
+    {
+        nextCharacter.gameObject.SetActive(block);
+        previousCharacter.gameObject.SetActive(block);
+    }
+
     #endregion
 
     #region Server Change Values
@@ -90,8 +125,6 @@ public class BannerNetwork : NetworkBehaviour
     private void OnChangeUsername(string oldName, string newName)
     {
         nameInput.text = newName;
-        connectedText.text = "Conectado";
-        connectedText.color = Color.green;
     }
 
     private void OnChangeCharacter(int oldCharacter, int newCharacter)
@@ -99,11 +132,15 @@ public class BannerNetwork : NetworkBehaviour
         characterSprite.sprite = characterDB.GetCharacter(newCharacter).characterIcon;
     }
 
-    // FIXME: Eliminar
     private void OnChangePosition(Vector2 oldPosition, Vector2 newPosition)
     {
         RectTransform rectTransform = panelPlayer.GetComponent<RectTransform>();
         rectTransform.anchoredPosition = newPosition;
+    }
+
+    private void OnChangeStatus(string oldStatus, string newStatus)
+    {
+        connectedText.text = newStatus;
     }
 
     #endregion

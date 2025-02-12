@@ -1,7 +1,7 @@
-using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
 using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 
 public class BannerLocal : MonoBehaviour
@@ -19,8 +19,7 @@ public class BannerLocal : MonoBehaviour
     [SerializeField] private string playerName;
 
     [Header("Status")]
-    [SerializeField] private GameObject deleteCharacter;
-    [SerializeField] private TextMeshProUGUI connectedText;
+    [SerializeField] private GameObject connectedText;
 
     public string PlayerName { get => playerName; set => playerName = value; }
     public int Model { get => characterSelected; }
@@ -46,8 +45,7 @@ public class BannerLocal : MonoBehaviour
         changeName.gameObject.SetActive(active);
         nextCharacter.gameObject.SetActive(active);
         previousCharacter.gameObject.SetActive(active);
-        connectedText.gameObject.SetActive(!active);
-        if (deleteCharacter != null) deleteCharacter.SetActive(active);
+        connectedText.SetActive(!active);
     }
 
     #region Character Selection

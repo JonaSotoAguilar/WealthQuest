@@ -467,8 +467,8 @@ public class GameUIManager : MonoBehaviour
         AudioManager.PlaySoundAppear();
         await MoveLocalYAsync(finishText, 0, 0.5f, LeanTweenType.easeOutCubic);
 
-        // Wait for 2 seconds
-        await Task.Delay(2000);
+        // Wait for 1 seconds
+        await Task.Delay(1000);
 
         // Move finish text out of the screen
         AudioManager.PlaySoundBannerDisappear();

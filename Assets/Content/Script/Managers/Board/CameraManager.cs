@@ -1,6 +1,6 @@
-using UnityEngine;
 using System.Collections;
 using Unity.Cinemachine;
+using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
@@ -21,9 +21,12 @@ public class CameraManager : MonoBehaviour
 
     public void CurrentCamera(Transform currentPlayer)
     {
-        cameraTarget.position = currentPlayer.transform.position;
+        cameraTarget.position = currentPlayer.position;
         cameraTarget.rotation = currentPlayer.rotation;
-        cameraTarget.SetParent(currentPlayer.transform);
+        cameraTarget.SetParent(currentPlayer);
+
+        // Forzar la actualización de Cinemachine para aplicar la nueva orientación inmediatamente
+        cinemachineCamera.ForceCameraPosition(cameraTarget.position, cameraTarget.rotation);
     }
 
     public IEnumerator UpdateCurrentCamera(Transform targetTransform)
@@ -37,13 +40,24 @@ public class CameraManager : MonoBehaviour
         while (elapsedTime < transitionDuration)
         {
             elapsedTime += Time.deltaTime;
-            cameraTarget.position = Vector3.Lerp(initialPosition, targetPosition, elapsedTime / transitionDuration);
+            float t = elapsedTime / transitionDuration;
 
-            cameraTarget.rotation = Quaternion.Slerp(initialRotation, targetRotation, elapsedTime / transitionDuration);
+            cameraTarget.position = Vector3.Lerp(initialPosition, targetPosition, t);
+            cameraTarget.rotation = Quaternion.Slerp(initialRotation, targetRotation, t);
+
+            // Forzar la actualización de Cinemachine en cada frame para aplicar los cambios
+            cinemachineCamera.ForceCameraPosition(cameraTarget.position, cameraTarget.rotation);
+
             yield return null;
         }
+
+        // Asegurar la posición y rotación final exacta
         cameraTarget.position = targetPosition;
         cameraTarget.rotation = targetRotation;
         cameraTarget.SetParent(targetTransform);
+
+        // Forzar la actualización final de Cinemachine
+        cinemachineCamera.ForceCameraPosition(cameraTarget.position, cameraTarget.rotation);
     }
+
 }

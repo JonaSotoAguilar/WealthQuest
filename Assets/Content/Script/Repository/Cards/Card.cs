@@ -31,7 +31,6 @@ public static class CardSerializer
     {
         string cardName = reader.ReadString();
         string cardType = reader.ReadString();
-        Debug.Log($"Card name: {cardName}, Card type: {cardType}");
 
         // Construir la ruta según el tipo
         string folder = GetFolderByCardType(cardType);

@@ -72,7 +72,6 @@ public class MenuManager : MonoBehaviour
         }
 
         Instance = this;
-        activeMenu = loginMenu;
     }
 
     public void ExitGame()
@@ -98,11 +97,15 @@ public class MenuManager : MonoBehaviour
         bool applyTest = await ProfileUser.ApplyTest();
         if (applyTest)
         {
-            OpenTestMenu();
+            if (activeMenu != null || activeMenu == testMenu) activeMenu.SetActive(false);
+            testMenu.SetActive(true);
+            activeMenu = testMenu;
         }
         else
         {
-            OpenStartMenu();
+            if (activeMenu != null || activeMenu == startMenu) activeMenu.SetActive(false);
+            startMenu.SetActive(true);
+            activeMenu = startMenu;
         }
     }
 
@@ -113,25 +116,19 @@ public class MenuManager : MonoBehaviour
     public void OpenLoginMenu()
     {
         LoginManager.Instance.ResetLoginFields();
-        activeMenu.SetActive(false);
-        loginMenu.SetActive(true);
-        activeMenu = loginMenu;
+        OpenMenu(loginMenu);
     }
 
     public void OpenRegistrationMenu()
     {
         LoginManager.Instance.ResetRegistrationFields();
-        activeMenu.SetActive(false);
-        registerMenu.SetActive(true);
-        activeMenu = registerMenu;
+        OpenMenu(registerMenu);
     }
 
     public void OpenForgotMenu()
     {
         LoginManager.Instance.ResetForgotFields();
-        activeMenu.SetActive(false);
-        forgotMenu.SetActive(true);
-        activeMenu = forgotMenu;
+        OpenMenu(forgotMenu);
     }
 
     #endregion
@@ -140,44 +137,32 @@ public class MenuManager : MonoBehaviour
 
     private void OpenTestMenu()
     {
-        activeMenu.SetActive(false);
-        testMenu.SetActive(true);
-        activeMenu = testMenu;
+        OpenMenu(testMenu);
     }
 
     public void OpenStartMenu()
     {
-        activeMenu.SetActive(false);
-        startMenu.SetActive(true);
-        activeMenu = startMenu;
+        OpenMenu(startMenu);
     }
 
     public void OpenOptionMenu()
     {
-        activeMenu.SetActive(false);
-        optionMenu.SetActive(true);
-        activeMenu = optionMenu;
+        OpenMenu(optionMenu);
     }
 
     public void OpenProfileMenu()
     {
-        activeMenu.SetActive(false);
-        profileMenu.SetActive(true);
-        activeMenu = profileMenu;
+        OpenMenu(profileMenu);
     }
 
     public void OpenContentMenu()
     {
-        activeMenu.SetActive(false);
-        contentMenu.SetActive(true);
-        activeMenu = contentMenu;
+        OpenMenu(contentMenu);
     }
 
     public void OpenCreateContentMenu()
     {
-        activeMenu.SetActive(false);
-        createContentMenu.SetActive(true);
-        activeMenu = createContentMenu;
+        OpenMenu(createContentMenu);
     }
 
     #endregion
@@ -186,24 +171,18 @@ public class MenuManager : MonoBehaviour
 
     public void OpenPlayMenu()
     {
-        activeMenu.SetActive(false);
-        playMenu.SetActive(true);
-        activeMenu = playMenu;
+        OpenMenu(playMenu);
     }
 
     public void OpenPlayLocalMenu()
     {
-        activeMenu.SetActive(false);
-        playLocalMenu.SetActive(true);
-        activeMenu = playLocalMenu;
+        OpenMenu(playLocalMenu);
     }
 
     public void OpenPlayOnlineMenu()
     {
         joinInput.text = "";
-        activeMenu.SetActive(false);
-        playOnlineMenu.SetActive(true);
-        activeMenu = playOnlineMenu;
+        OpenMenu(playOnlineMenu);
     }
 
     #endregion
@@ -212,15 +191,14 @@ public class MenuManager : MonoBehaviour
 
     public void OpenLobbyLocalMenu()
     {
-        activeMenu.SetActive(false);
-        lobbyLocalMenu.SetActive(true);
-        activeMenu = lobbyLocalMenu;
+        OpenMenuFade(lobbyLocalMenu);
     }
 
     public void OpenLobbyOnlineMenu()
     {
         joinInput.text = "";
         activeMenu.SetActive(false);
+        lobbyOnlineMenu.SetActive(true);
         activeMenu = lobbyOnlineMenu;
     }
 
@@ -329,7 +307,7 @@ public class MenuManager : MonoBehaviour
     private void CloseMessagePopup()
     {
         CanvasGroup canvasGroup = messagePopup.GetComponent<CanvasGroup>();
-        LeanTween.alphaCanvas(canvasGroup, 0, 1.5f)
+        LeanTween.alphaCanvas(canvasGroup, 0, 2.5f)
             .setEase(LeanTweenType.easeInOutQuad)
             .setOnComplete(() => messagePopup.SetActive(false));
     }
@@ -360,6 +338,111 @@ public class MenuManager : MonoBehaviour
     {
         canvasGroup.interactable = active;
         canvasGroup.blocksRaycasts = active;
+    }
+
+    #endregion
+
+    #region Menu Animations
+
+    private void OpenMenu(GameObject newMenu)
+    {
+        if (activeMenu != null)
+        {
+            CloseMenu(newMenu);
+        }
+        else
+        {
+            OpenNewMenu(newMenu);
+        }
+    }
+
+    private void OpenMenuFade(GameObject newMenu)
+    {
+        if (activeMenu != null)
+        {
+            CloseMenu(newMenu, true);
+        }
+        else
+        {
+            OpenMenuFadeIn(newMenu);
+        }
+    }
+
+    private void CloseMenu(GameObject newMenu, bool fadeIn = false)
+    {
+        if (activeMenu == newMenu) return;
+
+        CanvasGroup canvasGroup = activeMenu.GetComponent<CanvasGroup>();
+        GroupActive(canvasGroup, false);
+
+        // Mueve el menú hacia arriba (1080 en Y)
+        RectTransform rectTransform = activeMenu.GetComponent<RectTransform>();
+        LeanTween.moveY(rectTransform, 1080, 0.5f)
+            .setEase(LeanTweenType.easeInOutQuad)
+            .setOnComplete(() =>
+            {
+                activeMenu.SetActive(false);
+                if (fadeIn)
+                {
+                    OpenMenuFadeIn(newMenu);
+                }
+                else
+                {
+                    OpenNewMenu(newMenu);
+                }
+            });
+    }
+
+    private void OpenNewMenu(GameObject newMenu)
+    {
+        // Activa el nuevo menú si no es el mismo que el actual y no está activo
+        if (activeMenu == newMenu) return;
+
+        if (newMenu != null)
+        {
+            CanvasGroup canvasGroup = newMenu.GetComponent<CanvasGroup>();
+
+            newMenu.SetActive(true); // Activa el nuevo menú
+            RectTransform rectTransform = newMenu.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, 1080);
+
+            // Mueve el nuevo menú hasta el centro con efecto de rebote
+            LeanTween.moveY(rectTransform, 0, 0.6f)
+                .setEase(LeanTweenType.easeOutBack) // Rebote suave
+                .setOnComplete(() =>
+                {
+                    GroupActive(canvasGroup, true);
+                    activeMenu = newMenu;
+                });
+        }
+    }
+
+    private void OpenMenuFadeIn(GameObject newMenu)
+    {
+        if (activeMenu == newMenu) return;
+
+        if (newMenu != null)
+        {
+            CanvasGroup canvasGroup = newMenu.GetComponent<CanvasGroup>();
+
+            RectTransform rectTransform = newMenu.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, 0);
+
+            // Desactiva el CanvasGroup al inicio
+            canvasGroup.alpha = 0;
+            GroupActive(canvasGroup, false);
+
+            newMenu.SetActive(true);
+
+            // Aumenta el alpha de 0 a 1 y activa la interactividad
+            LeanTween.alphaCanvas(canvasGroup, 1f, 0.5f)
+                .setEase(LeanTweenType.easeInOutQuad)
+                .setOnComplete(() =>
+                {
+                    GroupActive(canvasGroup, true);
+                    activeMenu = newMenu;
+                });
+        }
     }
 
     #endregion

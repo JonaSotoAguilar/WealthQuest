@@ -1,8 +1,6 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
 using static UnityEngine.InputSystem.InputAction;
 
 public class PauseMultiMenu : MonoBehaviour
@@ -126,8 +124,6 @@ public class PauseMultiMenu : MonoBehaviour
         background.SetActive(false);
         currentMenu.SetActive(false);
         currentMenu = null;
-
-        // Time.timeScale = 1;
     }
 
     #endregion
@@ -138,15 +134,13 @@ public class PauseMultiMenu : MonoBehaviour
     {
         CanvasGroup canvasGroup = confirmMenuPopup.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, false);
-        // Time.timeScale = 1;
-        SceneManager.LoadScene("Menu");
+        SceneTransition.Instance.LoadScene("Menu");
     }
 
     public void ExitGame()
     {
         CanvasGroup canvasGroup = confirmExitPopup.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, false);
-        // Time.timeScale = 1;
         Application.Quit();
     }
 

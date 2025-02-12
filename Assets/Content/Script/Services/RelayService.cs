@@ -1,25 +1,18 @@
 using System;
-using System.Collections.Generic;
-using Mirror;
-using UnityEngine;
-using Unity.Services.Relay.Models;
-using Utp;
-using System.Threading.Tasks;
-using Unity.Services.Core;
-using Unity.Services.Authentication;
-using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Mirror;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+using Unity.Services.Relay.Models;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using Utp;
 
 public class RelayService : NetworkManager
 {
     public static RelayService Instance { get; private set; }
-
-    public enum GameState
-    {
-        Lobby,
-        InProgress,
-        Finished
-    }
 
     // Transport
     private UtpTransport utpTransport;
@@ -43,8 +36,7 @@ public class RelayService : NetworkManager
     [Header("Lobby Settings")]
     [SerializeField] private GameObject bannerPrefab;
     public int connBanners = 0;
-    public int connBannersDisconnected = 0;
-    private List<BannerNetwork> bannersDisconnected = new();
+    private List<NetworkConnectionToClient> readyPlayers = new();
     public Dictionary<NetworkConnectionToClient, BannerNetwork> clientPanels = new();
     private Dictionary<int, int> positions = new Dictionary<int, int>(){
         {0, -510},
@@ -52,6 +44,8 @@ public class RelayService : NetworkManager
         {2, 170},
         {3, 510}
     };
+
+    public int ReadyPlayers { get => readyPlayers.Count; }
 
     #region Initialization
 
@@ -81,8 +75,7 @@ public class RelayService : NetworkManager
         exitNetwork = false;
         connBanners = 0;
         connPlayers = 0;
-        connBannersDisconnected = 0;
-        bannersDisconnected.Clear();
+        readyPlayers.Clear();
         clientPanels.Clear();
     }
 
@@ -157,14 +150,21 @@ public class RelayService : NetworkManager
         {
             RemoveBanner(conn);
             connBanners--;
+            if (readyPlayers.Contains(conn))
+            {
+                readyPlayers.Remove(conn);
+                LobbyOnline.Instance.RpcEnableStartButton(false);
+                foreach (var banner in clientPanels.Values)
+                {
+                    banner.ReadyPlayer(false);
+                }
+                readyPlayers.Clear();
+            }
         }
         else
         {
             connPlayers--;
-
-            // Si cualquier jugador se desconecta, finalizar la partida inmediatamente.
-            Debug.Log("Un jugador se ha desconectado. Finalizando la partida...");
-            if (!finishGame) FinishGame();
+            if (!finishGame) StartCoroutine(SafeShutdown());
         }
     }
 
@@ -225,7 +225,6 @@ public class RelayService : NetworkManager
         base.OnClientDisconnect();
         Debug.Log("Cliente desconectado.");
 
-        // Si el host sigue activo, no hacer nada
         if (NetworkServer.active)
         {
             Debug.Log("El host sigue activo, no se cambiará de escena.");
@@ -236,15 +235,25 @@ public class RelayService : NetworkManager
         if (SceneManager.GetActiveScene().path != offlineScene)
         {
             Debug.Log("Cliente desconectado de la partida. Volviendo al menú...");
-            SceneManager.LoadScene(offlineScene);
+
+            SceneTransition.Instance.LoadScene(offlineScene);
         }
     }
-
-
 
     #endregion
 
     #region Lobby Scene
+
+    public void ReadyPlayerLobby(NetworkConnectionToClient conn)
+    {
+        readyPlayers.Add(conn);
+
+        // Busca el banner del jugador y actualiza el texto
+        if (clientPanels.TryGetValue(conn, out BannerNetwork banner))
+        {
+            banner.ReadyPlayer(true);
+        }
+    }
 
     private void SetupBanner(NetworkConnectionToClient conn)
     {
@@ -277,28 +286,6 @@ public class RelayService : NetworkManager
             index++;
         }
     }
-
-    // FIXME: disconnected banner 
-
-    // private void LoadBanner(NetworkConnectionToClient conn)
-    // {
-    //     // FIXME: Revisar si el uid coincide con el del jugador
-
-
-    //     // Bloquear botones de cambio de personaje
-
-    //     // Asignar el banner al jugador
-    //     clientPanels[conn] = bannersDisconnected[connBanners];
-    //     NetworkServer.AddPlayerForConnection(conn, bannersDisconnected[connBanners].gameObject);
-    // }
-
-    // public void SetupBannerDisconnected()
-    // {
-    //     GameObject banner = Instantiate(bannerPrefab);
-    //     BannerNetwork bannerNetwork = banner.GetComponent<BannerNetwork>();
-    //     bannerNetwork.position = new Vector2(positions[connBannersDisconnected], 0);
-    //     connBannersDisconnected++;
-    // }
 
     #endregion
 
@@ -343,17 +330,52 @@ public class RelayService : NetworkManager
     {
         Debug.Log("Cerrando la partida...");
 
-        if (NetworkServer.active)
+        if (NetworkServer.active && !finishGame)
         {
-            finishGame = true;
-            StopHost();
+            StartCoroutine(CloseGame());
         }
     }
 
-    private IEnumerator MessagePopup(string message)
+    private IEnumerator CloseGame()
     {
-        yield return new WaitForSeconds(1.5f);
-        MenuManager.Instance.OpenMessagePopup(message);
+        Debug.Log("Apagando el servidor..");
+        finishGame = true;
+        SceneTransition.Instance.LoadSceneNet();
+        yield return new WaitForSeconds(1f);
+        StopHost();
+    }
+
+    public IEnumerator SafeShutdown(bool error = true)
+    {
+        Debug.Log("Apagando el servidor de forma segura...");
+        finishGame = true;
+
+        if (error) GameNetManager.ServerClose();
+        SceneTransition.Instance.LoadSceneNet();
+
+        // Paso 1: Detener a todos los clientes conectados
+        if (NetworkServer.active)
+        {
+            Debug.Log("Desconectando todos los clientes...");
+            NetworkServer.DisconnectAll();
+            yield return new WaitForSeconds(0.5f); // Dar tiempo a que las conexiones se procesen
+        }
+
+        // Paso 2: Detener el cliente local, si está conectado
+        if (NetworkClient.isConnected)
+        {
+            Debug.Log("Cerrando cliente local...");
+            NetworkClient.Disconnect();
+            yield return new WaitUntil(() => !NetworkClient.isConnected);
+        }
+
+        // Paso 3: Apagar el servidor
+        if (NetworkServer.active)
+        {
+            Debug.Log("Apagando servidor...");
+            yield return new WaitForSeconds(0.5f);
+            StopHost();
+        }
     }
 
     #endregion

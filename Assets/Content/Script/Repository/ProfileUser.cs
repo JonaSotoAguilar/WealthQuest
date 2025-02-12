@@ -267,7 +267,7 @@ public static class ProfileUser
 
     public static async Task<bool> ApplyTest()
     {
-        // 1. Si es nivel 3 de finanzas, no aplicar test
+        // 1. Si es nivel 4 de finanzas, no aplicar test
         if (financeLevel >= 4) return false;
 
         // 2. Si no tiene conexión a internet, no aplicar test

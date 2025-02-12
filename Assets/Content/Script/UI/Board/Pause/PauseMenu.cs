@@ -1,9 +1,6 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
-using UnityEngine.SceneManagement;
 using static UnityEngine.InputSystem.InputAction;
 
 public class PauseMenu : MonoBehaviour
@@ -201,7 +198,7 @@ public class PauseMenu : MonoBehaviour
 
         if (gameData.mode < 3)
         {
-            SceneManager.LoadScene("Menu");
+            SceneTransition.Instance.LoadScene("Menu");
         }
         else
         {
@@ -211,24 +208,20 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
-    private IEnumerator DisconnectAndReturnToMenu()
-    {
-        if (RelayService.Instance != null)
-        {
-            // Inicia la desconexión del cliente
-            RelayService.Instance.StopClient();
-
-            // Espera un pequeño tiempo para garantizar la desconexión
-            yield return new WaitForSecondsRealtime(0.5f);
-        }
-    }
-
     public void ExitGame()
     {
         CanvasGroup canvasGroup = confirmExitPopup.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, false);
         DisablePauseAction();
-        Application.Quit();
+        if (gameData.mode < 3)
+        {
+            CloseCurrentMenu();
+            Application.Quit();
+        }
+        else
+        {
+            Application.Quit();
+        }
     }
 
     #endregion

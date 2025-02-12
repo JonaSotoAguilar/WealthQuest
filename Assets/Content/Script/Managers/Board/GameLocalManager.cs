@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Playables;
 using Random = UnityEngine.Random;
@@ -66,10 +67,20 @@ public class GameLocalManager : MonoBehaviour
     {
         if (instance == null) return;
 
+        instance.StartCoroutine(instance.StarGameLocal());
+    }
+
+    private IEnumerator StarGameLocal()
+    {
+        yield return new WaitForSeconds(1.2f);
         instance.UpdateYear(Data.currentYear);
         GameUIManager.ShowPanel(true);
 
-        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count > 1)
+        if (instance.gameData.timePlayed != "00:00:00")
+        {
+            StartGame();
+        }
+        else if (instance.gameData.playersData.Count > 1)
             instance.StartSelection();
         else
             instance.StartIntroCinematic();
@@ -218,8 +229,10 @@ public class GameLocalManager : MonoBehaviour
             int pointsComparison = b.Data.Points.CompareTo(a.Data.Points);
             if (pointsComparison != 0) return pointsComparison;
 
-            // Si hay empate en Points, comparar Money (mayor a menor)
-            return b.Data.Money.CompareTo(a.Data.Money);
+            // Si hay empate en Points, comparar Money con prioridad a valores positivos
+            if (a.Data.Money >= 0 && b.Data.Money < 0) return -1; // Prioriza el positivo
+            if (a.Data.Money < 0 && b.Data.Money >= 0) return 1;  // Penaliza el negativo
+            return b.Data.Money.CompareTo(a.Data.Money); // Si ambos son positivos o negativos, ordenar normal
         });
 
         // Asignar posiciones considerando empates
@@ -339,7 +352,7 @@ public class GameLocalManager : MonoBehaviour
         yield return new WaitUntil(() => cinematicDirector.playableGraph.IsValid());
 
         // Aumentar la velocidad de reproducción
-        cinematicDirector.playableGraph.GetRootPlayable(0).SetSpeed(1.5f);
+        cinematicDirector.playableGraph.GetRootPlayable(0).SetSpeed(2f);
     }
 
 

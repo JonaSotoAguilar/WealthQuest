@@ -82,13 +82,24 @@ public class GameNetManager : NetworkBehaviour
     {
         if (instance == null) return;
 
+        instance.StartCoroutine(instance.StartGameNet());
+    }
+
+    private IEnumerator StartGameNet()
+    {
+        yield return new WaitForSeconds(1.2f);
+
         instance.UpdateYear(Data.currentYear);
         instance.RpcActiveUI(true);
 
-        if (instance.gameData.timePlayed == "00:00:00" && instance.gameData.playersData.Count > 1)
+        if (instance.gameData.timePlayed != "00:00:00")
+        {
+            StartGame();
+        }
+        else if (instance.gameData.playersData.Count > 1)
             instance.StartSelection();
         else
-            StartGame();
+            instance.StartIntroCinematic();
     }
 
     [Server]
@@ -156,7 +167,7 @@ public class GameNetManager : NetworkBehaviour
     {
         // 1. Posiciona en esquina al jugador actual
         int position = currPlayer.Data.Position;
-        SquareManager.Squares[position].RemovePlayer(currPlayer.gameObject);
+        SquareManager.Squares[position].AddPlayer(currPlayer.gameObject);
 
         // 2. Obtiene el siguiente jugador
         RpcResetPlayerHUD(currPlayer.Data.UID);
@@ -207,10 +218,19 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     private void FinishGame()
     {
-        // 1. Calculate winner
+        // 1. Calcular el ganador después de un pequeño retraso para asegurar sincronización
+        StartCoroutine(FinishGameProcess());
+    }
+
+    [Server]
+    private IEnumerator FinishGameProcess()
+    {
+        yield return new WaitForSeconds(0.5f);
+
+        // 1. Calcular puntajes finales
         SetFinalScore();
 
-        // 2. Finish Game
+        // 2. Notificar a los clientes que el juego ha terminado
         RpcFinishGame();
     }
 
@@ -235,8 +255,10 @@ public class GameNetManager : NetworkBehaviour
             int pointsComparison = b.Data.Points.CompareTo(a.Data.Points);
             if (pointsComparison != 0) return pointsComparison;
 
-            // Si hay empate en Points, comparar Money (mayor a menor)
-            return b.Data.Money.CompareTo(a.Data.Money);
+            // Si hay empate en Points, comparar Money con prioridad a valores positivos
+            if (a.Data.Money >= 0 && b.Data.Money < 0) return -1; // Prioriza el positivo
+            if (a.Data.Money < 0 && b.Data.Money >= 0) return 1;  // Penaliza el negativo
+            return b.Data.Money.CompareTo(a.Data.Money); // Si ambos son positivos o negativos, ordenar normal
         });
 
         // Asignar posiciones considerando empates
@@ -274,15 +296,19 @@ public class GameNetManager : NetworkBehaviour
     [ClientRpc]
     private void RpcFinishGame()
     {
-        SaveHistory();
+        // Esperar antes de ejecutar SaveHistory para asegurar que los datos se han recibido
+        Invoke(nameof(SaveHistory), 0.5f);
         _ = GameUIManager.ShowFinishGame();
     }
 
     private void SaveHistory()
     {
-        Debug.Log("Profile UID: " + ProfileUser.uid);
-        int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
-        int level = GetPlayer(ProfileUser.uid).Data.Level;
+        Debug.Log("Time: " + timePlayed + " Year: " + currentYear);
+        var data = GetPlayer(ProfileUser.uid).Data;
+        int score = data.FinalScore;
+        int level = data.Level;
+        Debug.Log("Score: " + score + " Level: " + level);
+
         FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score, level);
         ProfileUser.SaveGame(finishData, 3);
     }
@@ -377,12 +403,15 @@ public class GameNetManager : NetworkBehaviour
         TimeSpan currentSpan = timeNow - currentTime;
         currentTime = timeNow;
 
-        // Actualizar tiempo jugado
+        // Sumar tiempo al tiempo total del juego
         TimeSpan totalSpan = TimeSpan.Parse(gameData.timePlayed);
-        TimeSpan timeSpan = totalSpan + currentSpan;
-        timePlayed = timeSpan.ToString(@"hh\:mm\:ss");
+        TimeSpan newTimeSpan = totalSpan + currentSpan;
+
+        // Asignar el nuevo valor y sincronizar con todos los clientes
+        timePlayed = newTimeSpan.ToString(@"hh\:mm\:ss");
         gameData.timePlayed = timePlayed;
     }
+
 
     [Server]
     private void UpdateYear(int newYear)
@@ -441,7 +470,7 @@ public class GameNetManager : NetworkBehaviour
         yield return new WaitUntil(() => cinematicDirector.playableGraph.IsValid());
 
         // Aumentar la velocidad de reproducción
-        cinematicDirector.playableGraph.GetRootPlayable(0).SetSpeed(1.5f);
+        cinematicDirector.playableGraph.GetRootPlayable(0).SetSpeed(2f);
     }
 
     [Server]
@@ -563,17 +592,17 @@ public class GameNetManager : NetworkBehaviour
     {
         if (instance.isClient && instance.isServer)
         {
-            instance.ServerClose();
+            ServerClose();
         }
         else if (instance.isClient)
         {
-            instance.ServerClose();
+            ServerClose();
         }
     }
 
-    public void ServerClose()
+    public static void ServerClose()
     {
-        CmdServerClose();
+        instance.CmdServerClose();
     }
 
     [Command(requiresAuthority = false)]

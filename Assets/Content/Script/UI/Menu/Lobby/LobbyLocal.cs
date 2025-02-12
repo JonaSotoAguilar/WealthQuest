@@ -1,13 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LobbyLocal : MonoBehaviour
@@ -225,7 +220,16 @@ public class LobbyLocal : MonoBehaviour
         newPanel.transform.SetSiblingIndex(siblingIndex);
         bannersPanel[index] = newPanel;
         var button = newPanel.transform.Find("DeletePlayer").GetComponent<Button>();
-        button.onClick.AddListener(() => DeletePlayer(newPanel));
+        if (mode == 1)
+        {
+            button.onClick.AddListener(() => DeletePlayer(newPanel));
+            button.gameObject.SetActive(true);
+        }
+        else
+        {
+            button.gameObject.SetActive(false);
+        }
+
         CreateCharacter(index, newPanel);
     }
 
@@ -240,6 +244,9 @@ public class LobbyLocal : MonoBehaviour
             character.UpdateName(gameData.playersData[index].Nickname);
             character.LoadCharacter(gameData.playersData[index].CharacterID);
             character.ActiveChanges(false);
+
+            var button = newPanel.transform.Find("DeletePlayer").GetComponent<Button>();
+            button.gameObject.SetActive(false);
         }
 
         EnableStartGame();
@@ -262,6 +269,12 @@ public class LobbyLocal : MonoBehaviour
             var disconnectedPanel = bannersPanel[i];
             disconnectedPanel.name = "PlayerDisconnected_" + i;
             disconnectedPanel.transform.Find("PlayerIndex").GetComponent<TextMeshProUGUI>().text = "Jugador " + (i + 1);
+        }
+
+        if (characters.Count < 2)
+        {
+            readyText.text = "¡Se requieren 2 jugadores para empezar!";
+            startButton.interactable = false;
         }
     }
 
@@ -310,7 +323,7 @@ public class LobbyLocal : MonoBehaviour
             gameData.LoadContent(contentDropdown.options[contentDropdown.value].text);
             CreateNewGameData();
         }
-        SceneManager.LoadScene(SCENE_GAME);
+        SceneTransition.Instance.LoadScene(SCENE_GAME);
     }
 
     private void CreateNewGameData()

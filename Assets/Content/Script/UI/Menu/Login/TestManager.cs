@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,12 +11,14 @@ public class TestManager : MonoBehaviour
     [SerializeField] private Transform container;
     [SerializeField] private List<TestQuestion> testQuestions = new List<TestQuestion>();
     [SerializeField] private Button sendButton;
+    [SerializeField] private TextMeshProUGUI loadText;
 
     private int questionsAnswered = 0;
 
     private void OnEnable()
     {
         sendButton.interactable = false;
+        loadText.gameObject.SetActive(true);
         GetTest();
     }
 
@@ -32,6 +35,7 @@ public class TestManager : MonoBehaviour
 
     private void SetTest(TestData test)
     {
+        loadText.gameObject.SetActive(false);
         foreach (QuestionData question in test.Questions)
         {
             int index = test.Questions.IndexOf(question);
