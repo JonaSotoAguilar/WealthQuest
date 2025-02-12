@@ -135,7 +135,8 @@ public class PlayerNetData : NetworkBehaviour
     [Server]
     private void UpdateLevel()
     {
-        int newLevel = 1 + Mathf.FloorToInt(Points / 6);
+        int addLevel = Mathf.FloorToInt(Points / 6);
+        int newLevel = level + addLevel;
         if (newLevel != level) level = Mathf.Clamp(newLevel, 1, 4);
     }
 

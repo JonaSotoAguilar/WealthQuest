@@ -330,7 +330,7 @@ public class LobbyLocal : MonoBehaviour
     {
         gameData.mode = mode;
         int years = 10 + (yearDropdown.value * 5);
-        gameData.yearsToPlay = 2;
+        gameData.yearsToPlay = years;
         SavePlayer();
     }
 

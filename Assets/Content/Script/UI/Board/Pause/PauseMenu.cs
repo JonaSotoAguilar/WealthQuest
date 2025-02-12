@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using static UnityEngine.InputSystem.InputAction;
 
 public class PauseMenu : MonoBehaviour
@@ -140,6 +141,7 @@ public class PauseMenu : MonoBehaviour
         background.SetActive(true);
         pauseMenu.SetActive(true);
         currentMenu = pauseMenu;
+        SetFirstSelectable(pauseMenu);
     }
 
     public void ReturnPauseMenu()
@@ -148,6 +150,7 @@ public class PauseMenu : MonoBehaviour
         pauseMenu.SetActive(true);
         eventSystem.SetSelectedGameObject(firstPauseButton);
         currentMenu = pauseMenu;
+        SetFirstSelectable(pauseMenu);
     }
 
     public void OpenOptionMenu()
@@ -156,6 +159,7 @@ public class PauseMenu : MonoBehaviour
         optionMenu.SetActive(true);
         eventSystem.SetSelectedGameObject(firstOptionButton);
         currentMenu = optionMenu;
+        SetFirstSelectable(optionMenu);
     }
 
     public void OpenConfirmMenuPopup()
@@ -164,6 +168,7 @@ public class PauseMenu : MonoBehaviour
         confirmMenuPopup.SetActive(true);
         eventSystem.SetSelectedGameObject(firstConfirmMenuButton);
         currentMenu = confirmMenuPopup;
+        SetFirstSelectable(confirmMenuPopup);
     }
 
     public void OpenConfirmExitPopup()
@@ -172,6 +177,7 @@ public class PauseMenu : MonoBehaviour
         confirmExitPopup.SetActive(true);
         eventSystem.SetSelectedGameObject(firstConfirmExitButton);
         currentMenu = confirmExitPopup;
+        SetFirstSelectable(confirmExitPopup);
     }
 
     public bool ActivePauseMenu()
@@ -273,4 +279,21 @@ public class PauseMenu : MonoBehaviour
     }
 
     #endregion
+
+    #region
+    
+    private void SetFirstSelectable(GameObject menu)
+    {
+        if (menu == null || eventSystem == null) return;
+
+        Selectable firstSelectable = menu.GetComponentInChildren<Selectable>();
+        if (firstSelectable != null)
+        {
+            eventSystem.SetSelectedGameObject(firstSelectable.gameObject);
+        }
+    }
+
+
+    #endregion
+
 }

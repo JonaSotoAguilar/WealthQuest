@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
@@ -52,6 +53,9 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private GameObject exitGamePopup;
     [SerializeField] private GameObject exitOnlineLobbyPopup;
 
+    [Header("Event System")]
+    [SerializeField] private EventSystem eventSystem;
+
 
     // Active Menu
     private GameObject activeMenu;
@@ -99,12 +103,14 @@ public class MenuManager : MonoBehaviour
         {
             if (activeMenu != null || activeMenu == testMenu) activeMenu.SetActive(false);
             testMenu.SetActive(true);
+            SetFirstSelectable(testMenu);
             activeMenu = testMenu;
         }
         else
         {
             if (activeMenu != null || activeMenu == startMenu) activeMenu.SetActive(false);
             startMenu.SetActive(true);
+            SetFirstSelectable(startMenu);
             activeMenu = startMenu;
         }
     }
@@ -191,15 +197,13 @@ public class MenuManager : MonoBehaviour
 
     public void OpenLobbyLocalMenu()
     {
-        OpenMenuFade(lobbyLocalMenu);
+        OpenMenu(lobbyLocalMenu);
     }
 
     public void OpenLobbyOnlineMenu()
     {
         joinInput.text = "";
-        activeMenu.SetActive(false);
-        lobbyOnlineMenu.SetActive(true);
-        activeMenu = lobbyOnlineMenu;
+        OpenMenu(lobbyOnlineMenu);
     }
 
     #endregion
@@ -211,6 +215,7 @@ public class MenuManager : MonoBehaviour
         CanvasGroup canvasGroup = profileMenu.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, !active);
         bGamesLoginPopup.SetActive(active);
+        SetFirstSelectable(bGamesLoginPopup);
     }
 
     public void OpenBGamesLogoutPopup(bool active)
@@ -218,6 +223,7 @@ public class MenuManager : MonoBehaviour
         CanvasGroup canvasGroup = profileMenu.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, !active);
         bGamesLogoutPopup.SetActive(active);
+        SetFirstSelectable(bGamesLogoutPopup);
     }
 
     public void OpenChangeNamePopup(bool active)
@@ -225,6 +231,7 @@ public class MenuManager : MonoBehaviour
         CanvasGroup canvasGroup = profileMenu.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, !active);
         changeNamePopup.SetActive(active);
+        SetFirstSelectable(changeNamePopup);
     }
 
     #endregion
@@ -236,6 +243,7 @@ public class MenuManager : MonoBehaviour
         CanvasGroup canvasGroup = createContentMenu.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, !active);
         confirmCreatePopup.SetActive(active);
+        SetFirstSelectable(confirmCreatePopup);
     }
 
     #endregion
@@ -245,6 +253,7 @@ public class MenuManager : MonoBehaviour
     public void OpenLoadMenu()
     {
         loadPopup.gameObject.SetActive(true);
+        SetFirstSelectable(loadPopup.gameObject);
     }
 
     public void CloseLoadPopup()
@@ -252,6 +261,7 @@ public class MenuManager : MonoBehaviour
         loadPopup.gameObject.SetActive(false);
         confirmNewGamePopup.SetActive(false);
         ActiveMenuButtons(true);
+        SetFirstSelectable(activeMenu);
     }
 
     public void ActiveMenuButtons(bool active)
@@ -271,12 +281,14 @@ public class MenuManager : MonoBehaviour
             CanvasGroup canvasGroup = playOnlineMenu.GetComponent<CanvasGroup>();
             GroupActive(canvasGroup, active);
         }
+        SetFirstSelectable(activeMenu);
     }
 
     public void OpenConfirmNewGamePopup()
     {
         loadPopup.gameObject.SetActive(false);
         confirmNewGamePopup.SetActive(true);
+        SetFirstSelectable(confirmNewGamePopup);
     }
 
     #endregion
@@ -321,6 +333,7 @@ public class MenuManager : MonoBehaviour
         CanvasGroup canvasGroup = startMenu.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, !active);
         exitGamePopup.SetActive(active);
+        SetFirstSelectable(exitGamePopup);
     }
 
     public void OpenPopupExitOnlineLobby(bool active)
@@ -328,6 +341,7 @@ public class MenuManager : MonoBehaviour
         CanvasGroup canvasGroup = lobbyOnlineMenu.GetComponent<CanvasGroup>();
         GroupActive(canvasGroup, !active);
         exitOnlineLobbyPopup.SetActive(active);
+        SetFirstSelectable(exitOnlineLobbyPopup);
     }
 
     #endregion
@@ -346,29 +360,34 @@ public class MenuManager : MonoBehaviour
 
     private void OpenMenu(GameObject newMenu)
     {
-        if (activeMenu != null)
+        if (activeMenu != null && activeMenu != newMenu)
         {
             CloseMenu(newMenu);
         }
         else
         {
-            OpenNewMenu(newMenu);
+            OpenMenuTransition(newMenu);
         }
     }
 
-    private void OpenMenuFade(GameObject newMenu)
+    private void CloseMenu(GameObject newMenu)
     {
-        if (activeMenu != null)
+        Debug.Log("NewMenu: " + newMenu.name + " ActiveMenu: " + activeMenu.name);
+        if (activeMenu == lobbyOnlineMenu || activeMenu == lobbyLocalMenu
+            || newMenu == lobbyOnlineMenu || newMenu == lobbyLocalMenu)
         {
-            CloseMenu(newMenu, true);
+            activeMenu.SetActive(false);
+            newMenu.SetActive(true);
+            SetFirstSelectable(newMenu);
+            activeMenu = newMenu;
         }
         else
         {
-            OpenMenuFadeIn(newMenu);
+            CloseMenuTransition(newMenu);
         }
     }
 
-    private void CloseMenu(GameObject newMenu, bool fadeIn = false)
+    private void CloseMenuTransition(GameObject newMenu)
     {
         if (activeMenu == newMenu) return;
 
@@ -382,18 +401,13 @@ public class MenuManager : MonoBehaviour
             .setOnComplete(() =>
             {
                 activeMenu.SetActive(false);
-                if (fadeIn)
-                {
-                    OpenMenuFadeIn(newMenu);
-                }
-                else
-                {
-                    OpenNewMenu(newMenu);
-                }
+                rectTransform.anchoredPosition = new Vector2(0, 0);
+                GroupActive(canvasGroup, true);
+                OpenMenuTransition(newMenu);
             });
     }
 
-    private void OpenNewMenu(GameObject newMenu)
+    private void OpenMenuTransition(GameObject newMenu)
     {
         // Activa el nuevo menú si no es el mismo que el actual y no está activo
         if (activeMenu == newMenu) return;
@@ -401,10 +415,11 @@ public class MenuManager : MonoBehaviour
         if (newMenu != null)
         {
             CanvasGroup canvasGroup = newMenu.GetComponent<CanvasGroup>();
+            GroupActive(canvasGroup, false);
 
-            newMenu.SetActive(true); // Activa el nuevo menú
             RectTransform rectTransform = newMenu.GetComponent<RectTransform>();
             rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, 1080);
+            newMenu.SetActive(true);
 
             // Mueve el nuevo menú hasta el centro con efecto de rebote
             LeanTween.moveY(rectTransform, 0, 0.6f)
@@ -413,35 +428,23 @@ public class MenuManager : MonoBehaviour
                 {
                     GroupActive(canvasGroup, true);
                     activeMenu = newMenu;
+                    SetFirstSelectable(newMenu);
                 });
         }
     }
 
-    private void OpenMenuFadeIn(GameObject newMenu)
+    #endregion
+
+    #region Selectable
+
+    private void SetFirstSelectable(GameObject menu)
     {
-        if (activeMenu == newMenu) return;
+        if (menu == null || eventSystem == null) return;
 
-        if (newMenu != null)
+        Selectable firstSelectable = menu.GetComponentInChildren<Selectable>();
+        if (firstSelectable != null)
         {
-            CanvasGroup canvasGroup = newMenu.GetComponent<CanvasGroup>();
-
-            RectTransform rectTransform = newMenu.GetComponent<RectTransform>();
-            rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, 0);
-
-            // Desactiva el CanvasGroup al inicio
-            canvasGroup.alpha = 0;
-            GroupActive(canvasGroup, false);
-
-            newMenu.SetActive(true);
-
-            // Aumenta el alpha de 0 a 1 y activa la interactividad
-            LeanTween.alphaCanvas(canvasGroup, 1f, 0.5f)
-                .setEase(LeanTweenType.easeInOutQuad)
-                .setOnComplete(() =>
-                {
-                    GroupActive(canvasGroup, true);
-                    activeMenu = newMenu;
-                });
+            eventSystem.SetSelectedGameObject(firstSelectable.gameObject);
         }
     }
 

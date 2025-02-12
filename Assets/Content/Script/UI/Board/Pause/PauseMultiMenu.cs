@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.UI;
 using static UnityEngine.InputSystem.InputAction;
 
 public class PauseMultiMenu : MonoBehaviour
@@ -78,8 +79,8 @@ public class PauseMultiMenu : MonoBehaviour
         pauseMenu.SetActive(true);
         eventSystem.SetSelectedGameObject(firstPauseButton);
         currentMenu = pauseMenu;
+        SetFirstSelectable(pauseMenu);
 
-        // Time.timeScale = 0;
     }
 
     public void ReturnPauseMenu()
@@ -88,6 +89,7 @@ public class PauseMultiMenu : MonoBehaviour
         pauseMenu.SetActive(true);
         eventSystem.SetSelectedGameObject(firstPauseButton);
         currentMenu = pauseMenu;
+        SetFirstSelectable(pauseMenu);
     }
 
     public void OpenOptionMenu()
@@ -96,6 +98,7 @@ public class PauseMultiMenu : MonoBehaviour
         optionMenu.SetActive(true);
         eventSystem.SetSelectedGameObject(firstOptionButton);
         currentMenu = optionMenu;
+        SetFirstSelectable(optionMenu);
     }
 
     public void OpenConfirmMenuPopup()
@@ -104,6 +107,7 @@ public class PauseMultiMenu : MonoBehaviour
         confirmMenuPopup.SetActive(true);
         eventSystem.SetSelectedGameObject(firstConfirmMenuButton);
         currentMenu = confirmMenuPopup;
+        SetFirstSelectable(confirmMenuPopup);
     }
 
     public void OpenConfirmExitPopup()
@@ -112,6 +116,7 @@ public class PauseMultiMenu : MonoBehaviour
         confirmExitPopup.SetActive(true);
         eventSystem.SetSelectedGameObject(firstConfirmExitButton);
         currentMenu = confirmExitPopup;
+        SetFirstSelectable(confirmExitPopup);
     }
 
     public bool ActivePauseMenu()
@@ -152,6 +157,21 @@ public class PauseMultiMenu : MonoBehaviour
     {
         canvasGroup.interactable = active;
         canvasGroup.blocksRaycasts = active;
+    }
+
+    #endregion
+
+    #region
+
+    private void SetFirstSelectable(GameObject menu)
+    {
+        if (menu == null || eventSystem == null) return;
+
+        Selectable firstSelectable = menu.GetComponentInChildren<Selectable>();
+        if (firstSelectable != null)
+        {
+            eventSystem.SetSelectedGameObject(firstSelectable.gameObject);
+        }
     }
 
     #endregion

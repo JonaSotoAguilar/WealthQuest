@@ -251,14 +251,16 @@ public class GameNetManager : NetworkBehaviour
             int finalScoreComparison = b.Data.FinalScore.CompareTo(a.Data.FinalScore);
             if (finalScoreComparison != 0) return finalScoreComparison;
 
-            // Si hay empate en FinalScore, comparar Points (mayor a menor)
+            // Comparar Points (mayor a menor)
             int pointsComparison = b.Data.Points.CompareTo(a.Data.Points);
             if (pointsComparison != 0) return pointsComparison;
 
-            // Si hay empate en Points, comparar Money con prioridad a valores positivos
-            if (a.Data.Money >= 0 && b.Data.Money < 0) return -1; // Prioriza el positivo
-            if (a.Data.Money < 0 && b.Data.Money >= 0) return 1;  // Penaliza el negativo
-            return b.Data.Money.CompareTo(a.Data.Money); // Si ambos son positivos o negativos, ordenar normal
+            // Comparar Final Capital (mayor a menor)
+            int capitalComparison = b.Data.GetFinalCapital().CompareTo(a.Data.GetFinalCapital());
+            if (capitalComparison != 0) return capitalComparison;
+
+            // Comparar Money 
+            return b.Data.Money.CompareTo(a.Data.Money);
         });
 
         // Asignar posiciones considerando empates
@@ -586,7 +588,7 @@ public class GameNetManager : NetworkBehaviour
 
     #endregion
 
-    #region Network loss'
+    #region Client Disconnection
 
     public static void Return()
     {
@@ -616,6 +618,7 @@ public class GameNetManager : NetworkBehaviour
     [Server]
     private IEnumerator ServerCloseProcess()
     {
+        Debug.Log("Server Close Process");
         RpcMessageClose();
         yield return new WaitForSeconds(1.2f);
         RelayService.Instance.FinishGame();

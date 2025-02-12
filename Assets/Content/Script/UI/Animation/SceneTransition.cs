@@ -34,10 +34,12 @@ public class SceneTransition : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        Debug.Log("OnSceneLoaded: " + scene.name);
+
         if (firstLoad)
         {
             firstLoad = false;
-            previousScene = scene.name; 
+            previousScene = scene.name;
             return;
         }
 
@@ -48,7 +50,7 @@ public class SceneTransition : MonoBehaviour
             return;
         }
 
-        previousScene = scene.name; 
+        previousScene = scene.name;
         FadeOut();
         TranslateOut();
     }

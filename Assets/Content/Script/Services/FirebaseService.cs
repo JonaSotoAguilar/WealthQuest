@@ -1,14 +1,14 @@
-using System.Collections;
-using UnityEngine;
-using Firebase;
-using Firebase.Auth;
-using TMPro;
 using System;
-using Firebase.Firestore;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UnityEngine.SceneManagement;
+using Firebase;
+using Firebase.Auth;
 using Firebase.Extensions;
+using Firebase.Firestore;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FirebaseService : MonoBehaviour
 {

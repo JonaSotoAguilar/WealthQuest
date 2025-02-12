@@ -279,7 +279,7 @@ public class LobbyOnline : NetworkBehaviour
     {
         RelayService.Instance.ReadyPlayerLobby(conn);
         int readyPlayers = RelayService.Instance.ReadyPlayers;
-        if (readyPlayers > 1 && readyPlayers == RelayService.Instance.connBanners)
+        if (readyPlayers == RelayService.Instance.connBanners)
             RpcEnableStartButton(true);
     }
 

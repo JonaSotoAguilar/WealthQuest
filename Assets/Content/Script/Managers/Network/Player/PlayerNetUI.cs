@@ -11,7 +11,7 @@ public class PlayerNetUI : NetworkBehaviour
     // Question
     [SyncVar(hook = nameof(SetupQuestion))] private Question currentQuestion = null;
     private List<Question> questions = new List<Question>();
-    private int levelQuestion = 1;
+    private int levelQuestion;
     [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
     private bool useBGames = false;
     [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 30f;
@@ -59,6 +59,7 @@ public class PlayerNetUI : NetworkBehaviour
 
         int index = Random.Range(0, questions.Count);
         currentQuestion = questions[index];
+        levelQuestion = currentQuestion.level;
 
         StartQuestionTimer();
     }
@@ -66,11 +67,8 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void GetQuestionsTopic()
     {
-        if (levelQuestion == 0)
-        {
-            levelQuestion = GetComponent<PlayerNetData>().Level;
-        }
-        questions = GameNetManager.Data.GetQuestionsByLevel(levelQuestion);
+        int level = GetComponent<PlayerNetData>().Level;
+        questions = GameNetManager.Data.GetQuestionsByLevel(level);
     }
 
     private void SetupQuestion(Question oldQuestion, Question newQuestion)
@@ -84,7 +82,6 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void ResetQuestionValues()
     {
-        levelQuestion = 0;
         attempts = 2;
         currentQuestion = null;
         questions.Clear();

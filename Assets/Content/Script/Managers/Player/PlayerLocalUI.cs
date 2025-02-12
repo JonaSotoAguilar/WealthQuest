@@ -9,7 +9,7 @@ public class PlayerLocalUI : MonoBehaviour
     [SerializeField] private UIPlayer ui;
 
     // Question
-    private int levelQuestion = 1;
+    private int levelQuestion;
     private int attempts = 2;
     private List<Question> questions = new List<Question>();
     private Question currentQuestion;
@@ -44,6 +44,7 @@ public class PlayerLocalUI : MonoBehaviour
 
         int index = Random.Range(0, questions.Count);
         currentQuestion = questions[index];
+        levelQuestion = currentQuestion.level;
 
         ui.SetupQuestion(currentQuestion, attempts, true);
         ui.OnQuestionAnswered += OnAnswerQuestion;
@@ -53,17 +54,13 @@ public class PlayerLocalUI : MonoBehaviour
 
     private void GetQuestionsTopic()
     {
-        if (levelQuestion == 0)
-        {
-            levelQuestion = GetComponent<PlayerLocalData>().Level;
-        }
-        questions = GameLocalManager.Data.GetQuestionsByLevel(levelQuestion);
+        int level = GetComponent<PlayerLocalData>().Level;
+        questions = GameLocalManager.Data.GetQuestionsByLevel(level);
     }
 
     private void ResetQuestionValues()
     {
         useBGames = false;
-        levelQuestion = 0;
         attempts = 2;
         currentQuestion = null;
         questions.Clear();
@@ -225,7 +222,8 @@ public class PlayerLocalUI : MonoBehaviour
 
     private async Task TaskCardSelected(int index)
     {
-        if (index >= 0) {
+        if (index >= 0)
+        {
             Card selectedCard = selectedCards[index];
             int capital = 0;
             if (selectedCard is InvestmentCard) capital = ui.AmountInvest;

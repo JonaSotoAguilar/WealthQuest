@@ -225,14 +225,16 @@ public class GameLocalManager : MonoBehaviour
             int finalScoreComparison = b.Data.FinalScore.CompareTo(a.Data.FinalScore);
             if (finalScoreComparison != 0) return finalScoreComparison;
 
-            // Si hay empate en FinalScore, comparar Points (mayor a menor)
+            // Comparar Points (mayor a menor)
             int pointsComparison = b.Data.Points.CompareTo(a.Data.Points);
             if (pointsComparison != 0) return pointsComparison;
 
-            // Si hay empate en Points, comparar Money con prioridad a valores positivos
-            if (a.Data.Money >= 0 && b.Data.Money < 0) return -1; // Prioriza el positivo
-            if (a.Data.Money < 0 && b.Data.Money >= 0) return 1;  // Penaliza el negativo
-            return b.Data.Money.CompareTo(a.Data.Money); // Si ambos son positivos o negativos, ordenar normal
+            // Comparar Final Capital (mayor a menor)
+            int capitalComparison = b.Data.GetFinalCapital().CompareTo(a.Data.GetFinalCapital());
+            if (capitalComparison != 0) return capitalComparison;
+
+            // Comparar Money
+            return b.Data.Money.CompareTo(a.Data.Money);
         });
 
         // Asignar posiciones considerando empates

@@ -164,7 +164,7 @@ public class RelayService : NetworkManager
         else
         {
             connPlayers--;
-            if (!finishGame) StartCoroutine(SafeShutdown());
+            FinishGame();
         }
     }
 
@@ -235,8 +235,7 @@ public class RelayService : NetworkManager
         if (SceneManager.GetActiveScene().path != offlineScene)
         {
             Debug.Log("Cliente desconectado de la partida. Volviendo al menú...");
-
-            SceneTransition.Instance.LoadScene(offlineScene);
+            SceneTransition.Instance.LoadSceneNet();
         }
     }
 
@@ -328,54 +327,19 @@ public class RelayService : NetworkManager
 
     public void FinishGame()
     {
-        Debug.Log("Cerrando la partida...");
-
         if (NetworkServer.active && !finishGame)
         {
-            StartCoroutine(CloseGame());
+            Debug.Log("Cerrando la partida...");
+            finishGame = true;
+            StartCoroutine(FinishGameCoroutine());
         }
     }
 
-    private IEnumerator CloseGame()
+    private IEnumerator FinishGameCoroutine()
     {
-        Debug.Log("Apagando el servidor..");
-        finishGame = true;
         SceneTransition.Instance.LoadSceneNet();
         yield return new WaitForSeconds(1f);
         StopHost();
-    }
-
-    public IEnumerator SafeShutdown(bool error = true)
-    {
-        Debug.Log("Apagando el servidor de forma segura...");
-        finishGame = true;
-
-        if (error) GameNetManager.ServerClose();
-        SceneTransition.Instance.LoadSceneNet();
-
-        // Paso 1: Detener a todos los clientes conectados
-        if (NetworkServer.active)
-        {
-            Debug.Log("Desconectando todos los clientes...");
-            NetworkServer.DisconnectAll();
-            yield return new WaitForSeconds(0.5f); // Dar tiempo a que las conexiones se procesen
-        }
-
-        // Paso 2: Detener el cliente local, si está conectado
-        if (NetworkClient.isConnected)
-        {
-            Debug.Log("Cerrando cliente local...");
-            NetworkClient.Disconnect();
-            yield return new WaitUntil(() => !NetworkClient.isConnected);
-        }
-
-        // Paso 3: Apagar el servidor
-        if (NetworkServer.active)
-        {
-            Debug.Log("Apagando servidor...");
-            yield return new WaitForSeconds(0.5f);
-            StopHost();
-        }
     }
 
     #endregion

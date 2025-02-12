@@ -76,7 +76,8 @@ public class PlayerLocalData : MonoBehaviour
 
     private void UpdateLevel()
     {
-        int newLevel = 1 + Mathf.FloorToInt(Points / 6);
+        int addLevel = Mathf.FloorToInt(Points / 6);
+        int newLevel = Level + addLevel;
         if (newLevel != Level) Level = Mathf.Clamp(newLevel, 1, 4);
     }
 
