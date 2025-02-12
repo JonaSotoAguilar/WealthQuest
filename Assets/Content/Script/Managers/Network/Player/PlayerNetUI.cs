@@ -166,7 +166,7 @@ public class PlayerNetUI : NetworkBehaviour
             }
             else
             {
-                questions.Remove(currentQuestion);
+                if (questions.Count > 1) questions.Remove(currentQuestion);
                 CreateQuestion();
             }
         }
@@ -249,7 +249,7 @@ public class PlayerNetUI : NetworkBehaviour
         if (success)
         {
             attempts++;
-            questions.Remove(currentQuestion);
+            if (questions.Count > 1) questions.Remove(currentQuestion);
             CreateQuestion();
         }
         else

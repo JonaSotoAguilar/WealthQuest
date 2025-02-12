@@ -151,28 +151,6 @@ public class GameData : ScriptableObject
 
     #region Methods Questions
 
-    public string GetRandomTopicQuestions(int level)
-    {
-        HashSet<string> topics = new HashSet<string>();
-
-        foreach (Question question in allQuestionList)
-        {
-            if (question.level <= level)
-                topics.Add(question.topic);
-        }
-
-        if (topics.Count == 0)
-        {
-            ResetQuestionsByLevel(level);
-            return GetRandomTopicQuestions(level);
-        }
-
-        List<string> topicList = new List<string>(topics);
-        int randomIndex = UnityEngine.Random.Range(0, topicList.Count);
-
-        return topicList[randomIndex];
-    }
-
     public List<Question> GetQuestionsByLevel(int level)
     {
         // Intentar obtener preguntas desde el nivel más alto hacia abajo
@@ -189,21 +167,9 @@ public class GameData : ScriptableObject
         }
 
         // Si no hay preguntas en ningún nivel, restaurar niveles y volver a intentarlo
-        ResetQuestionsByLevel(level);
+        RestoreQuestionsForLevel(level);
         return GetQuestionsByLevel(level);
     }
-
-    public void ResetQuestionsByLevel(int level)
-    {
-        // Recuperar preguntas agotadas para el nivel especificado y los niveles inferiores
-        var resetLevels = Enumerable.Range(1, level);
-        foreach (var lvl in resetLevels)
-        {
-            // Restaurar las preguntas de ese nivel (implementación específica)
-            RestoreQuestionsForLevel(lvl);
-        }
-    }
-
 
     public void RestoreQuestionsForLevel(int level)
     {

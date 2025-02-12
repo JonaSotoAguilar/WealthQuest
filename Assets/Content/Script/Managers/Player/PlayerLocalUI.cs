@@ -127,7 +127,7 @@ public class PlayerLocalUI : MonoBehaviour
             }
             else
             {
-                questions.Remove(currentQuestion);
+                if (questions.Count > 1) questions.Remove(currentQuestion);
                 CreateQuestion();
             }
         }
@@ -178,7 +178,7 @@ public class PlayerLocalUI : MonoBehaviour
             if (success)
             {
                 attempts++;
-                questions.Remove(currentQuestion);
+                if (questions.Count > 1) questions.Remove(currentQuestion);
                 CreateQuestion();
             }
             else
