@@ -9,7 +9,7 @@ public class PlayerNetUI : NetworkBehaviour
     [SerializeField] private UIPlayer ui;
 
     // Question
-    [SyncVar(hook = nameof(SetupQuestion))] private Question currentQuestion = null;
+    [SyncVar(hook = nameof(SetupQuestion))] private Question currentQuestion;
     private List<Question> questions = new List<Question>();
     private int levelQuestion;
     [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
@@ -55,10 +55,13 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     public void CreateQuestion()
     {
+        currentQuestion = null;
+
         if (questions.Count == 0) GetQuestionsTopic();
 
         int index = Random.Range(0, questions.Count);
         currentQuestion = questions[index];
+
         levelQuestion = currentQuestion.level;
 
         StartQuestionTimer();
@@ -75,6 +78,7 @@ public class PlayerNetUI : NetworkBehaviour
     {
         ui.ShowQuestion(false);
         if (newQuestion == null) return;
+
         ui.SetupQuestion(newQuestion, attempts, isOwned);
         if (isOwned) ui.OnQuestionAnswered += OnAnswerQuestion;
     }

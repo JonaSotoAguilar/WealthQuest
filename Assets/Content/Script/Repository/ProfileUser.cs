@@ -38,7 +38,7 @@ public static class ProfileUser
     public static void LoadLocalProfile(string userId)
     {
         uid = userId;
-        username = PlayerPrefs.GetString("username", "Player");
+        username = PlayerPrefs.GetString("username", FirebaseService.Instance.GetUsername());
         level = PlayerPrefs.GetInt("levelUser", 1);
         xp = PlayerPrefs.GetInt("xpUser", 0);
         averageScore = PlayerPrefs.GetInt("averageScoreUser", 0);

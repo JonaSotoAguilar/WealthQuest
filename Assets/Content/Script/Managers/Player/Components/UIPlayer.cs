@@ -101,7 +101,6 @@ public class UIPlayer : MonoBehaviour
         attemptsValue.text = attemps.ToString();
         ShowQuestion(true);
 
-
         if (systemLocal != null && isOwned) systemLocal.SetSelectedGameObject(optionButtons[0].gameObject);
         else if (isOwned) EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
 

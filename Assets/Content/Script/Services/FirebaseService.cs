@@ -24,6 +24,11 @@ public class FirebaseService : MonoBehaviour
 
     private bool loggedIn = false;
 
+    public string GetUsername()
+    {
+        return user.DisplayName;
+    }
+
     #region Initialization
 
     private void Awake()
@@ -93,7 +98,7 @@ public class FirebaseService : MonoBehaviour
 
     private IEnumerator CheckForAutoLogin()
     {
-        //Logout(); // Uncomment to test login
+        Logout(); // Uncomment to test login
         if (user != null)
         {
             var reloadUser = user.ReloadAsync();
