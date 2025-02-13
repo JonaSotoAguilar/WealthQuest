@@ -364,7 +364,7 @@ public class FirebaseService : MonoBehaviour
 
     private void Logout()
     {
-        auth.SignOut();
+        //auth.SignOut();
         user = null;
         Debug.Log("User Signed Out");
     }
@@ -499,7 +499,8 @@ public class FirebaseService : MonoBehaviour
             { "TimePlayed", gameData.TimePlayed },
             { "Date", gameData.Date },
             { "Content", gameData.Content },
-            { "Score", gameData.Score }
+            { "Score", gameData.Score },
+            { "Grade", gameData.Grade }
         };
 
         try
