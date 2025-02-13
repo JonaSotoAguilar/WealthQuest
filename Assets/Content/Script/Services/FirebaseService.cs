@@ -98,7 +98,7 @@ public class FirebaseService : MonoBehaviour
 
     private IEnumerator CheckForAutoLogin()
     {
-        Logout(); // Uncomment to test login
+        //Logout(); // Uncomment to test login
         if (user != null)
         {
             var reloadUser = user.ReloadAsync();
@@ -364,7 +364,7 @@ public class FirebaseService : MonoBehaviour
 
     private void Logout()
     {
-        //auth.SignOut();
+        auth.SignOut();
         user = null;
         Debug.Log("User Signed Out");
     }
