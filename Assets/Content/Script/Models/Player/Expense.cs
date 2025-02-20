@@ -5,16 +5,27 @@ using UnityEngine;
 public class Expense
 {
     [SerializeField] private int turns;
-    [SerializeField] private int amount;
+    [SerializeField] private int cost;
 
     public int Turns { get => turns; set => turns = value; }
-    public int Amount { get => amount; set => amount = value; }
+    public int Cost { get => cost; set => cost = value; }
 
     public Expense() { }
+
     public Expense(int playerTurns, int amountTurn)
     {
         turns = playerTurns;
-        amount = amountTurn;
+        cost = amountTurn;
+    }
+
+    public void UpdateExpense()
+    {
+        turns--;
+    }
+
+    public int GetDebt()
+    {
+        return - cost * turns;
     }
 
     #region Methods Write and Read
@@ -22,7 +33,7 @@ public class Expense
     public static void WritePlayerExpense(NetworkWriter writer, Expense expense)
     {
         writer.WriteInt(expense.turns);
-        writer.WriteInt(expense.amount);
+        writer.WriteInt(expense.cost);
     }
 
     public static Expense ReadPlayerExpense(NetworkReader reader)

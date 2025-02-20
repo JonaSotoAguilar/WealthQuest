@@ -8,12 +8,12 @@ public class CardAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        OnSelect(eventData);
+        SetSelected();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        OnDeselect(eventData);
+        //OnDeselect(eventData);
     }
 
     public void OnSelect(BaseEventData eventData)
@@ -21,6 +21,7 @@ public class CardAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         AudioManager.PlaySoundButtonSelect();
         ActiveOutline(true);
         ScaleButton();
+        SetSelected();
     }
 
     public void OnDeselect(BaseEventData eventData)
@@ -38,6 +39,8 @@ public class CardAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         AudioManager.PlaySoundButtonPress();
     }
+
+    #region Animation
 
     private void ActiveOutline(bool active)
     {
@@ -57,4 +60,29 @@ public class CardAnimation : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         LeanTween.scale(gameObject, Vector3.one, 0.1f).setEase(LeanTweenType.easeOutBack).setIgnoreTimeScale(true); ;
     }
+
+    #endregion
+
+    #region Selectable
+
+    private void SetSelected()
+    {
+        EventSystem eventSystem = EventSystem.current;
+        Selectable firstSelectable = gameObject.GetComponent<Selectable>();
+
+        if (eventSystem == null || firstSelectable == null) return;
+
+        if (firstSelectable != null)
+        {
+            // Verifica si el objeto actualmente seleccionado es diferente al que se quiere seleccionar
+            if (eventSystem.currentSelectedGameObject != gameObject)
+            {
+                firstSelectable.Select();
+            }
+        }
+    }
+
+    #endregion
+
+
 }

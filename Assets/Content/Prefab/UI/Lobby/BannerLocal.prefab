@@ -1459,7 +1459,6 @@ MonoBehaviour:
   nameInput: {fileID: 9205816505825222929}
   changeName: {fileID: 4456774597073186164}
   playerName: Jugador
-  deleteCharacter: {fileID: 6675767005342918634}
   connectedText: {fileID: 3907769177237474359}
 --- !u!114 &6053437993521938586
 MonoBehaviour:

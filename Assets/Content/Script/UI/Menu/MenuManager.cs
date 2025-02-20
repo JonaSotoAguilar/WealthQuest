@@ -372,7 +372,6 @@ public class MenuManager : MonoBehaviour
 
     private void CloseMenu(GameObject newMenu)
     {
-        Debug.Log("NewMenu: " + newMenu.name + " ActiveMenu: " + activeMenu.name);
         if (activeMenu == lobbyOnlineMenu || activeMenu == lobbyLocalMenu
             || newMenu == lobbyOnlineMenu || newMenu == lobbyLocalMenu)
         {

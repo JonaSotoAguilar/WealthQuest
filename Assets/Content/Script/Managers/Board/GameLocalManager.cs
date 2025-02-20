@@ -277,8 +277,7 @@ public class GameLocalManager : MonoBehaviour
     private void SaveHistory()
     {
         int score = GetPlayer(ProfileUser.uid).Data.FinalScore;
-        int level = GetPlayer(ProfileUser.uid).Data.Level;
-        FinishGameData finishData = new FinishGameData(gameData.currentYear, gameData.timePlayed, gameData.content, score, level);
+        FinishGameData finishData = new FinishGameData(gameData.currentYear, gameData.timePlayed, gameData.content, score);
         int slotData = gameData.mode == 0 ? 1 : 2;
         ProfileUser.SaveGame(finishData, slotData);
     }

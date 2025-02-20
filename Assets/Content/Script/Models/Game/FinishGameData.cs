@@ -25,7 +25,7 @@ public class FinishGameData
 
     public FinishGameData() { }
 
-    public FinishGameData(int currentYear, string timePlayed, string content, int finalScore, int level)
+    public FinishGameData(int currentYear, string timePlayed, string content, int finalScore)
     {
         userId = ProfileUser.uid;
         gameID = PlayerPrefs.GetInt("gameId", 0) + 1;
@@ -34,7 +34,7 @@ public class FinishGameData
         date = DateTime.Now.ToString("dd/MM/yyyy");
         this.content = content;
         this.score = finalScore;
-        this.grade = ProfileUser.GetGrade(level);
+        this.grade = ProfileUser.GetLevelGame(finalScore);
     }
 
 }

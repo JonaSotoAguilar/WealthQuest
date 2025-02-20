@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Globalization;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "IncomeCard", menuName = "Cards/IncomeCard")]
 public class IncomeCard : Card
@@ -30,8 +30,8 @@ public class IncomeCard : Card
             PlayerLocalData player = GameLocalManager.CurrentPlayer.Data;
             if (affectIncome)
             {
-                int newSalary = (int)(player.Salary * (1 + incomeChange));
-                player.NewSalary(newSalary);
+                int addSalary = (int)(player.Income * incomeChange);
+                player.AddIncome(addSalary);
             }
             else
                 player.AddMoney(income);
@@ -41,8 +41,8 @@ public class IncomeCard : Card
             PlayerNetData player = GameNetManager.CurrentPlayer.Data;
             if (affectIncome)
             {
-                int newSalary = (int)(player.Salary * (1 + incomeChange));
-                player.NewSalary(newSalary);
+                int addSalary = (int)(player.Income * incomeChange);
+                player.AddIncome(addSalary);
             }
             else
                 player.AddMoney(income);

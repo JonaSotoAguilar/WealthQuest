@@ -40,13 +40,21 @@ public class PlayerLocalUI : MonoBehaviour
             return;
         }
 
+        currentQuestion = null;
+        StartCoroutine(NewQuestion());
+    }
+
+    private IEnumerator NewQuestion()
+    {
+        yield return new WaitForSeconds(0.2f);
+
         if (questions.Count == 0) GetQuestionsTopic();
 
         int index = Random.Range(0, questions.Count);
         currentQuestion = questions[index];
         levelQuestion = currentQuestion.level;
 
-        ui.SetupQuestion(currentQuestion, attempts, true);
+        ui.SetupQuestion(currentQuestion, attempts);
         ui.OnQuestionAnswered += OnAnswerQuestion;
 
         questionTimerCoroutine = StartCoroutine(QuestionTimer());
@@ -87,21 +95,9 @@ public class PlayerLocalUI : MonoBehaviour
         SubmitAnswer(isCorrect);
     }
 
-    private void StopTimer()
-    {
-        AudioManager.StopSoundSFX();
-
-        // Detener el temporizador
-        if (questionTimerCoroutine != null)
-        {
-            StopCoroutine(questionTimerCoroutine);
-            questionTimerCoroutine = null;
-        }
-    }
-
     private void SubmitAnswer(bool isCorrect)
     {
-        ui.ShowQuestion(false);
+        ui.CloseQuestion();
 
         if (isCorrect)
         {
@@ -133,6 +129,10 @@ public class PlayerLocalUI : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region 
+
     private IEnumerator QuestionTimer()
     {
         float timeRemaining = 30f;
@@ -149,6 +149,18 @@ public class PlayerLocalUI : MonoBehaviour
 
         // Si se agota el tiempo, se considera respuesta incorrecta
         OnAnswerQuestion(-1, false);
+    }
+
+    private void StopTimer()
+    {
+        AudioManager.StopSoundSFX();
+
+        // Detener el temporizador
+        if (questionTimerCoroutine != null)
+        {
+            StopCoroutine(questionTimerCoroutine);
+            questionTimerCoroutine = null;
+        }
     }
 
     #endregion

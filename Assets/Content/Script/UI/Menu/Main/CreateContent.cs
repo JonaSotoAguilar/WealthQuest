@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,8 @@ public class CreateContent : MonoBehaviour
     [SerializeField] private ScrollRect scrollRect;
     [SerializeField] private GameObject questionPanelPrefab;
     [SerializeField] private List<CreateQuestion> questions = new List<CreateQuestion>();
+    [SerializeField] private Button createButton;
+    [SerializeField] private TextMeshProUGUI createButtonText;
 
     [Header("Confirm Panel")]
     [SerializeField] private TMP_InputField nameInput;
@@ -50,6 +53,7 @@ public class CreateContent : MonoBehaviour
         confirmTitleText.text = "Crear Contenido";
         confirmButtonPopupText.text = "Crear";
         AddQuestion();
+        ValidateCreate();
     }
 
     public void UpdateContent(Content content)
@@ -103,6 +107,33 @@ public class CreateContent : MonoBehaviour
         }
     }
 
+    private void ValidateCreate()
+    {
+        if (questions.Count >= 25 && ValidateQuestions())
+        {
+            createButton.interactable = true;
+            createButtonText.gameObject.SetActive(true);
+        }
+        else
+        {
+            createButton.interactable = false;
+            createButtonText.gameObject.SetActive(false);
+        }
+    }
+
+    private bool ValidateQuestions()
+    {
+        foreach (var question in questions)
+        {
+            if (!question.QuestionComplete())
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     #endregion
 
     #region Update Content
@@ -119,6 +150,8 @@ public class CreateContent : MonoBehaviour
             CreateQuestion newQuestion = questions[questions.Count - 1];
             newQuestion.LoadQuestion(question);
         }
+
+        ValidateCreate();
     }
 
     public void AddQuestion()
@@ -140,6 +173,8 @@ public class CreateContent : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         scrollRect.verticalNormalizedPosition = 0;
         Canvas.ForceUpdateCanvases();
+
+        ValidateCreate();
     }
 
     public void DeleteQuestion(CreateQuestion question)
@@ -149,6 +184,8 @@ public class CreateContent : MonoBehaviour
             questions.Remove(question);
             Destroy(question.gameObject);
         }
+
+        ValidateCreate();
     }
 
     #endregion

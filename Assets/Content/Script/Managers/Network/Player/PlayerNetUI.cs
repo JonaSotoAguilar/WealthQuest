@@ -12,14 +12,15 @@ public class PlayerNetUI : NetworkBehaviour
     [SyncVar(hook = nameof(SetupQuestion))] private Question currentQuestion;
     private List<Question> questions = new List<Question>();
     private int levelQuestion;
-    [SyncVar(hook = nameof(OnAttemptUpdated))] private int attempts = 2;
+    [SyncVar] private int attempts = 2;
     private bool useBGames = false;
     [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 30f;
     private int readyPlayer = 0;
+    private Coroutine questionTimerCoroutine;
 
     // Cards
     private readonly SyncList<Card> selectedCards = new SyncList<Card>();
-    [SyncVar(hook = nameof(ChangeAmountInvest))] private int amountInvest = 0;
+    [SyncVar(hook = nameof(ChangeAmountInvest))] private int amountInvest;
 
     private void OnDestroy()
     {
@@ -35,10 +36,15 @@ public class PlayerNetUI : NetworkBehaviour
         base.OnStartServer();
 
         selectedCards.OnAdd += OnCardAdded;
+        ui.RemoveLocalListeners();
 
-        if (!isOwned)
+        if (isOwned)
         {
-            ui.DesactiveCanvaGroup();
+            ui.amountText.onEndEdit.AddListener(ValidateAmountInput);
+        }
+        else
+        {
+            ui.IsNotOwner();
             ui.NotOwnerInvest();
         }
     }
@@ -53,42 +59,38 @@ public class PlayerNetUI : NetworkBehaviour
     #region Question
 
     [Server]
-    public void CreateQuestion()
-    {
-        currentQuestion = null;
-
-        if (questions.Count == 0) GetQuestionsTopic();
-
-        int index = Random.Range(0, questions.Count);
-        currentQuestion = questions[index];
-
-        levelQuestion = currentQuestion.level;
-
-        StartQuestionTimer();
-    }
-
-    [Server]
     private void GetQuestionsTopic()
     {
         int level = GetComponent<PlayerNetData>().Level;
         questions = GameNetManager.Data.GetQuestionsByLevel(level);
     }
 
-    private void SetupQuestion(Question oldQuestion, Question newQuestion)
+    [Server]
+    public void CreateQuestion()
     {
-        ui.ShowQuestion(false);
-        if (newQuestion == null) return;
-
-        ui.SetupQuestion(newQuestion, attempts, isOwned);
-        if (isOwned) ui.OnQuestionAnswered += OnAnswerQuestion;
+        currentQuestion = null;
+        StartCoroutine(NewQuestion());
     }
 
-    [Server]
-    private void ResetQuestionValues()
+    private IEnumerator NewQuestion()
     {
-        attempts = 2;
-        currentQuestion = null;
-        questions.Clear();
+        yield return new WaitForSeconds(0.2f);
+
+        if (questions.Count == 0) GetQuestionsTopic();
+        int index = Random.Range(0, questions.Count);
+        currentQuestion = questions[index];
+        levelQuestion = currentQuestion.level;
+        questionTimerCoroutine = StartCoroutine(QuestionTimer());
+    }
+
+    private void SetupQuestion(Question oldQuestion, Question newQuestion)
+    {
+        ui.CloseQuestion();
+        if (newQuestion == null) return;
+
+        ui.SetupQuestion(newQuestion, attempts);
+        ui.OnQuestionAnswered -= OnAnswerQuestion;
+        if (isOwned) ui.OnQuestionAnswered += OnAnswerQuestion;
     }
 
     private void OnAnswerQuestion(int index, bool isCorrect)
@@ -106,8 +108,7 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void FinishAnswer(int index, bool isCorrect)
     {
-        RpcStopSoundTimer();
-        StopCoroutine(nameof(QuestionTimer));
+        StopTimer();
 
         if (index < 0)
         {
@@ -155,18 +156,15 @@ public class PlayerNetUI : NetworkBehaviour
         }
         else
         {
-            attempts--;
-            if (attempts <= 0)
+            attempts = attempts - 1;
+            if (attempts <= 0 && CanPlayBGames())
             {
-                if (CanPlayBGames())
-                {
-                    AddAttempt();
-                }
-                else
-                {
-                    ResetQuestionValues();
-                    FinishTurn();
-                }
+                AddAttempt();
+            }
+            else if (attempts <= 0)
+            {
+                ResetQuestionValues();
+                FinishTurn();
             }
             else
             {
@@ -177,16 +175,22 @@ public class PlayerNetUI : NetworkBehaviour
     }
 
     [Server]
-    private void StartQuestionTimer()
+    private void ResetQuestionValues()
     {
-        if (timeRemaining > 0) StopCoroutine(nameof(QuestionTimer));
-        timeRemaining = 30f;
-        StartCoroutine(nameof(QuestionTimer));
+        useBGames = false;
+        attempts = 2;
+        currentQuestion = null;
+        questions.Clear();
     }
+
+    #endregion
+
+    #region Timer
 
     [Server]
     private IEnumerator QuestionTimer()
     {
+        timeRemaining = 30f;
         RpcSoundTimer();
         while (timeRemaining > 0)
         {
@@ -202,14 +206,22 @@ public class PlayerNetUI : NetworkBehaviour
         ui.UpdateTimerDisplay(Mathf.CeilToInt(newTime));
     }
 
+    [Server]
+    private void StopTimer()
+    {
+        RpcStopSoundTimer();
+
+        // Detener el temporizador
+        if (questionTimerCoroutine != null)
+        {
+            StopCoroutine(questionTimerCoroutine);
+            questionTimerCoroutine = null;
+        }
+    }
+
     #endregion
 
     #region Attempts
-
-    private void OnAttemptUpdated(int oldAttempts, int newAttempts)
-    {
-        ui.UpdateAttempts(newAttempts);
-    }
 
     [Server]
     private bool CanPlayBGames()
@@ -252,7 +264,7 @@ public class PlayerNetUI : NetworkBehaviour
         RpcSetupBGames(false);
         if (success)
         {
-            attempts++;
+            attempts = 1;
             if (questions.Count > 1) questions.Remove(currentQuestion);
             CreateQuestion();
         }
@@ -277,7 +289,7 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     public void SetupCards(Square square)
     {
-        amountInvest = ui.MinInvestment;
+        amountInvest = 0;
         List<Card> cards = square.GetCards();
         foreach (var card in cards)
             selectedCards.Add(card);
@@ -288,13 +300,13 @@ public class PlayerNetUI : NetworkBehaviour
         PlayerNetData data = GetComponent<PlayerNetData>();
         ui.SetupCard(selectedCards[index], data.Points);
 
-        if (!ui.ActiveCards()) ShowCards();
+        if (selectedCards.Count == 2) ShowCards();
     }
 
     private void ShowCards()
     {
         PlayerNetData data = GetComponent<PlayerNetData>();
-        ui.ShowCards(data.Money, isOwned);
+        ui.ShowCards(data.Money);
         if (isOwned) ui.OnCardSelected += OnCardSelected;
     }
 
@@ -358,12 +370,6 @@ public class PlayerNetUI : NetworkBehaviour
         FinishTurn();
     }
 
-    [ClientRpc]
-    private void RpcCloseCards()
-    {
-        ui.CloseCards();
-    }
-
     #endregion
 
     #region Investment Card
@@ -376,15 +382,45 @@ public class PlayerNetUI : NetworkBehaviour
         {
             CmdChangeAmountInvest(amountInvest + amountChange);
         }
+        else
+        {
+            CmdChangeAmountInvest(moneyPlayer);
+        }
     }
 
     public void LowerAmount()
     {
         int amountChange = ui.AmountChange;
-        int minInvestment = ui.MinInvestment;
-        if (amountInvest - amountChange >= minInvestment)
+        if (amountInvest - amountChange > 0)
         {
             CmdChangeAmountInvest(amountInvest - amountChange);
+        }
+        else
+        {
+            CmdChangeAmountInvest(0);
+        }
+    }
+
+    private void ValidateAmountInput(string input)
+    {
+        ParseAmount();
+    }
+
+    private void ParseAmount()
+    {
+        int moneyPlayer = GetComponent<PlayerNetData>().Money;
+        string amount = ui.amountText.text.Replace("$", "").Replace(".", "").Trim();
+
+        if (int.TryParse(amount, out int parsedAmount))
+        {
+            int amountValue = Mathf.Clamp(parsedAmount, 0, moneyPlayer);
+            ui.ChangeAmountInvest(amountValue);
+            CmdChangeAmountInvest(amountValue);
+        }
+        else
+        {
+            ui.ChangeAmountInvest(0);
+            CmdChangeAmountInvest(0);
         }
     }
 

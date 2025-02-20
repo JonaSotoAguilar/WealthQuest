@@ -111,7 +111,14 @@ public class RelayService : NetworkManager
     public override void OnServerConnect(NetworkConnectionToClient conn)
     {
         base.OnServerConnect(conn);
+
         Debug.Log("Server connected.");
+
+        if (SceneManager.GetActiveScene().name != SCENE_MENU)
+        {
+            Debug.LogWarning($"Conexión rechazada: El juego ya ha comenzado. Cliente {conn.connectionId} desconectado.");
+            conn.Disconnect();
+        }
     }
 
     // Se llama al servidor cuando un cliente está listo (= carga la escena)
@@ -124,6 +131,7 @@ public class RelayService : NetworkManager
         {
             SetupBanner(conn);
             connBanners++;
+            LobbyOnline.Instance.GameReady();
         }
         else
         {
@@ -153,12 +161,7 @@ public class RelayService : NetworkManager
             if (readyPlayers.Contains(conn))
             {
                 readyPlayers.Remove(conn);
-                LobbyOnline.Instance.RpcEnableStartButton(false);
-                foreach (var banner in clientPanels.Values)
-                {
-                    banner.ReadyPlayer(false);
-                }
-                readyPlayers.Clear();
+                LobbyOnline.Instance.GameReady();
             }
         }
         else

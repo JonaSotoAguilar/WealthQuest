@@ -97,6 +97,13 @@ public static class ProfileUser
         }
     }
 
+    public static string GetLevelGame(int newPoints)
+    {
+        int pointsLevel = Mathf.FloorToInt(newPoints / 6) + 1;
+        pointsLevel = Mathf.Clamp(pointsLevel, 1, 4);
+        return GetGrade(pointsLevel);
+    }
+
     #endregion
 
     #region BGames
@@ -147,9 +154,9 @@ public static class ProfileUser
 
     public static void UpdateStats(FinishGameData data)
     {
-        AddXPUser(xp + data.score);
+        UpdatePlayedGames(playedGames + 1);
 
-        if (playedGames == 0)
+        if (playedGames == 1)
         {
             UpdateAverageScoreUser(data.score);
         }
@@ -158,13 +165,12 @@ public static class ProfileUser
             UpdateAverageScoreUser((averageScore * playedGames + data.score) / (playedGames + 1));
         }
 
-        UpdatePlayedGames(playedGames + 1);
-
         if (bestScore < data.score)
         {
             UpdateBestScoreUser(data.score);
         }
 
+        AddXPUser(xp + data.score);
         PlayerPrefs.Save();
         FirebaseService.Instance.UpdateProfile(uid);
     }
@@ -234,13 +240,15 @@ public static class ProfileUser
 
     public static async void SaveGame(FinishGameData data, int slotData)
     {
-        // 1. Guarda local
+        // 1. Actualiza perfil
+        UpdateStats(data);
+
+        // 2. Guarda local
         history.Add(data);
         await SaveService.SaveHistory(data, slotData);
-        // 2. Guarda en Firebase
+
+        // 3. Guarda en Firebase
         await FirebaseService.Instance.SaveGameHistory(uid, data);
-        // 3. Actualiza perfil
-        UpdateStats(data);
     }
 
     public static async void LoadHistory()

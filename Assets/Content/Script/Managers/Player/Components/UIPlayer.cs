@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using Mirror;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -18,19 +16,20 @@ public class UIPlayer : MonoBehaviour
     [SerializeField] public CanvasGroup canvasGroupUI;
 
     [Header("Questions")]
+    [SerializeField] private GameObject answerPrefab;
+    [SerializeField] private Transform answerParent;
     [SerializeField] private GameObject questionPanel;
     [SerializeField] private GameObject questionTextPanel;
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private GameObject optionsParent;
-    [SerializeField] private Button[] optionButtons;
     [SerializeField] private TextMeshProUGUI timerText;
+    private List<Button> optionButtons;
     public event Action<int, bool> OnQuestionAnswered;
 
     [Header("Attempts")]
     [SerializeField] private GameObject attemptsPanel;
     [SerializeField] private TextMeshProUGUI attemptsText;
     [SerializeField] private TextMeshProUGUI attemptsValue;
-    [SerializeField] private Button[] attemptsButtons;
     public event Action<bool> OnAttemptFinished;
 
     [Header("Cards")]
@@ -44,7 +43,7 @@ public class UIPlayer : MonoBehaviour
 
     [Header("Invest")]
     [SerializeField] private GameObject investPanel;
-    [SerializeField] private TextMeshProUGUI amountText;
+    [SerializeField] public TMP_InputField amountText;
     [SerializeField] private GameObject investText;
     [SerializeField] private Button increaseAmount;
     [SerializeField] private Button lowerAmount;
@@ -52,15 +51,14 @@ public class UIPlayer : MonoBehaviour
     [SerializeField] private GameObject notInvestCardPrefab;
 
     [Header("Invest Settings")]
-    [SerializeField] private int minInvestment = 100;
     [SerializeField] private int amountChange = 100;
     private int moneyPlayer;
     private int amountInvest;
+    private bool isOwned = true;
 
     #region Getters
 
     public int AmountChange { get => amountChange; }
-    public int MinInvestment { get => minInvestment; }
     public int AmountInvest { get => amountInvest; }
 
     #endregion
@@ -69,90 +67,107 @@ public class UIPlayer : MonoBehaviour
 
     void Awake()
     {
-        ShowQuestion(false);
-        ShowAttempts(false);
-        CloseCards();
-
         cancelButton.onClick.AddListener(CancelSelection);
+        amountText.onEndEdit.AddListener(ValidateAmountInput);
     }
 
-    public void DesactiveCanvaGroup()
+    public void IsNotOwner()
     {
-        canvasGroupUI.interactable = false;
-        canvasGroupUI.blocksRaycasts = false;
+        isOwned = false;
+        DesactiveCanvaGroup(false);
+    }
+
+    public void RemoveLocalListeners()
+    {
+        amountText.onEndEdit.RemoveListener(ValidateAmountInput);
+    }
+
+    private void DesactiveCanvaGroup(bool active)
+    {
+        canvasGroupUI.interactable = active;
+        canvasGroupUI.blocksRaycasts = active;
     }
 
     #endregion
 
     #region QuestionPanel
 
-    public void SetupQuestion(Question questionData, int attemps, bool isOwned)
+    public void SetupQuestion(Question questionData, int attempts)
     {
         questionText.text = questionData.question;
+
+        // Crea una nueva lista de botones según las respuestas
+        optionButtons = new List<Button>(questionData.answers.Length);
 
         for (int i = 0; i < questionData.answers.Length; i++)
         {
             int localIndex = i;
-            optionButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = questionData.answers[i];
-            optionButtons[i].onClick.RemoveAllListeners();
-            if (isOwned) optionButtons[i].onClick.AddListener(() => Answer(localIndex, questionData));
+
+            // Instancia un nuevo botón desde el prefab
+            GameObject answerGO = Instantiate(answerPrefab, answerParent);
+
+            // Configura el texto del botón
+            answerGO.GetComponentInChildren<TextMeshProUGUI>().text = questionData.answers[i];
+
+            // Obtiene el componente Button
+            Button answerButton = answerGO.GetComponent<Button>();
+
+            // Limpia listeners y añade uno nuevo si es dueño
+            answerButton.onClick.RemoveAllListeners();
+            if (isOwned)
+            {
+                answerButton.onClick.AddListener(() => Answer(localIndex, questionData));
+            }
+
+            // Añade el botón a la lista
+            optionButtons.Add(answerButton);
         }
 
-        attemptsValue.text = attemps.ToString();
-        ShowQuestion(true);
-
-        if (systemLocal != null && isOwned) systemLocal.SetSelectedGameObject(optionButtons[0].gameObject);
-        else if (isOwned) EventSystem.current.SetSelectedGameObject(optionButtons[0].gameObject);
-
-        PauseMenu.SetCanvasGroup(canvasGroupUI);
+        attemptsValue.text = attempts.ToString();
+        ShowQuestion();
     }
 
     void Answer(int index, Question questionData)
     {
-        foreach (Button button in optionButtons)
-            button.interactable = false;
+        canvasGroupUI.interactable = false;
         bool isCorrect = index == questionData.indexCorrectAnswer;
 
         OnQuestionAnswered?.Invoke(index, isCorrect);
     }
 
-    public void UpdateTimerDisplay(int secondsRemaining)
+    public void ShowQuestion()
     {
-        timerText.text = $"{secondsRemaining}s";
-    }
-
-    public void ShowQuestion(bool visible)
-    {
-        if (visible)
+        canvasGroupUI.interactable = false;
+        questionPanel.transform.localScale = Vector3.zero;
+        questionTextPanel.SetActive(true);
+        foreach (Button button in optionButtons)
         {
-            questionPanel.transform.localScale = Vector3.zero;
-            questionTextPanel.SetActive(true);
-            foreach (Button button in optionButtons)
+            button.gameObject.SetActive(true);
+            button.interactable = true;
+        }
+        questionPanel.SetActive(true);
+
+        LeanTween.scale(questionPanel, Vector3.one, 0.5f).setEaseOutBack().setOnComplete(() =>
             {
-                button.gameObject.SetActive(true);
-                button.interactable = true;
-            }
-            questionPanel.SetActive(true);
-
-            LeanTween.scale(questionPanel, Vector3.one, 0.3f).setEaseOutBack();
-            AudioManager.PlayOpenCard();
-        }
-        else
-        {
-            questionPanel.SetActive(false);
-            ResertOutline();
-        }
+                if (isOwned)
+                {
+                    SetFirstSelectable();
+                    canvasGroupUI.interactable = true;
+                }
+            });
+        AudioManager.PlayOpenCard();
     }
 
     public async Task AnsweredQuestion(int index, bool isCorrect)
     {
-        if (index < 0 || index >= optionButtons.Length) return;
+        if (index < 0 || index >= optionButtons.Count) return;
 
+        canvasGroupUI.interactable = false;
         questionTextPanel.SetActive(false);
         optionsParent.transform.localPosition = new Vector3(0, -50, 0);
 
         // Esconde los botones que no son el índice seleccionado
-        for (int i = 0; i < optionButtons.Length; i++)
+        for (int i = 0; i < optionButtons.Count; i++)
         {
             if (i != index) optionButtons[i].gameObject.SetActive(false);
         }
@@ -193,8 +208,8 @@ public class UIPlayer : MonoBehaviour
         // Restaurar el color original del borde
         if (outline != null)
         {
-            outline.enabled = false;
             outline.effectColor = originalOutlineColor;
+            outline.enabled = false;
         }
 
         // Esconde el botón después de la animación
@@ -202,40 +217,31 @@ public class UIPlayer : MonoBehaviour
         optionButtons[index].transform.localScale = Vector3.one;
         optionsParent.transform.localPosition = new Vector3(0, -216, 0);
         cardAnimation.enabled = true;
+        CloseQuestion();
     }
 
-    private void ResertOutline()
+    public void CloseQuestion()
     {
-        foreach (Button button in optionButtons)
-        {
-            Outline outline = button.GetComponent<Outline>();
-            if (outline != null)
-            {
-                outline.enabled = false;
-            }
-        }
+        questionPanel.SetActive(false);
+        ClearAnswers();
     }
 
-    private Task ScaleButtonAsync(GameObject button, Vector3 targetScale, float duration)
+    public void ClearAnswers()
     {
-        var tcs = new TaskCompletionSource<bool>();
+        if (optionButtons == null || optionButtons.Count == 0) return;
+        optionButtons.Clear();
+        foreach (Transform child in answerParent)
+            Destroy(child.gameObject);
+    }
 
-        // Usa LeanTween para escalar el botón y completa la tarea al finalizar
-        LeanTween.scale(button, targetScale, duration)
-            .setEaseOutBack()
-            .setOnComplete(() => tcs.SetResult(true));
-
-        return tcs.Task;
+    public void UpdateTimerDisplay(int secondsRemaining)
+    {
+        timerText.text = $"{secondsRemaining}s";
     }
 
     #endregion
 
     #region Attempts
-
-    public void UpdateAttempts(int attempts)
-    {
-        attemptsValue.text = attempts.ToString();
-    }
 
     public void ShowAttempts(bool show)
     {
@@ -243,8 +249,7 @@ public class UIPlayer : MonoBehaviour
         {
             int points = ProfileUser.bGamesProfile.points;
             attemptsText.text = "Tienes " + points + " puntos de bGames, ¿quieres usar 1 punto para tener un intento extra?";
-            if (systemLocal != null) systemLocal.SetSelectedGameObject(attemptsButtons[0].gameObject);
-            else EventSystem.current.SetSelectedGameObject(attemptsButtons[0].gameObject);
+            SetFirstSelectable();
         }
         attemptsPanel.SetActive(show);
     }
@@ -295,15 +300,13 @@ public class UIPlayer : MonoBehaviour
         // Configurar el botón de la carta
         Button cardButton = cardInstance.GetComponent<Button>();
         cardButton.onClick.AddListener(() => HandleOptionSelected(card));
-        cardButtons.Add(cardButton);
         selectedCardType = card.GetCardType();
+        cardButtons.Add(cardButton);
     }
 
     public void HandleOptionSelected(Card selectedCard)
     {
-        foreach (Button button in cardButtons)
-            button.interactable = false;
-
+        canvasGroupUI.interactable = false;
         OnCardSelected?.Invoke(selectedCard);
     }
 
@@ -321,15 +324,16 @@ public class UIPlayer : MonoBehaviour
             Destroy(child.gameObject);
     }
 
-    public void ShowCards(int money, bool isOwned = true)
+    public void ShowCards(int money)
     {
+        canvasGroupUI.interactable = false;
         if (isInvestmentCard)
         {
-            if (money < minInvestment) ActiveAmount(false);
+            if (money <= 0) ActiveAmount(false);
             else ActiveAmount(true);
 
             moneyPlayer = money;
-            ResetAmount();
+            ChangeAmountInvest(0);
             ShowInvest(true);
         }
         else
@@ -340,20 +344,19 @@ public class UIPlayer : MonoBehaviour
         cardsPanel.transform.localScale = Vector3.zero;
         cardsPanel.SetActive(true);
         AudioManager.PlayOpenCard();
-        LeanTween.scale(cardsPanel, Vector3.one, 0.3f).setEaseOutBack();
-
-        if (systemLocal != null && isOwned) systemLocal.SetSelectedGameObject(cardButtons[0].gameObject);
-        else if (isOwned) EventSystem.current.SetSelectedGameObject(cardButtons[0].gameObject);
-        PauseMenu.SetCanvasGroup(canvasGroupUI);
-    }
-
-    public bool ActiveCards()
-    {
-        return cardsPanel.activeSelf;
+        LeanTween.scale(cardsPanel, Vector3.one, 0.5f).setEaseOutBack().setOnComplete(() =>
+            {
+                if (isOwned)
+                {
+                    SetFirstSelectable();
+                    canvasGroupUI.interactable = true;
+                }
+            });
     }
 
     public async Task CardSelected(int index)
     {
+        canvasGroupUI.interactable = false;
         investPanel.SetActive(false);
 
         if (index < 0 && isInvestmentCard)
@@ -390,6 +393,17 @@ public class UIPlayer : MonoBehaviour
 
     #region InvestmentPanel
 
+    private void EnableCards(bool enable)
+    {
+        foreach (Button cardButton in cardButtons)
+        {
+            cardButton.enabled = enable;
+            cardButton.interactable = enable;
+            CardAnimation cardAnimation = cardButton.GetComponent<CardAnimation>();
+            cardAnimation.enabled = enable;
+        }
+    }
+
     private void ConfigureGrafic(Card card, GameObject grafic)
     {
         InvestmentCard investmentCard = (InvestmentCard)card;
@@ -403,55 +417,75 @@ public class UIPlayer : MonoBehaviour
 
     private void ActiveAmount(bool active)
     {
-        if (!active)
-        {
-            if (systemLocal != null) systemLocal.SetSelectedGameObject(cancelButton.gameObject);
-            else EventSystem.current.SetSelectedGameObject(cancelButton.gameObject);
-        }
-
         increaseAmount.interactable = active;
         lowerAmount.interactable = active;
         cancelButton.interactable = true;
-
-        foreach (Button cardButton in cardButtons)
-            cardButton.interactable = active;
     }
 
     public void IncreaseAmount()
     {
-        string amount = amountText.text.Substring(1);
-        amountInvest = int.Parse(amount.Replace(".", ""));
         if (amountInvest + amountChange <= moneyPlayer)
         {
             ChangeAmountInvest(amountInvest + amountChange);
+        }
+        else
+        {
+            ChangeAmountInvest(moneyPlayer);
         }
     }
 
     public void LowerAmount()
     {
-        string amount = amountText.text.Substring(1);
-        amountInvest = int.Parse(amount.Replace(".", ""));
-        if (amountInvest - amountChange >= minInvestment)
+        if (amountInvest - amountChange > 0)
         {
             ChangeAmountInvest(amountInvest - amountChange);
         }
+        else
+        {
+            ChangeAmountInvest(0);
+        }
     }
 
-    public void CancelSelection()
+    private void ValidateAmountInput(string input)
     {
-        OnCardSelected?.Invoke(null);
-    }
-
-    public void ResetAmount()
-    {
-        amountInvest = minInvestment;
-        amountText.text = amountInvest.ToString("C0", chileanCulture);
+        ParseAmount();
+        ChangeAmountInvest(amountInvest);
     }
 
     public void ChangeAmountInvest(int newAmount)
     {
-        amountInvest = newAmount;
+        amountInvest = Mathf.Clamp(newAmount, 0, moneyPlayer);
         amountText.text = amountInvest.ToString("C0", chileanCulture);
+
+        if (amountInvest > 0)
+        {
+            EnableCards(true);
+        }
+        else
+        {
+            EnableCards(false);
+        }
+    }
+
+    private void ParseAmount()
+    {
+        string amount = amountText.text.Replace("$", "").Replace(".", "").Trim();
+
+        if (int.TryParse(amount, out int parsedAmount))
+        {
+            amountInvest = Mathf.Clamp(parsedAmount, 0, moneyPlayer);
+        }
+        else
+        {
+            amountInvest = 0;
+        }
+    }
+
+
+    public void CancelSelection()
+    {
+        canvasGroupUI.interactable = false;
+        OnCardSelected?.Invoke(null);
     }
 
     public void ShowInvest(bool show)
@@ -468,4 +502,40 @@ public class UIPlayer : MonoBehaviour
     }
 
     #endregion
+
+    #region EventSystem
+
+    private void SetFirstSelectable()
+    {
+        Selectable firstSelectable = gameObject.GetComponentInChildren<Selectable>();
+        if (systemLocal != null)
+        {
+            systemLocal.SetSelectedGameObject(firstSelectable.gameObject);
+        }
+        else if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(firstSelectable.gameObject);
+        }
+
+        PauseMenu.SetCanvasGroup(canvasGroupUI);
+    }
+
+    #endregion
+
+    #region Animation
+
+    private Task ScaleButtonAsync(GameObject button, Vector3 targetScale, float duration)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        // Usa LeanTween para escalar el botón y completa la tarea al finalizar
+        LeanTween.scale(button, targetScale, duration)
+            .setEaseOutBack()
+            .setOnComplete(() => tcs.SetResult(true));
+
+        return tcs.Task;
+    }
+
+    #endregion
+
 }

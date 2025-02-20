@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SettingsLoad : MonoBehaviour
@@ -10,8 +11,8 @@ public class SettingsLoad : MonoBehaviour
     private void LoadDataGame()
     {
         LoadLocalContent();
-        SetFullscreen();
         LoadResolution();
+        SetFullscreen();
         LoadQuality();
         LoadVSync();
     }
@@ -45,14 +46,27 @@ public class SettingsLoad : MonoBehaviour
             return;
         }
 
-        // Seleccionar la resolución más alta disponible
-        Resolution highestResolution = resolutions[resolutions.Length - 1];
+        // Filtrar resoluciones que no superen 1920x1080
+        List<Resolution> validResolutions = new List<Resolution>();
+        foreach (var res in resolutions)
+        {
+            if (res.width <= 1920 && res.height <= 1080)
+            {
+                validResolutions.Add(res);
+            }
+        }
 
-        // Guardar el índice en PlayerPrefs
-        PlayerPrefs.SetInt("ResolutionIndex", resolutions.Length - 1);
+        if (validResolutions.Count == 0)
+        {
+            Debug.LogError("No se encontraron resoluciones dentro del límite de 1920x1080.");
+            return;
+        }
+
+        // Seleccionar la resolución más alta dentro del límite
+        Resolution bestResolution = validResolutions[validResolutions.Count - 1];
 
         // Aplicar la resolución
-        Screen.SetResolution(highestResolution.width, highestResolution.height, Screen.fullScreen);
+        Screen.SetResolution(bestResolution.width, bestResolution.height, Screen.fullScreen);
     }
 
     private void LoadQuality()

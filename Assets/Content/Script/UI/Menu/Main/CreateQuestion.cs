@@ -49,4 +49,22 @@ public class CreateQuestion : MonoBehaviour
         return new Question(question.text, answersArray, correctAnswer.value, topic.text, subTopic.text, levels.value);
     }
 
+    public bool QuestionComplete()
+    {
+        if (string.IsNullOrEmpty(question.text) || string.IsNullOrEmpty(topic.text) || string.IsNullOrEmpty(subTopic.text))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < answers.Length; i++)
+        {
+            if (string.IsNullOrEmpty(answers[i].text) || answers[i].text.Trim().Length == 0 || answers[i].text.Trim() == " ")
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }

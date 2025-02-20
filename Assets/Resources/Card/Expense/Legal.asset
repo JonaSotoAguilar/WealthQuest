@@ -15,4 +15,4 @@ MonoBehaviour:
   title: Cubres gastos legales para resolver un litigio
   image: {fileID: 21300000, guid: 6125dea55cca5504bb578a0be2e33ba2, type: 3}
   duration: 1
-  cost: 400
+  cost: -400

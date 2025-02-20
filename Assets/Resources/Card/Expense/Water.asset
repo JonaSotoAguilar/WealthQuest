@@ -15,4 +15,4 @@ MonoBehaviour:
   title: Pagas tu facturas por agua
   image: {fileID: 21300000, guid: bbdd446a01b6c304a84b04bd18dea1eb, type: 3}
   duration: 12
-  cost: 40
+  cost: -40

@@ -15,4 +15,4 @@ MonoBehaviour:
   title: Pagas el impuesto a la renta
   image: {fileID: 21300000, guid: 3d000e285ed38f4438a2731c15705ea7, type: 3}
   duration: 1
-  cost: 300
+  cost: -300

@@ -279,7 +279,7 @@ public class LobbyOnline : NetworkBehaviour
     {
         RelayService.Instance.ReadyPlayerLobby(conn);
         int readyPlayers = RelayService.Instance.ReadyPlayers;
-        if (readyPlayers == RelayService.Instance.connBanners)
+        if (readyPlayers > 1 && readyPlayers == RelayService.Instance.connBanners)
             RpcEnableStartButton(true);
     }
 
@@ -289,6 +289,22 @@ public class LobbyOnline : NetworkBehaviour
         readyButton.gameObject.SetActive(!enable);
         readyButton.interactable = !enable;
         startButton.gameObject.SetActive(enable);
+    }
+
+    [Server]
+    public void GameReady()
+    {
+        int readyPlayers = RelayService.Instance.ReadyPlayers;
+        if (readyPlayers > 1 && readyPlayers == RelayService.Instance.connBanners)
+            RpcEnableStartButton(true);
+        else
+            RpcDisableStartButton();
+    }
+
+    [ClientRpc]
+    public void RpcDisableStartButton()
+    {
+        startButton.gameObject.SetActive(false);
     }
 
     #endregion

@@ -15,4 +15,4 @@ MonoBehaviour:
   title: Pagas un multa por exceso de velocidad
   image: {fileID: 21300000, guid: bb6a72d1a940533418b57ad6cbb6b99b, type: 3}
   duration: 1
-  cost: 300
+  cost: -300

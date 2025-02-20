@@ -14,7 +14,6 @@ public class PlayerData
     [SerializeField] private int level;
 
     [SerializeField] private int money;
-    [SerializeField] private int salary;
     [SerializeField] private int invest;
     [SerializeField] private int debt;
     [SerializeField] private int income;
@@ -32,7 +31,6 @@ public class PlayerData
     public int Points { get => points; set => points = value; }
     public int Level { get => level; set => level = value; }
     public int Money { get => money; set => money = value; }
-    public int Salary { get => salary; set => salary = value; }
     public int Invest { get => invest; set => invest = value; }
     public int Debt { get => debt; set => debt = value; }
     public List<Investment> Investments { get => investments; }
@@ -54,11 +52,10 @@ public class PlayerData
         finalScore = 0;
 
         money = 1000;
-        salary = 1000;
         invest = 0;
         debt = 0;
 
-        income = 0 + salary;
         expense = 0;
+        income = 1000;
     }
 }

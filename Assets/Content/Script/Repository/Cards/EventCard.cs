@@ -37,7 +37,7 @@ public class EventCard : Card
                     player.Data.AddMoney(amount);
                 else
                 {
-                    Expense expense = new Expense(1, -amount);
+                    Expense expense = new Expense(1, amount);
                     player.Data.NewExpense(expense, false);
                 }
             }
@@ -50,7 +50,7 @@ public class EventCard : Card
                     player.Data.AddMoney(amount);
                 else
                 {
-                    Expense expense = new Expense(1, -amount);
+                    Expense expense = new Expense(1, amount);
                     player.Data.NewExpense(expense, false);
                 }
             }

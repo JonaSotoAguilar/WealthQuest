@@ -8,41 +8,25 @@ public class Investment
     [SerializeField] private string nameInvestment;
     [SerializeField] private int turns;
     [SerializeField] private int capital;
-    [SerializeField] private int nextDividend;
     [SerializeField] private List<float> pctChanges;
     [SerializeField] private List<float> pctDividend;
 
     public string NameInvestment { get => nameInvestment; set => nameInvestment = value; }
     public int Turns { get => turns; set => turns = value; }
     public int Capital { get => capital; set => capital = value; }
-    public int Dividend { get => nextDividend; set => nextDividend = value; }
     public List<float> PctChanges { get => pctChanges; set => pctChanges = value; }
     public List<float> PctDividend { get => pctDividend; set => pctDividend = value; }
 
     public Investment() { }
 
-    public Investment(string name, int turnsInvest, int capitalInvest, int nextDividendInvest,
+    public Investment(string name, int turnsInvest, int capitalInvest,
                         List<float> pctChangesInvest, List<float> pctDividendInvest)
     {
         nameInvestment = name;
         turns = turnsInvest;
         capital = capitalInvest;
-        nextDividend = nextDividendInvest;
         pctChanges = pctChangesInvest;
         pctDividend = pctDividendInvest;
-    }
-
-    public Investment(string name, int turnsInvest, int capitalInvest,
-                            List<float> pctChangesInvest, List<float> pctDividendInvest)
-    {
-        nameInvestment = name;
-        turns = turnsInvest;
-        capital = capitalInvest;
-        pctChanges = pctChangesInvest;
-        pctDividend = pctDividendInvest;
-
-        nextDividend = (int)(capital * pctDividend[0]);
-        pctDividend.RemoveAt(0);
     }
 
     public void UpdateInvestment()
@@ -52,14 +36,17 @@ public class Investment
         capital += (int)(capital * pctChanges[0]);
         pctChanges.RemoveAt(0);
 
-        // Siguiente dividendo
-        if (pctDividend.Count == 0)
-            nextDividend = 0;
-        else
-        {
-            nextDividend = (int)(capital * pctDividend[0]);
-            pctDividend.RemoveAt(0);
-        }
+        // Actualizar dividendo
+        pctDividend.RemoveAt(0);
+
+        // Actualizar turnos
+        turns--;
+    }
+
+    public int Dividend()
+    {
+        if (pctDividend.Count == 0) return 0;
+        return (int)(capital * pctDividend[0]);
     }
 
     #region Write and Read
@@ -69,7 +56,6 @@ public class Investment
         writer.WriteString(investment.nameInvestment);
         writer.WriteInt(investment.turns);
         writer.WriteInt(investment.capital);
-        writer.WriteInt(investment.nextDividend);
 
         // Serializar la lista pctChanges
         writer.WriteInt(investment.pctChanges.Count);
@@ -91,7 +77,6 @@ public class Investment
         string name = reader.ReadString();
         int turns = reader.ReadInt();
         int capital = reader.ReadInt();
-        int nextDividend = reader.ReadInt();
 
         // Deserializar la lista pctChanges
         int pctChangesCount = reader.ReadInt();
@@ -109,7 +94,7 @@ public class Investment
             pctDividend.Add(reader.ReadFloat());
         }
 
-        return new Investment(name, turns, capital, nextDividend, pctChanges, pctDividend);
+        return new Investment(name, turns, capital, pctChanges, pctDividend);
     }
 
     #endregion

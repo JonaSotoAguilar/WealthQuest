@@ -15,4 +15,4 @@ MonoBehaviour:
   title: Disfrutas de tus vacaciones, pero a un costo
   image: {fileID: 21300000, guid: cf6280e0e65ce8945840a2d5ef1b7ca5, type: 3}
   duration: 1
-  cost: 1500
+  cost: -1500

@@ -298,21 +298,18 @@ public class GameNetManager : NetworkBehaviour
     [ClientRpc]
     private void RpcFinishGame()
     {
-        // Esperar antes de ejecutar SaveHistory para asegurar que los datos se han recibido
         Invoke(nameof(SaveHistory), 0.5f);
-        _ = GameUIManager.ShowFinishGame();
     }
 
     private void SaveHistory()
     {
-        Debug.Log("Time: " + timePlayed + " Year: " + currentYear);
         var data = GetPlayer(ProfileUser.uid).Data;
         int score = data.FinalScore;
-        int level = data.Level;
-        Debug.Log("Score: " + score + " Level: " + level);
 
-        FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score, level);
+        FinishGameData finishData = new FinishGameData(currentYear, timePlayed, content, score);
         ProfileUser.SaveGame(finishData, 3);
+
+        _ = GameUIManager.ShowFinishGame();
     }
 
     #endregion

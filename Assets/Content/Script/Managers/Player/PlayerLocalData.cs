@@ -26,7 +26,6 @@ public class PlayerLocalData : MonoBehaviour
     public int Level { get => playerData.Level; set => playerData.Level = value; }
 
     public int Money { get => playerData.Money; set => playerData.Money = value; }
-    public int Salary { get => playerData.Salary; set => playerData.Salary = value; }
     public int Invest { get => playerData.Invest; set => playerData.Invest = value; }
     public int Debt { get => playerData.Debt; set => playerData.Debt = value; }
     public List<Investment> Investments { get => playerData.Investments; }
@@ -84,60 +83,58 @@ public class PlayerLocalData : MonoBehaviour
     public void AddMoney(int amount)
     {
         Money += amount;
+        if (Money < 0) Money = 0;
         OnChangeMoney(Money);
-    }
-
-    public void NewSalary(int newSalary)
-    {
-        int oldSalary = Salary;
-        Salary = newSalary;
-        AddIncome(Salary - oldSalary);
     }
 
     public void AddInvest(int amount)
     {
         Invest += amount;
+        if (Invest < 0) Invest = 0;
         OnChangeInvest(Invest);
     }
 
     public void AddDebt(int amount)
     {
         Debt += amount;
+        if (Debt < 0) Debt = 0;
         OnChangeDebt(Debt);
     }
 
     public void AddIncome(int amount)
     {
         Income += amount;
+        if (Income < 0) Income = 0;
         OnChangeIncome(Income);
     }
 
     public void AddExpense(int amount)
     {
         Expense += amount;
+        if (Expense < 0) Expense = 0;
         OnChangeExpense(Expense);
     }
 
     public void NewExpense(Expense newExpense, bool isRecurrent)
     {
-        if (isRecurrent) AddExpense(newExpense, false);
+        if (isRecurrent) NewDebt(newExpense, false);
         else
         {
-            if (Money >= newExpense.Amount)
-                AddMoney(-newExpense.Amount);
+            if (Money >= -newExpense.Cost)
+                AddMoney(newExpense.Cost);
             else
-                AddExpense(newExpense, true);
+                NewDebt(newExpense, true);
         }
     }
 
-    private void AddExpense(Expense newExpense, bool withInterest)
+    private void NewDebt(Expense newExpense, bool withInterest = false)
     {
-        if (withInterest)
-        {
-            newExpense.Amount += (int)(newExpense.Amount * interest);
-        }
-        AddDebt(newExpense.Amount * newExpense.Turns);
-        AddExpense(newExpense.Amount);
+        // Aplica interes a la deuda
+        if (withInterest) newExpense.Cost += (int) (newExpense.Cost * interest);
+
+        // Agrega deuda
+        AddDebt(newExpense.GetDebt());
+        AddExpense(-newExpense.Cost);
         Expenses.Add(newExpense);
     }
 
@@ -146,64 +143,72 @@ public class PlayerLocalData : MonoBehaviour
         if (newInvestment.Capital > Money) return;
         AddMoney(-newInvestment.Capital);
         AddInvest(newInvestment.Capital);
-        AddIncome(newInvestment.Dividend);
         Investments.Add(newInvestment);
     }
 
-    private void UpdateInvestment(int index, int oldDividend, int oldCapital)
+    private void UpdateInvestment(int index)
     {
         if (index < 0 || index >= Investments.Count) return;
 
-        // Obtiene dividendo anual
         Investment currInvestment = Investments[index];
-        if (currInvestment.Dividend != 0) AddMoney(currInvestment.Dividend);
+        int oldCapital = currInvestment.Capital;
 
-        // Actualiza Capital y Proximo Dividendo
+        // Obtiene dividendo anual
+        if (currInvestment.Dividend() != 0) AddMoney(currInvestment.Dividend());
+
+        // Actualiza Capital
         currInvestment.UpdateInvestment();
         AddInvest(currInvestment.Capital - oldCapital);
-        int nextDividend = currInvestment.Dividend - oldDividend;
-        if (nextDividend != 0) AddIncome(nextDividend);
-        currInvestment.Turns--;
+
+        // Quedan turnos
         if (currInvestment.Turns != 0)
         {
             Investments[index] = currInvestment;
-            return;
         }
-
-        // Terminó la inversión
-        AddMoney(currInvestment.Capital);
-        AddInvest(-currInvestment.Capital);
-        Investments.RemoveAt(index);
+        else
+        {
+            AddMoney(currInvestment.Capital);
+            AddInvest(-currInvestment.Capital);
+            Investments.RemoveAt(index);
+        }   
     }
 
-    private void UpdateExpense(int index, int amountInterest)
+    private void UpdateExpense(int index, bool applyInterest)
     {
+        // No existe el gasto
         if (index < 0 || index >= Expenses.Count) return;
-
-        // No tiene para pagar: Suma interes
         Expense currExpense = Expenses[index];
-        if (amountInterest > 0)
+        int oldDebt = currExpense.GetDebt();
+
+        // Evalua si puede pagar
+        if (applyInterest)
         {
-            currExpense.Amount += amountInterest;
-            AddDebt(amountInterest);
-            AddExpense(amountInterest);
-            Expenses[index] = currExpense;
-            return;
+            // 1. No tiene para pagar: Suma interes
+            int amountInterest = (int)(currExpense.Cost * interest);
+            currExpense.Cost += amountInterest;
+            AddDebt(currExpense.GetDebt() - oldDebt);
+            AddExpense(-amountInterest);
+        }
+        else
+        {
+            // 2. Puede pagar: Paga la cuota
+            AddMoney(currExpense.Cost);
+            AddDebt(currExpense.Cost);
+            currExpense.UpdateExpense();
         }
 
-        // Tiene para pagar: Paga la cuota
-        AddMoney(-currExpense.Amount);
-        AddDebt(-currExpense.Amount);
-        currExpense.Turns--;
+        // Quedan turnos
         if (currExpense.Turns != 0)
         {
+            // Actualiza gasto
             Expenses[index] = currExpense;
-            return;
         }
-
-        // Terminó de pagar: Elimina la deuda
-        AddExpense(-currExpense.Amount);
-        Expenses.RemoveAt(index);
+        else
+        {
+            // Elimina gasto
+            AddExpense(currExpense.Cost);
+            Expenses.RemoveAt(index);
+        }
     }
 
     #endregion
@@ -217,7 +222,10 @@ public class PlayerLocalData : MonoBehaviour
         ProcessRecurrentExpenses();
     }
 
-    private void ProcessSalary() => Money += Salary;
+    private void ProcessSalary()
+    {
+        AddMoney(Income);
+    }
 
     private void ProcessInvestments()
     {
@@ -225,8 +233,7 @@ public class PlayerLocalData : MonoBehaviour
 
         for (int i = Investments.Count - 1; i >= 0; i--)
         {
-            var invest = Investments[i];
-            UpdateInvestment(i, invest.Dividend, invest.Capital);
+            UpdateInvestment(i);
         }
     }
 
@@ -237,10 +244,10 @@ public class PlayerLocalData : MonoBehaviour
         for (int i = Expenses.Count - 1; i >= 0; i--)
         {
             var expense = Expenses[i];
-            if (Money >= expense.Amount)
-                UpdateExpense(i, 0);
+            if (Money >= -expense.Cost)
+                UpdateExpense(i, false);
             else
-                UpdateExpense(i, (int)(expense.Amount * interest));
+                UpdateExpense(i, true);
         }
     }
 

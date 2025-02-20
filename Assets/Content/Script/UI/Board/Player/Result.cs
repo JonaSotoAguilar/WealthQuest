@@ -43,7 +43,7 @@ public class Result : MonoBehaviour
         UpdatePoints(data.Points);
         UpdateMoney(data.GetFinalCapital());
         UpdateScore(data.FinalScore);
-        UpdateGrade(data.Level);
+        UpdateGrade(data.Points);
 
         UpdatePosition(data.ResultPosition);
         SetWinner(data.ResultPosition);
@@ -89,9 +89,9 @@ public class Result : MonoBehaviour
         }).setEaseOutQuad();
     }
 
-    public void UpdateGrade(int level)
+    public void UpdateGrade(int newPoints)
     {
-        string newGrade = ProfileUser.GetGrade(level);
+        string newGrade = ProfileUser.GetLevelGame(newPoints);
         LeanTween.value(0, 1, 1.5f).setOnUpdate((float val) =>
         {
             grade.text = newGrade;

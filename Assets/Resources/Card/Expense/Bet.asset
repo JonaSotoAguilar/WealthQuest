@@ -15,4 +15,4 @@ MonoBehaviour:
   title: Pierdes dinero por apostar
   image: {fileID: 21300000, guid: 10d434e19cbbbd44fb52b8e8923af3ee, type: 3}
   duration: 1
-  cost: 800
+  cost: -800

@@ -15,4 +15,4 @@ MonoBehaviour:
   title: Compras un casa con unn credito hipotecario
   image: {fileID: 21300000, guid: 955363e7b35efb141a9f4eeae2a20ef7, type: 3}
   duration: 16
-  cost: 300
+  cost: -300
