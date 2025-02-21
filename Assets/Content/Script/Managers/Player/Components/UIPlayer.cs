@@ -243,24 +243,31 @@ public class UIPlayer : MonoBehaviour
 
     #region Attempts
 
-    public void ShowAttempts(bool show)
+    public void ShowMoreAttempts()
     {
-        if (show)
-        {
-            int points = ProfileUser.bGamesProfile.points;
-            attemptsText.text = "Tienes " + points + " puntos de bGames, ¿quieres usar 1 punto para tener un intento extra?";
-            SetFirstSelectable();
-        }
-        attemptsPanel.SetActive(show);
+        Debug.Log("ShowMoreAttempts");
+        int points = ProfileUser.bGamesProfile.points;
+        attemptsText.text = "Tienes " + points + " puntos de bGames, ¿quieres usar 1 punto para tener un intento extra?";
+
+        canvasGroupUI.interactable = true;
+        attemptsPanel.SetActive(true);
+        SetFirstSelectable();
+    }
+
+    public void CloseMoreAttempts()
+    {
+        attemptsPanel.SetActive(false);
     }
 
     public void YesMoreAttempts()
     {
+        canvasGroupUI.interactable = false;
         OnAttemptFinished?.Invoke(true);
     }
 
     public void NoMoreAttempts()
     {
+        canvasGroupUI.interactable = false;
         OnAttemptFinished?.Invoke(false);
     }
 
@@ -339,6 +346,7 @@ public class UIPlayer : MonoBehaviour
         else
         {
             ShowInvest(false);
+            EnableCards(true);
         }
 
         cardsPanel.transform.localScale = Vector3.zero;

@@ -180,11 +180,12 @@ public class PlayerNetData : NetworkBehaviour
     [Server]
     public void NewExpense(Expense newExpense, bool isRecurrent)
     {
+        int absCost = Mathf.Abs(newExpense.Cost);
         if (isRecurrent) NewDebt(newExpense, false);
         else
         {
-            if (money >= -newExpense.Cost)
-                AddMoney(-newExpense.Cost);
+            if (money >= absCost)
+                AddMoney(newExpense.Cost);
             else
                 NewDebt(newExpense, true);
         }

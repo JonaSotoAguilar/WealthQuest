@@ -13,7 +13,6 @@ public class PlayerNetUI : NetworkBehaviour
     private List<Question> questions = new List<Question>();
     private int levelQuestion;
     [SyncVar] private int attempts = 2;
-    private bool useBGames = false;
     [SyncVar(hook = nameof(OnTimerUpdated))] private float timeRemaining = 30f;
     private int readyPlayer = 0;
     private Coroutine questionTimerCoroutine;
@@ -25,7 +24,6 @@ public class PlayerNetUI : NetworkBehaviour
     private void OnDestroy()
     {
         ui.OnQuestionAnswered -= OnAnswerQuestion;
-        ui.OnAttemptFinished -= OnAttemptFinished;
         ui.OnCardSelected -= OnCardSelected;
         selectedCards.OnAdd -= OnCardAdded;
         StopAllCoroutines();
@@ -33,7 +31,7 @@ public class PlayerNetUI : NetworkBehaviour
 
     public override void OnStartClient()
     {
-        base.OnStartServer();
+        base.OnStartClient();
 
         selectedCards.OnAdd += OnCardAdded;
         ui.RemoveLocalListeners();
@@ -157,11 +155,7 @@ public class PlayerNetUI : NetworkBehaviour
         else
         {
             attempts = attempts - 1;
-            if (attempts <= 0 && CanPlayBGames())
-            {
-                AddAttempt();
-            }
-            else if (attempts <= 0)
+            if (attempts <= 0)
             {
                 ResetQuestionValues();
                 FinishTurn();
@@ -177,7 +171,6 @@ public class PlayerNetUI : NetworkBehaviour
     [Server]
     private void ResetQuestionValues()
     {
-        useBGames = false;
         attempts = 2;
         currentQuestion = null;
         questions.Clear();
@@ -223,64 +216,65 @@ public class PlayerNetUI : NetworkBehaviour
 
     #region Attempts
 
-    [Server]
-    private bool CanPlayBGames()
-    {
-        if (useBGames || ProfileUser.bGamesProfile == null || ProfileUser.bGamesProfile.points <= 0) return false;
-        return true;
-    }
+    // [Server]
+    // private bool CanPlayBGames()
+    // {
+    //     if (useBGames || ProfileUser.bGamesProfile == null || ProfileUser.bGamesProfile.points <= 0) return false;
+    //     return true;
+    // }
 
-    [Server]
-    private void AddAttempt()
-    {
-        useBGames = true;
-        RpcSetupBGames(true);
-    }
+    // [Server]
+    // private void AddAttempt()
+    // {
+    //     useBGames = true;
+    //     RpcSetupBGames();
+    // }
 
-    [ClientRpc]
-    private void RpcSetupBGames(bool show)
-    {
-        ui.ShowAttempts(show);
-        if (isOwned && show) ui.OnAttemptFinished += OnAttemptFinished;
-    }
+    // [ClientRpc]
+    // private void RpcSetupBGames()
+    // {
+    //     if (!isOwned) return;
+    //     ui.ShowMoreAttempts();
+    //     ui.OnAttemptFinished += OnAttemptFinished;
+    // }
 
-    private async void OnAttemptFinished(bool isYes)
-    {
-        ui.OnAttemptFinished -= OnAttemptFinished;
-        if (isYes)
-        {
-            bool success = await HttpService.SpendPoints(1);
-            CmdOnAttemptFinished(success);
-        }
-        else
-        {
-            CmdFinishQuestion();
-        }
-    }
+    // private async void OnAttemptFinished(bool isYes)
+    // {
+    //     ui.CloseMoreAttempts();
+    //     ui.OnAttemptFinished -= OnAttemptFinished;
+    //     if (isYes)
+    //     {
+    //         bool success = await HttpService.SpendPoints(1);
+    //         CmdOnAttemptFinished(success);
+    //     }
+    //     else
+    //     {
+    //         CmdFinishQuestion();
+    //     }
+    // }
 
-    [Command]
-    private void CmdOnAttemptFinished(bool success)
-    {
-        RpcSetupBGames(false);
-        if (success)
-        {
-            attempts = 1;
-            if (questions.Count > 1) questions.Remove(currentQuestion);
-            CreateQuestion();
-        }
-        else
-        {
-            ResetQuestionValues();
-            FinishTurn();
-        }
-    }
+    // [Command]
+    // private void CmdOnAttemptFinished(bool success)
+    // {
+    //     if (success)
+    //     {
+    //         attempts = 1;
+    //         if (questions.Count > 1) questions.Remove(currentQuestion);
+    //         CreateQuestion();
+    //     }
+    //     else
+    //     {
+    //         ResetQuestionValues();
+    //         FinishTurn();
+    //     }
+    // }
 
-    [Command]
-    private void CmdFinishQuestion()
-    {
-        ResetQuestionValues();
-        FinishTurn();
-    }
+    // [Command]
+    // private void CmdFinishQuestion()
+    // {
+    //     ResetQuestionValues();
+    //     FinishTurn();
+    // }
 
     #endregion
 
@@ -366,7 +360,6 @@ public class PlayerNetUI : NetworkBehaviour
     private void SubmitCard()
     {
         selectedCards.Clear();
-
         FinishTurn();
     }
 

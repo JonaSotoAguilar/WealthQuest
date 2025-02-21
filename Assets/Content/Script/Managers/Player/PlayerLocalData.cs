@@ -117,10 +117,11 @@ public class PlayerLocalData : MonoBehaviour
 
     public void NewExpense(Expense newExpense, bool isRecurrent)
     {
+        int absCost = Mathf.Abs(newExpense.Cost);
         if (isRecurrent) NewDebt(newExpense, false);
         else
         {
-            if (Money >= -newExpense.Cost)
+            if (Money >= absCost)
                 AddMoney(newExpense.Cost);
             else
                 NewDebt(newExpense, true);
@@ -130,7 +131,7 @@ public class PlayerLocalData : MonoBehaviour
     private void NewDebt(Expense newExpense, bool withInterest = false)
     {
         // Aplica interes a la deuda
-        if (withInterest) newExpense.Cost += (int) (newExpense.Cost * interest);
+        if (withInterest) newExpense.Cost += (int)(newExpense.Cost * interest);
 
         // Agrega deuda
         AddDebt(newExpense.GetDebt());
@@ -170,7 +171,7 @@ public class PlayerLocalData : MonoBehaviour
             AddMoney(currInvestment.Capital);
             AddInvest(-currInvestment.Capital);
             Investments.RemoveAt(index);
-        }   
+        }
     }
 
     private void UpdateExpense(int index, bool applyInterest)

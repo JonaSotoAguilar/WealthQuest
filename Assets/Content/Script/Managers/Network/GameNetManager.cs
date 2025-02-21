@@ -36,6 +36,8 @@ public class GameNetManager : NetworkBehaviour
     [SyncVar] private string timePlayed = "00:00:00";
     [SyncVar(hook = nameof(OnChangeYear))] private int currentYear = 0;
     [SyncVar] private bool isClosed = false;
+
+    // Control
     private int readyPlayer = 0;
 
     # region Getters
@@ -68,6 +70,11 @@ public class GameNetManager : NetworkBehaviour
         {
             instance = null;
         }
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
     }
 
     public static void PlayerJoined(PlayerNetManager player)

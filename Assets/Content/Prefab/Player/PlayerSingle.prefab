@@ -58,7 +58,6 @@ MonoBehaviour:
     points: 0
     level: 0
     money: 0
-    salary: 0
     invest: 0
     debt: 0
     income: 0
@@ -140,6 +139,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 299599989399475149, guid: dd19a19017ed1924e9c10da05dc722b1, type: 3}
       propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2015295185184529481, guid: dd19a19017ed1924e9c10da05dc722b1, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4806766383206716782, guid: dd19a19017ed1924e9c10da05dc722b1, type: 3}

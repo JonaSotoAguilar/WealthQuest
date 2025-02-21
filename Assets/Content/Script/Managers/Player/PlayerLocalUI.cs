@@ -109,17 +109,15 @@ public class PlayerLocalUI : MonoBehaviour
         else
         {
             attempts--;
-            if (attempts <= 0)
+            if (attempts <= 0 && CanPlayBGames())
             {
-                if (CanPlayBGames())
-                {
-                    AddAttempt();
-                }
-                else
-                {
-                    ResetQuestionValues();
-                    FinishTurn();
-                }
+                Debug.Log("No hay más intentos. ¿Deseas usar un BGame?");
+                AddAttempt();
+            }
+            else if (attempts <= 0)
+            {
+                ResetQuestionValues();
+                FinishTurn();
             }
             else
             {
@@ -176,13 +174,13 @@ public class PlayerLocalUI : MonoBehaviour
     private void AddAttempt()
     {
         useBGames = true;
-        ui.ShowAttempts(true);
+        ui.ShowMoreAttempts();
         ui.OnAttemptFinished += OnAttemptFinished;
     }
 
     private async void OnAttemptFinished(bool isYes)
     {
-        ui.ShowAttempts(false);
+        ui.CloseMoreAttempts();
         ui.OnAttemptFinished -= OnAttemptFinished;
         if (isYes)
         {

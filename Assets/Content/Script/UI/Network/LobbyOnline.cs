@@ -345,7 +345,7 @@ public class LobbyOnline : NetworkBehaviour
             {
                 BannerNetwork bannerPlayer = pair.Value;
 
-                PlayerData player = new PlayerData(bannerPlayer.UID, bannerPlayer.Username, bannerPlayer.Character, bannerPlayer.FinanceLevel);
+                PlayerData player = new PlayerData(bannerPlayer.UID, bannerPlayer.Username, bannerPlayer.Character, 1);
                 data.playersData.Add(player);
             }
         }
