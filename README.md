@@ -55,6 +55,21 @@ WealthQuest permite descargar **paquetes de preguntas personalizados** que puede
 
 ## ⚙️ Funcionalidades Adicionales
 
+### Despliegue local de bGames
+
+Se provee un `docker-compose.yml`  para desplegar los principales servicios de bGames con datos poblados para pruebas del videojuego WealthQuest. Disponible en la sección de **Releases** del repositorio.
+
+Para levantar los servicios:
+
+```bash
+docker-compose up --build
+```
+
+### Usuario para pruebas de bGames
+
+- **Usuario:** `user`
+- **Contraseña:** `asd123`
+
 ### Consumo de Puntos de bGames
 
 Para que WealthQuest pueda consumir puntos de bGames:
