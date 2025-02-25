@@ -51,14 +51,24 @@ public class CreateQuestion : MonoBehaviour
 
     public bool QuestionComplete()
     {
+        if (question == null || topic == null || subTopic == null)
+        {
+            return false;
+        }
+
         if (string.IsNullOrEmpty(question.text) || string.IsNullOrEmpty(topic.text) || string.IsNullOrEmpty(subTopic.text))
+        {
+            return false;
+        }
+
+        if (answers == null)
         {
             return false;
         }
 
         for (int i = 0; i < answers.Length; i++)
         {
-            if (string.IsNullOrEmpty(answers[i].text) || answers[i].text.Trim().Length == 0 || answers[i].text.Trim() == " ")
+            if (answers[i] == null || string.IsNullOrEmpty(answers[i].text) || answers[i].text.Trim().Length == 0 || answers[i].text.Trim() == " ")
             {
                 return false;
             }
@@ -66,5 +76,6 @@ public class CreateQuestion : MonoBehaviour
 
         return true;
     }
+
 
 }

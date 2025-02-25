@@ -121,26 +121,43 @@ public class CreateContent : MonoBehaviour
         if (questions.Count >= 25 && ValidateQuestions())
         {
             createButton.interactable = true;
-            createButtonText.gameObject.SetActive(true);
+            createButtonText.gameObject.SetActive(false);
         }
         else
         {
             createButton.interactable = false;
-            createButtonText.gameObject.SetActive(false);
+            createButtonText.gameObject.SetActive(true);
         }
     }
 
     private bool ValidateQuestions()
     {
-        foreach (var question in questions)
-        {
-            if (!question.QuestionComplete())
-            {
-                return false;
-            }
-        }
+
+        // if (questions == null || questions.Count == 0)
+        // {
+        //     return false;
+        // }
+
+        // foreach (var question in questions)
+        // {
+        //     if (question == null)
+        //     {
+        //         return false;
+        //     }
+
+        //     if (!question.QuestionComplete())
+        //     {
+        //         return false;
+        //     }
+        // }
 
         return true;
+    }
+
+    public void OpenCreatePopup()
+    {
+        MenuManager.Instance.OpenConfirmCreatePopup(true);
+        nameError.gameObject.SetActive(false);
     }
 
     #endregion
