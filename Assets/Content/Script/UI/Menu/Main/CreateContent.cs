@@ -28,6 +28,7 @@ public class CreateContent : MonoBehaviour
     private bool update = false;
     private int version = 1;
     private string uidContent = "";
+    private Content currContent;
 
     #region Initialization
 
@@ -39,6 +40,14 @@ public class CreateContent : MonoBehaviour
     private void OnDisable()
     {
         ClearQuestions();
+    }
+
+    private void OnEnable()
+    {
+        if (update)
+        {
+            StartCoroutine(LoadQuestions(currContent));
+        }
     }
 
     public void NewContent()
@@ -68,7 +77,7 @@ public class CreateContent : MonoBehaviour
         confirmButtonText.text = "Actualizar";
         confirmTitleText.text = "Actualizar Contenido";
         confirmButtonPopupText.text = "Actualizar";
-        StartCoroutine(LoadQuestions(content));
+        currContent = content;
     }
 
     private void ClearQuestions()
@@ -140,15 +149,17 @@ public class CreateContent : MonoBehaviour
 
     private IEnumerator LoadQuestions(Content content)
     {
-        if (!update) yield return null;
-
+        if (content == null || !update) yield break;
         ClearQuestions();
+
+        yield return new WaitForSeconds(0.4f);
 
         foreach (var question in content.questions)
         {
             AddQuestion();
             CreateQuestion newQuestion = questions[questions.Count - 1];
             newQuestion.LoadQuestion(question);
+            yield return null;
         }
 
         ValidateCreate();
@@ -191,12 +202,6 @@ public class CreateContent : MonoBehaviour
     #endregion
 
     #region Create Content
-
-    public void OpenCreatePopup()
-    {
-        MenuManager.Instance.OpenConfirmCreatePopup(true);
-        nameError.gameObject.SetActive(false);
-    }
 
     public void CreateContentBundle()
     {

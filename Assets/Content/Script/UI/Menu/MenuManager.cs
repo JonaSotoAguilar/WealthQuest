@@ -169,6 +169,7 @@ public class MenuManager : MonoBehaviour
     public void OpenCreateContentMenu()
     {
         OpenMenu(createContentMenu);
+
     }
 
     #endregion

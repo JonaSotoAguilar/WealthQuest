@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using SFB;
 using TMPro;
@@ -10,7 +8,7 @@ using UnityEngine.UI;
 public class ContentMenu : MonoBehaviour
 {
     [Header("Content")]
-    [SerializeField] private CreateContent createContent; //FIXME
+    [SerializeField] private CreateContent createContent;
     [SerializeField] private GameObject topicPrefab;
     [SerializeField] private Transform container;
     [SerializeField] private TMP_InputField searchInput;
@@ -62,8 +60,8 @@ public class ContentMenu : MonoBehaviour
 
     public void OpenCreateMenu()
     {
-        MenuManager.Instance.OpenCreateContentMenu();
         createContent.NewContent();
+        MenuManager.Instance.OpenCreateContentMenu();
     }
 
     #endregion
@@ -131,8 +129,8 @@ public class ContentMenu : MonoBehaviour
         {
             changeButton.GetComponent<Button>().onClick.AddListener(() =>
             {
-                MenuManager.Instance.OpenCreateContentMenu();
                 createContent.UpdateContent(content);
+                MenuManager.Instance.OpenCreateContentMenu();
             });
         }
 
@@ -206,21 +204,12 @@ public class ContentMenu : MonoBehaviour
 
         if (success)
         {
-            contentPanel.transform.Find("Download").gameObject.SetActive(true);
-            contentPanel.transform.Find("Download").GetComponent<Button>().interactable = true;
-            contentPanel.transform.Find("Downloaded").gameObject.SetActive(false);
-            contentPanel.transform.Find("Delete").gameObject.SetActive(false);
-            contentPanel.transform.Find("Update").gameObject.SetActive(false);
-
-            contentPanel.transform.Find("Change").gameObject.SetActive(false);
-            contentPanel.transform.Find("Export").gameObject.SetActive(false);
-
-            RefreshPanels();
-            FilterBySearch();
+            Destroy(contentPanel);
+            InitScrollView();
         }
         else
         {
-            Destroy(contentPanel);
+            Debug.LogError("Error al eliminar el contenido local.");
         }
     }
 
