@@ -7,7 +7,7 @@ public class BGamesUI : MonoBehaviour
     [Header("bGames")]
     [SerializeField] private GameObject bGamesLoginIcon;
 
-    private static string bGamesLink = "bGames.interaction-lab.info";
+    private string bGamesLink = "https://bgames.interaction-lab.info";
 
     #region bGames
 
