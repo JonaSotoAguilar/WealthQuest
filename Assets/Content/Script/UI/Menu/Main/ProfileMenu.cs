@@ -105,7 +105,7 @@ public class ProfileMenu : MonoBehaviour
         loginButton.gameObject.SetActive(false);
         logoutButton.gameObject.SetActive(true);
         bGamesUsername.text = ProfileUser.bGamesProfile.name;
-        bGamesPoints.text = "Puntos bGames: " + ProfileUser.bGamesProfile.points;
+        bGamesPoints.text = "Puntos: " + ProfileUser.bGamesProfile.points;
     }
 
     private void WithoutBGames()
@@ -144,10 +144,10 @@ public class ProfileMenu : MonoBehaviour
             configPanel.SetActive(true);
             canvasGroup.alpha = 0;
 
-            LeanTween.moveY(configPanel.GetComponent<RectTransform>(), -160, 1f)
+            LeanTween.moveY(configPanel.GetComponent<RectTransform>(), -160, 0.5f)
                 .setEase(LeanTweenType.easeOutBack);
 
-            LeanTween.value(configPanel, 0, 1, 1f)
+            LeanTween.value(configPanel, 0, 1, 0.5f)
                 .setOnUpdate((float val) =>
                 {
                     canvasGroup.alpha = val;
@@ -161,9 +161,10 @@ public class ProfileMenu : MonoBehaviour
         }
         else
         {
-            LeanTween.moveY(configPanel.GetComponent<RectTransform>(), 120, 1f)
+            LeanTween.moveY(configPanel.GetComponent<RectTransform>(), 120, 0.5f)
                 .setEase(LeanTweenType.easeInBack);
-            LeanTween.value(configPanel, 1, 0, 1f)
+
+            LeanTween.value(configPanel, 1, 0, 0.5f)
                 .setOnUpdate((float val) =>
                 {
                     canvasGroup.alpha = val;

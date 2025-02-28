@@ -110,11 +110,11 @@ RectTransform:
   - {fileID: 6194887701268943385}
   m_Father: {fileID: 8752812182290877776}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 100, y: 45}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -100, y: 45}
   m_SizeDelta: {x: 250, y: 50}
-  m_Pivot: {x: 0, y: 0}
+  m_Pivot: {x: 1, y: 0}
 --- !u!222 &5112477505012892242
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -143,7 +143,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -6045235674028870251, guid: 7ed010a2b51d0fb4f9fee6a47b1334fd, type: 3}
+  m_Sprite: {fileID: 5014669083926033807, guid: f05ec7f8583bfa3468fb8958e87e24d9, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -251,6 +251,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5821073241453662650}
   - {fileID: 5681241667654552146}
   - {fileID: 8672758174301660145}
   m_Father: {fileID: 4979769158174556788}
@@ -524,7 +525,7 @@ GameObject:
   - component: {fileID: 2367411786821903468}
   - component: {fileID: 1396334630260653952}
   m_Layer: 0
-  m_Name: AmountText
+  m_Name: CardText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -577,7 +578,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ingresa un monto y luego selecciona la inversi\xF3n"
+  m_text: Ingresa el monto y selecciona la carta que deseas invertir
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
@@ -716,8 +717,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 4717104774431673990, guid: 2204c5120d209e24b8d8473101c0670f, type: 3}
-  m_Type: 1
+  m_Sprite: {fileID: -6045235674028870251, guid: 7ed010a2b51d0fb4f9fee6a47b1334fd, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -895,7 +896,7 @@ GameObject:
   - component: {fileID: 9156495614076746520}
   - component: {fileID: 7273828933605811333}
   m_Layer: 0
-  m_Name: InvestText
+  m_Name: HeaderCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -908,18 +909,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2264763602581585443}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 603661946597084157}
-  m_Father: {fileID: 8672758174301660145}
+  m_Father: {fileID: 5345929069393368090}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 210}
-  m_SizeDelta: {x: 750, y: 40}
+  m_SizeDelta: {x: 875, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9156495614076746520
 CanvasRenderer:
@@ -1377,14 +1378,14 @@ MonoBehaviour:
   m_text: No
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1401,13 +1402,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -1937,7 +1938,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8672758174301660145
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1952,7 +1953,6 @@ RectTransform:
   m_Children:
   - {fileID: 2444859008244085039}
   - {fileID: 1144174368034465718}
-  - {fileID: 5821073241453662650}
   m_Father: {fileID: 5345929069393368090}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2515,11 +2515,11 @@ RectTransform:
   - {fileID: 536498585654669594}
   m_Father: {fileID: 8752812182290877776}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -100, y: 45}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 100, y: 45}
   m_SizeDelta: {x: 250, y: 50}
-  m_Pivot: {x: 1, y: 0}
+  m_Pivot: {x: 0, y: 0}
 --- !u!222 &5154544426095070893
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2548,7 +2548,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -6045235674028870251, guid: 7ed010a2b51d0fb4f9fee6a47b1334fd, type: 3}
+  m_Sprite: {fileID: -6029991969101318831, guid: c77a20011fee4694cb75577a7509ffda, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2789,17 +2789,17 @@ RectTransform:
   m_GameObject: {fileID: 6041678218658712934}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4410279075170523953}
   - {fileID: 7570329270334340874}
   m_Father: {fileID: 4979769158174556788}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -50}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -10}
+  m_SizeDelta: {x: 1920, y: 920}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8149133673178935559
 CanvasRenderer:
@@ -3264,9 +3264,9 @@ MonoBehaviour:
   cardsPanel: {fileID: 1455108911856331600}
   cardGrid: {fileID: 5681241667654552146}
   cardPrefab: {fileID: 7861086620489467455, guid: a25307080ade85e41af15243f298ea87, type: 3}
+  cardText: {fileID: 1396334630260653952}
   investPanel: {fileID: 4251482380641636099}
   amountText: {fileID: 6325138534091506502}
-  investText: {fileID: 2264763602581585443}
   increaseAmount: {fileID: 2456054785961522768}
   lowerAmount: {fileID: 8057931771695843258}
   cancelButton: {fileID: 5124829464281921769}
@@ -3352,14 +3352,14 @@ MonoBehaviour:
   m_text: Si
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3376,13 +3376,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 36
+  m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -3530,7 +3530,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -40}
-  m_SizeDelta: {x: 800, y: 300}
+  m_SizeDelta: {x: 820, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4865453279322463687
 CanvasRenderer:
@@ -3560,8 +3560,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Tienes X puntos de bGames disponibles. \nTe gustaria consumir 1 por otro
-    intento?"
+  m_text: "Tienes X puntos de LifeSyncGames disponibles. \n\xBFTe gustaria consumir
+    1 por otro intento?"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}

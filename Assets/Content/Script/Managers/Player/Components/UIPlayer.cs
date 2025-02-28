@@ -36,6 +36,7 @@ public class UIPlayer : MonoBehaviour
     [SerializeField] private GameObject cardsPanel;
     [SerializeField] private Transform cardGrid;
     [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private TextMeshProUGUI cardText;
     private List<Button> cardButtons = new List<Button>();
     private bool isInvestmentCard = false;
     public event Action<Card> OnCardSelected;
@@ -44,7 +45,6 @@ public class UIPlayer : MonoBehaviour
     [Header("Invest")]
     [SerializeField] private GameObject investPanel;
     [SerializeField] public TMP_InputField amountText;
-    [SerializeField] private GameObject investText;
     [SerializeField] private Button increaseAmount;
     [SerializeField] private Button lowerAmount;
     [SerializeField] private Button cancelButton;
@@ -147,7 +147,7 @@ public class UIPlayer : MonoBehaviour
         }
         questionPanel.SetActive(true);
 
-        LeanTween.scale(questionPanel, Vector3.one, 0.5f).setEaseOutBack().setOnComplete(() =>
+        LeanTween.scale(questionPanel, Vector3.one * 0.9f, 0.5f).setEaseOutBack().setOnComplete(() =>
             {
                 if (isOwned)
                 {
@@ -245,9 +245,8 @@ public class UIPlayer : MonoBehaviour
 
     public void ShowMoreAttempts()
     {
-        Debug.Log("ShowMoreAttempts");
         int points = ProfileUser.bGamesProfile.points;
-        attemptsText.text = "Tienes " + points + " puntos de bGames, ¿quieres usar 1 punto para tener un intento extra?";
+        attemptsText.text = "Tienes " + points + " puntos de LifeSyncGames, ¿quieres usar 1 punto para tener un intento extra?";
 
         canvasGroupUI.interactable = true;
         attemptsPanel.SetActive(true);
@@ -339,12 +338,14 @@ public class UIPlayer : MonoBehaviour
             if (money <= 0) ActiveAmount(false);
             else ActiveAmount(true);
 
+            cardText.text = "Ingresa el monto y selecciona la carta que deseas invertir";
             moneyPlayer = money;
             ChangeAmountInvest(0);
             ShowInvest(true);
         }
         else
         {
+            cardText.text = "Selecciona la carta más favorable";
             ShowInvest(false);
             EnableCards(true);
         }
@@ -489,7 +490,6 @@ public class UIPlayer : MonoBehaviour
         }
     }
 
-
     public void CancelSelection()
     {
         canvasGroupUI.interactable = false;
@@ -503,7 +503,7 @@ public class UIPlayer : MonoBehaviour
 
     public void NotOwnerInvest()
     {
-        investText.SetActive(false);
+        cardText.transform.parent.gameObject.SetActive(false);
         increaseAmount.gameObject.SetActive(false);
         lowerAmount.gameObject.SetActive(false);
         cancelButton.gameObject.SetActive(false);

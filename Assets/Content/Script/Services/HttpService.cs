@@ -1,8 +1,8 @@
-using UnityEngine;
-using UnityEngine.Networking;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
 
 public static class HttpService
 {
@@ -108,7 +108,7 @@ public static class HttpService
 
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
-                Debug.LogError($"Error en GetPlayerId: {request.error}");
+                Debug.Log($"Error en GetPlayerId: {request.error}");
                 return 0;
             }
             else
@@ -159,13 +159,13 @@ public static class HttpService
                     }
                     else
                     {
-                        Debug.LogError("La lista de jugadores está vacía o es nula.");
+                        Debug.Log("La lista de jugadores está vacía o es nula.");
                         return null;
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError($"Error al deserializar los datos del jugador: {ex.Message}");
+                    Debug.Log($"Error al deserializar los datos del jugador: {ex.Message}");
                     return null;
                 }
             }
@@ -187,7 +187,7 @@ public static class HttpService
 
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
-                Debug.LogError($"Error en GetPlayerPoints: {request.error}");
+                Debug.Log($"Error en GetPlayerPoints: {request.error}");
                 return 0;
             }
             else
@@ -211,7 +211,7 @@ public static class HttpService
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError($"Error al deserializar los atributos del jugador: {ex.Message}");
+                    Debug.Log($"Error al deserializar los atributos del jugador: {ex.Message}");
                     return 0;
                 }
             }

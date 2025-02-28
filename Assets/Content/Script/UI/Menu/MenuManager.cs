@@ -56,7 +56,6 @@ public class MenuManager : MonoBehaviour
     [Header("Event System")]
     [SerializeField] private EventSystem eventSystem;
 
-
     // Active Menu
     private GameObject activeMenu;
 

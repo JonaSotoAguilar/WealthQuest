@@ -108,6 +108,11 @@ public static class ProfileUser
 
     #region BGames
 
+    public static bool LoggedBGames()
+    {
+        return GetBGamesID() != -1;
+    }
+
     public static int GetBGamesID()
     {
         return PlayerPrefs.GetInt("bGamesId", -1);
@@ -124,6 +129,7 @@ public static class ProfileUser
     {
         if (bgames == null) return;
         bGamesProfile = bgames;
+        BGamesUI.Instance.ActiveBGamesLoginIcon(true);
     }
 
     public static void LoginBGames(BGamesProfile bgames)
@@ -132,12 +138,14 @@ public static class ProfileUser
         bGamesProfile = bgames;
         PlayerPrefs.SetInt("bGamesId", bgames.id);
         PlayerPrefs.Save();
+        BGamesUI.Instance.ActiveBGamesLoginIcon(true);
     }
 
     public static void LogoutBGames()
     {
         PlayerPrefs.DeleteKey("bGamesId");
         bGamesProfile = null;
+        BGamesUI.Instance.ActiveBGamesLoginIcon(false);
     }
 
     #endregion
